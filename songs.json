@@ -1,0 +1,922 @@
+{
+  "Us V. Them": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Us V. Them",
+      "stream": "LCD_Soundsystem",
+      "artist": "LCD Soundsystem",
+      "album": "Sound Of Silver"
+    }
+  },
+  "Stop!": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Stop!",
+      "stream": "Janes_Addiction",
+      "artist": "Jane's Addiction",
+      "album": "The Best Of Jane's Addiction"
+    }
+  },
+  "My Curse": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "My Curse",
+      "stream": "Killswitch_Engage",
+      "artist": "Killswitch Engage",
+      "album": "As Daylight Dies"
+    }
+  },
+  "Stand And Deliver": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Stand And Deliver",
+      "stream": "Adam_Ant",
+      "artist": "Adam And The Ants",
+      "album": "The Essential Adam Ant"
+    }
+  },
+  "Would?": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Would?",
+      "stream": "Alice_in_Chains",
+      "artist": "Alice In Chains",
+      "album": "The Essential Alice In Chains"
+    }
+  },
+  "Girlfriend": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Girlfriend",
+      "stream": "Avril_Lavigne",
+      "artist": "Avril Lavigne",
+      "album": "Best D*** Thing"
+    }
+  },
+  "The Archers Bows Have Broken": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "The Archers Bows Have Broken",
+      "stream": "Brand_New",
+      "artist": "Brand New",
+      "album": "The Devil And God..."
+    }
+  },
+  "Fight Music For The Fight": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Fight Music For The Fight",
+      "stream": "Bromheads_Jacket",
+      "artist": "Bromheads Jacket",
+      "album": "Dits From The Commuter Belt"
+    }
+  },
+  "Route 66 (Beatmasters Mix)": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Route 66 (Beatmasters Mix)",
+      "stream": "Depeche_Mode",
+      "artist": "Depeche Mode",
+      "album": "Remixes 81-04"
+    }
+  },
+  "Going Through Changes": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Going Through Changes",
+      "stream": "Army_Of_Me",
+      "artist": "Army Of Me",
+      "album": "Citizen"
+    }
+  },
+  "Epic": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Epic",
+      "stream": "Faith_No_More",
+      "artist": "Faith No More",
+      "album": "The Real Thing"
+    }
+  },
+  "Beautiful Ruin": {
+    "type": 0,
+    "lock": 9,
+    "defaults": {
+      "title": "Beautiful Ruin",
+      "stream": "Make_Good_Your_Escape",
+      "artist": "Make Good Your Escape",
+      "album": "Beautiful Ruin"
+    }
+  },
+  "Block Out The World": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Block Out The World",
+      "stream": "Maxeen",
+      "artist": "Maxeen",
+      "album": "Hello Echo"
+    }
+  },
+  "Rockstar (Jason Nevins Remix)": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Rockstar (Jason Nevins Remix)",
+      "stream": "Nerd",
+      "artist": "N.E.R.D.",
+      "album": "In Search Of..."
+    }
+  },
+  "FRICTION": {
+    "type": 0,
+    "lock": 1,
+    "defaults": {
+      "title": "FRICTION",
+      "stream": "Bz",
+      "artist": "B'z",
+      "album": ""
+    }
+  },
+  "Collapse": {
+    "type": 0,
+    "lock": 7,
+    "defaults": {
+      "title": "Collapse",
+      "stream": "Saosin",
+      "artist": "Saosin",
+      "album": "Saosin"
+    }
+  },
+  "Calling All Cars": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Calling All Cars",
+      "stream": "Senses_Fail",
+      "artist": "Senses Fail",
+      "album": "Still Searching"
+    }
+  },
+  "It Goes Off": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "It Goes Off",
+      "stream": "Skybombers",
+      "artist": "Skybombers",
+      "album": "Sirens"
+    }
+  },
+  "Rusty Cage": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Rusty Cage",
+      "stream": "Soundgarden",
+      "artist": "Soundgarden",
+      "album": "A-Sides"
+    }
+  },
+  "Dead Living": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Dead Living",
+      "stream": "Sugarcult",
+      "artist": "Sugarcult",
+      "album": "Lights Out"
+    }
+  },
+  "Duel": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Duel",
+      "stream": "Swervedriver",
+      "artist": "Swervedriver",
+      "album": ".....Head"
+    }
+  },
+  "Glitter Hits (J. J. Puig Mix)": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Glitter Hits (J. J. Puig Mix)",
+      "stream": "The_Styles",
+      "artist": "The Styles",
+      "album": "You Love The Styles"
+    }
+  },
+  "Red Orange Yellow": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Red Orange Yellow",
+      "stream": "The_Photo_Atlas",
+      "artist": "The Photo Atlas",
+      "album": "No, Not Me, Never"
+    }
+  },
+  "I Wanna Rock": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "I Wanna Rock",
+      "stream": "Twisted_Sister",
+      "artist": "Twisted Sister",
+      "album": "Still Hungry"
+    }
+  },
+  "Finger On The Trigger": {
+    "type": 0,
+    "lock": 3,
+    "defaults": {
+      "title": "Finger On The Trigger",
+      "stream": "Never_Heard_Of_It",
+      "artist": "Never Heard Of It",
+      "album": "Never Heard Of It"
+    }
+  },
+  "Everyone Has Their Secrets": {
+    "type": 0,
+    "lock": 9,
+    "defaults": {
+      "title": "Everyone Has Their Secrets",
+      "stream": "Showing_Off_To_Theives",
+      "artist": "Showing Off To Thieves",
+      "album": "Everyone Has Their Secrets"
+    }
+  },
+  "Paradise City": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Paradise City",
+      "stream": "Guns_And_Roses",
+      "artist": "Guns N' Roses",
+      "album": "Greatest Hits"
+    }
+  },
+  "Fake It": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Fake It",
+      "stream": "Seether",
+      "artist": "Seether",
+      "album": "Finding Beauty In Negative Spaces"
+    }
+  },
+  "I'm Not Sorry": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "I'm Not Sorry",
+      "stream": "PigeonDetectives",
+      "artist": "The Pigeon Detectives",
+      "album": "Wait For Me"
+    }
+  },
+  "Until You Leave": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Until You Leave",
+      "stream": "PermanentME",
+      "artist": "Permanent ME",
+      "album": "After The Room Clears"
+    }
+  },
+  "Nothing To Lose": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Nothing To Lose",
+      "stream": "Operator",
+      "artist": "Operator",
+      "album": "Soul Crusher"
+    }
+  },
+  "Come Clean": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Come Clean",
+      "stream": "Mexicolas",
+      "artist": "Mexicolas",
+      "album": "X"
+    }
+  },
+  "Creepshow": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Creepshow",
+      "stream": "Kerli",
+      "artist": "Kerli",
+      "album": "Love Is Dead"
+    }
+  },
+  "Cities In Dust": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Cities In Dust",
+      "stream": "JunkieXL",
+      "artist": "Junkie XL feat. Lauren Rocket",
+      "album": "Booming Back At You"
+    }
+  },
+  "Fire Away": {
+    "type": 0,
+    "lock": 3,
+    "defaults": {
+      "title": "Fire Away",
+      "stream": "Jupiter_One",
+      "artist": "Jupiter One",
+      "album": "Jupiter One"
+    }
+  },
+  "Electable (Give It Up)": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Electable (Give It Up)",
+      "stream": "JimmyEatWorld",
+      "artist": "Jimmy Eat World",
+      "album": "Chase This Light"
+    }
+  },
+  "Heart Of Fire": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Heart Of Fire",
+      "stream": "Innerpartysystem",
+      "artist": "Innerpartysystem",
+      "album": "The Download EP"
+    }
+  },
+  "Coming Down To Beijing": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Coming Down To Beijing",
+      "stream": "BrainFailure",
+      "artist": "Brain Failure feat. Dicky Barrett",
+      "album": "Beijing To Boston"
+    }
+  },
+  "Too Much, Too Young, Too Fast": {
+    "type": 0,
+    "lock": 6,
+    "defaults": {
+      "title": "Too Much, Too Young, Too Fast",
+      "stream": "Airbourne",
+      "artist": "Airbourne",
+      "album": "Runnin' Wild"
+    }
+  },
+  "Snowhill": {
+    "type": 0,
+    "lock": 0,
+    "defaults": {
+      "title": "Snowhill",
+      "stream": "AgentBlue",
+      "artist": "Agent Blue",
+      "album": "A Stolen Honda Vision"
+    }
+  },
+  "Burnout 2002 Reprise": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Burnout 2002 Reprise",
+      "stream": "Burnout_2002Reprise",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "Tokyo Nights": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Tokyo Nights",
+      "stream": "Burnout_TokyoNights",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Bulldozer Blues": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Bulldozer Blues",
+      "stream": "Burnout_BulldozerBlues",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "Round And Rounder": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Round And Rounder",
+      "stream": "Burnout_RoundAndRounder",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Pass Me By": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Pass Me By",
+      "stream": "Burnout_PassMeBy",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "Panic Attack": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Panic Attack",
+      "stream": "Burnout_PanicAttack",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "Ozone": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Ozone",
+      "stream": "Burnout_Ozone",
+      "artist": "Criterion Games",
+      "album": "Burnout 3"
+    }
+  },
+  "Lyon": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Lyon",
+      "stream": "Burnout_Lyon",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Like My Shirt": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Like My Shirt",
+      "stream": "Burnout_LikeMyShirt",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Halfway To Dreaming": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Halfway To Dreaming",
+      "stream": "Burnout_HalfwayToDreaming",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Free": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Free",
+      "stream": "Burnout_Free",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Fight Or Flight": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Fight Or Flight",
+      "stream": "Burnout_FightOrFlight",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Exodus": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Exodus",
+      "stream": "Burnout_Exodus",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Dark Moon Rising": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Dark Moon Rising",
+      "stream": "Burnout_DarkMoonRising",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "Childish Games": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Childish Games",
+      "stream": "Burnout_ChildishGames",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "Chicken George": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Chicken George",
+      "stream": "Burnout_ChickenGeorge",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Caught On A Wire": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Caught On A Wire",
+      "stream": "Burnout_CaughtOnWire",
+      "artist": "Criterion Games",
+      "album": "Burnout 1"
+    }
+  },
+  "Burnout Paradise Theme": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Burnout Paradise Theme",
+      "stream": "Burnout_Burnout5Theme",
+      "artist": "Criterion Games",
+      "album": "Burnout Paradise"
+    }
+  },
+  "Destroyer Mix": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Destroyer Mix",
+      "stream": "Burnout_DestroyerMix",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "Bridge The Gap": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Bridge The Gap",
+      "stream": "Burnout_BridgeTheGap",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "Backlash": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Backlash",
+      "stream": "Burnout_Backlash",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "A Photograph": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "A Photograph",
+      "stream": "Burnout_APhotograph",
+      "artist": "Criterion Games",
+      "album": "Burnout 2"
+    }
+  },
+  "16 Years On": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "16 Years On",
+      "stream": "Burnout_APhotograph",
+      "artist": "Criterion Games",
+      "album": "Burnout 3"
+    }
+  },
+  "Another World": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Another World",
+      "stream": "Burnout_AnotherWorld",
+      "artist": "Criterion Games",
+      "album": "Burnout 3"
+    }
+  },
+  "Betties Last Voyage": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Betties Last Voyage",
+      "stream": "Burnout_BettiesLastVoyage",
+      "artist": "Criterion Games",
+      "album": "Burnout 3"
+    }
+  },
+  "Liquid Sky": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Liquid Sky",
+      "stream": "Burnout_LiquidSky",
+      "artist": "Criterion Games",
+      "album": "Burnout 3"
+    }
+  },
+  "Red Sky Horizon": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Red Sky Horizon",
+      "stream": "Burnout_RedSkyHorizon",
+      "artist": "Criterion Games",
+      "album": "Burnout 3"
+    }
+  },
+  "Shine": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Shine",
+      "stream": "Burnout_Shine",
+      "artist": "Criterion Games",
+      "album": "Burnout 3"
+    }
+  },
+  "Take Cover": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Take Cover",
+      "stream": "Burnout_TakeCover",
+      "artist": "Criterion Games",
+      "album": "Burnout 3"
+    }
+  },
+  "Tonight This Ends": {
+    "type": 1,
+    "lock": 0,
+    "defaults": {
+      "title": "Tonight This Ends",
+      "stream": "Burnout_TonightThisEnds",
+      "artist": "Criterion Games",
+      "album": "Burnout 3"
+    }
+  },
+  "$WORK_BACH_AIR": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_BACH_AIR",
+      "stream": "PicParadise01",
+      "artist": "$COMP_BACH",
+      "album": ""
+    }
+  },
+  "$WORK_BOCCHERINI_MINUET": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_BOCCHERINI_MINUET",
+      "stream": "PicParadise15",
+      "artist": "$COMP_BOCCHERINI",
+      "album": ""
+    }
+  },
+  "$WORK_MOZART_EINEKLEINENACHTMUSIC": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_MOZART_EINEKLEINENACHTMUSIC",
+      "stream": "PicParadise08",
+      "artist": "$COMP_MOZART",
+      "album": ""
+    }
+  },
+  "$WORK_DELIBES_FLOWERDUET": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_DELIBES_FLOWERDUET",
+      "stream": "PicParadise09",
+      "artist": "$COMP_DELIBES",
+      "album": ""
+    }
+  },
+  "$WORK_GOUNOD_AVEMARIA": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_GOUNOD_AVEMARIA",
+      "stream": "PicParadise02",
+      "artist": "$COMP_GOUNOD",
+      "album": ""
+    }
+  },
+  "$WORK_TCHAIKOVSKY_NUTCRACKER": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_TCHAIKOVSKY_NUTCRACKER",
+      "stream": "PicParadise21",
+      "artist": "$COMP_TCHAIKOVSKY",
+      "album": ""
+    }
+  },
+  "$WORK_SAINTSAENS_AQUARIUM": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_SAINTSAENS_AQUARIUM",
+      "stream": "PicParadise03",
+      "artist": "$COMP_SAINTSAENS",
+      "album": ""
+    }
+  },
+  "$WORK_MOZART_HORNCONCERTO4": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_MOZART_HORNCONCERTO4",
+      "stream": "PicParadise12",
+      "artist": "$COMP_MOZART",
+      "album": ""
+    }
+  },
+  "$WORK_TCHAIKOVSKY_SLEEPINGBEAUTY": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_TCHAIKOVSKY_SLEEPINGBEAUTY",
+      "stream": "PicParadise18",
+      "artist": "$COMP_TCHAIKOVSKY",
+      "album": ""
+    }
+  },
+  "$WORK_VERDI_HEBREW": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_VERDI_HEBREW",
+      "stream": "PicParadise11",
+      "artist": "$COMP_VERDI",
+      "album": ""
+    }
+  },
+  "$WORK_DVORAK_SYMPHONY9": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_DVORAK_SYMPHONY9",
+      "stream": "PicParadise19",
+      "artist": "$COMP_DVORAK",
+      "album": ""
+    }
+  },
+  "$WORK_DEBUSSY_CLAIRDELUNE": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_DEBUSSY_CLAIRDELUNE",
+      "stream": "PicParadise05",
+      "artist": "$COMP_DEBUSSY",
+      "album": ""
+    }
+  },
+  "$WORK_BEETHOVEN_MOONLIGHT": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_BEETHOVEN_MOONLIGHT",
+      "stream": "PicParadise16",
+      "artist": "$COMP_BEETHOVEN",
+      "album": ""
+    }
+  },
+  "$WORK_MOZART_PIANOCONCERTO": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_MOZART_PIANOCONCERTO",
+      "stream": "PicParadise17",
+      "artist": "$COMP_MOZART",
+      "album": ""
+    }
+  },
+  "$WORK_HANDEL_WATERMUSIC1": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_HANDEL_WATERMUSIC1",
+      "stream": "PicParadise24",
+      "artist": "$COMP_HANDEL",
+      "album": ""
+    }
+  },
+  "$WORK_SAINTSAENS_SWAN": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_SAINTSAENS_SWAN",
+      "stream": "PicParadise04",
+      "artist": "$COMP_SAINTSAENS",
+      "album": ""
+    }
+  },
+  "$WORK_BIZET_CARMEN": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_BIZET_CARMEN",
+      "stream": "PicParadise10",
+      "artist": "$COMP_BIZET",
+      "album": ""
+    }
+  },
+  "$WORK_MOZART_HORNCONCERTO3": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_MOZART_HORNCONCERTO3",
+      "stream": "PicParadise13",
+      "artist": "$COMP_MOZART",
+      "album": ""
+    }
+  },
+  "$WORK_VERDI_AIDA": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_VERDI_AIDA",
+      "stream": "PicParadise23",
+      "artist": "$COMP_VERDI",
+      "album": ""
+    }
+  },
+  "$WORK_HANDEL_WATERMUSIC2": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_HANDEL_WATERMUSIC2",
+      "stream": "PicParadise25",
+      "artist": "$COMP_HANDEL",
+      "album": ""
+    }
+  },
+  "$WORK_VIVALDI_SPRING": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_VIVALDI_SPRING",
+      "stream": "PicParadise06",
+      "artist": "$COMP_VIVALDI",
+      "album": ""
+    }
+  },
+  "$WORK_BRAHMS_HUNGARIANDANCE": {
+    "type": 2,
+    "lock": 0,
+    "defaults": {
+      "title": "$WORK_BRAHMS_HUNGARIANDANCE",
+      "stream": "PicParadise14",
+      "artist": "$COMP_BRAHMS",
+      "album": ""
+    }
+  }
+}
