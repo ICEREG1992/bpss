@@ -3,11 +3,14 @@ import json
 
 class HexNavigator:
     def __init__(self, filepath):
-        self.file = open(filepath, 'rb')
+        self.file = open(filepath, 'r+b')
 
     def seek(self, offset):
         # print(f"Seeking to offset 0x{offset:X}")
         self.file.seek(offset)
+
+    def seek_end(self):
+        self.file.seek(0, 2)  # 0 bytes from the end (whence=2)
 
     def read_uint32(self, endian='<'):
         data = self.file.read(4)
@@ -20,6 +23,12 @@ class HexNavigator:
         data = self.file.read(size)
         # print(f"Read bytes: {data.hex()}")
         return data
+    
+    def write_bytes(self, data: bytes):
+        """Writes raw bytes at the current file position."""
+        if not isinstance(data, (bytes, bytearray)):
+            raise TypeError("write_bytes expects a bytes-like object")
+        self.file.write(data)
 
     def read_cstring(self, encoding='ascii'):
         chars = []
@@ -35,6 +44,10 @@ class HexNavigator:
         # print(f"Read C-string: {result}")
         return result
     
+    def write_cstring(self, s: str, encoding='ascii'):
+        """Writes a null-terminated string at the current file position."""
+        self.write_bytes(s.encode(encoding) + b'\x00')
+        
     def find(self, pattern, hex=False, encoding='ascii'):
         """Finds the first occurrence of pattern (hex bytes or ascii string) and seeks there."""
         if hex:
@@ -126,147 +139,3 @@ class HexNavigator:
     
     def close(self):
         self.file.close()
-
-# Load JSON file
-with open('songs.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
-
-# Create a navigator
-navigator = HexNavigator(r"C:\temp\bundle\AttribSysVault\7657D9BF.dat")
-
-# Find the pointer to strings
-navigator.seek(0x08)
-offset = navigator.read_uint32('<')
-print(offset)
-bin_size = navigator.read_uint32('<')
-print(bin_size)
-
-# now find the ptr base
-navigator.find("NrtP")
-ptr_base = navigator.loc()
-
-# start consuming tokens
-navigator.seek(offset)
-while (navigator.loc() < offset + bin_size):
-    song_pos = navigator.loc()
-    song = navigator.read_cstring()
-    if song in data:
-        match data[song]["type"]:
-            case 0: # regular soundtrack
-                match data[song]["lock"]:
-                    case 0: # no lock
-                        stream_pos = navigator.loc()
-                        stream = navigator.read_cstring()
-                        artist_pos = navigator.loc()
-                        artist = navigator.read_cstring()
-                        album_pos = navigator.loc()
-                        album = navigator.read_cstring()
-                    case 1: # no album (FRICTION)
-                        stream_pos = navigator.loc()
-                        stream = navigator.read_cstring()
-                        artist_pos = navigator.loc()
-                        artist = navigator.read_cstring()
-                        album_pos = 0
-                        album = ""
-                    case 3: # artist/album sync
-                        stream_pos = navigator.loc()
-                        stream = navigator.read_cstring()
-                        artist_pos = navigator.loc()
-                        album_pos = navigator.loc()
-                        artist = navigator.read_cstring()
-                        album = artist
-                    case 6: # stream/artist sync
-                        stream_pos = navigator.loc()
-                        artist_pos = navigator.loc()
-                        stream = navigator.read_cstring()
-                        artist = stream
-                        album_pos = navigator.loc()
-                        album = navigator.read_cstring()
-                    case 7: # stream/artist/album sync
-                        stream_pos = navigator.loc()
-                        artist_pos = navigator.loc()
-                        album_pos = navigator.loc()
-                        stream = navigator.read_cstring()
-                        artist = stream
-                        album = stream
-                    case 9: # song/album sync
-                        stream_pos = navigator.loc()
-                        stream = navigator.read_cstring()
-                        artist_pos = navigator.loc()
-                        artist = navigator.read_cstring()
-                        album_pos = song_pos
-                        album = song
-            case 1: # burnout soundtrack
-                # get stream name
-                stream_pos = navigator.loc()
-                stream = navigator.read_cstring()
-                # save pos, check for more
-                temp_pos = navigator.loc()
-                artist = navigator.read_cstring()
-                if artist == data[song]["defaults"]["artist"]:
-                    artist_pos = temp_pos
-                else:
-                    artist = ""
-                    artist_pos = 0
-                    navigator.seek(temp_pos)
-                temp_pos = navigator.loc()
-                album = navigator.read_cstring()
-                if album == data[song]["defaults"]["album"]:
-                    album_pos = temp_pos
-                else:
-                    album = ""
-                    album_pos = 0
-                    navigator.seek(temp_pos)
-            case 2: # classical soundtrack
-                stream_pos = navigator.loc()
-                stream = navigator.read_cstring()
-                # save pos, check for artist
-                temp_pos = navigator.loc()
-                artist = navigator.read_cstring()
-                if artist == data[song]["defaults"]["artist"]:
-                    artist_pos = temp_pos
-                else:
-                    artist = ""
-                    artist_pos = 0
-                    navigator.seek(temp_pos)
-                album_pos = 0
-                album = ""
-        data[song]["strings"] = {"title":song, "stream":stream, "artist":artist, "album":album}
-        data[song]["locs"] = {"title":song_pos, "stream":stream_pos, "artist":artist_pos, "album":album_pos}
-        # get pointers
-        temp_pos = navigator.loc()
-        for pos in [song_pos, stream_pos, artist_pos, album_pos]:
-            if pos != 0:
-                prefix = bytes.fromhex('03 00 01 00')
-                pos_bytes = struct.pack('<I', pos - offset)
-                search_string = prefix + pos_bytes
-                print(navigator.find(search_string, hex=True))
-                if pos == song_pos:
-                    song_ptr = navigator.loc() + 4
-                if pos == stream_pos:
-                    stream_ptr = navigator.loc() + 4
-                if pos == artist_pos:
-                    artist_ptr = navigator.loc() + 4
-                if pos == album_pos:
-                    album_ptr = navigator.loc() + 4
-            else:
-                if pos == song_pos:
-                    song_ptr = 0
-                if pos == stream_pos:
-                    stream_ptr = 0
-                if pos == artist_pos:
-                    artist_ptr = 0
-                if pos == album_pos:
-                    album_ptr = 0
-        navigator.seek(temp_pos)
-        data[song]["ptrs"] = {"title":song_ptr, "stream":stream_ptr, "artist":artist_ptr, "album":album_ptr}
-        game = r"C:\Program Files (x86)\Steam\steamapps\common\Burnout(TM) Paradise The Ultimate Box"
-        data[song]["file"] = f"{game}\SOUND\STREAMS\{stream}.SNS"
-        data[song]["source"] = ""
-
-# Save the modified JSON back to file
-with open('locs.json', 'w', encoding='utf-8') as f:
-    json.dump(data, f, indent=4, ensure_ascii=False)
-
-navigator.close()
-f.close()
