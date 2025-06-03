@@ -9,7 +9,6 @@ from PyQt5.QtGui import QIcon
 
 SETTINGS_FILE = "settings.json"
 
-
 class SettingsDialog(QDialog):
     def __init__(self, first=False):
         super().__init__()

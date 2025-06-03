@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import hashlib
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox)
 from PyQt5.QtCore import Qt
@@ -10,6 +11,7 @@ from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QLineEdit
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt
 
+from processing import loadPtrs
 from settings import SettingsDialog
 
 SETTINGS_FILE = "settings.json"
@@ -81,6 +83,13 @@ class SoundtrackViewer(QMainWindow):
 
         missing = [v for v in required_keys if not v in self.settings]
         return not missing
+    
+    def get_ptrs_hash(self):
+        if self.settings["game"]:
+            return hashlib.sha256(self.settings["game"].encode()).hexdigest()[:8]
+        else:
+            return None
+
         
     def create_toolbar(self):
         toolbar = QToolBar("Main Toolbar")
@@ -150,9 +159,17 @@ class SoundtrackViewer(QMainWindow):
 
     def load_data(self):
         try:
+            self.settings = self.load_settings()
             # Load JSON data
-            with open("ptrs.json", "r") as file:
-                ptrs = json.load(file)
+            filename = self.get_ptrs_hash() + ".json"
+            if os.path.isfile(filename):
+                with open(filename, "r") as file:
+                    ptrs = json.load(file)
+            else:
+                print("Generating new ptrs")
+                loadPtrs(self.settings, filename)
+                with open(filename, "r") as file:
+                    ptrs = json.load(file)
 
             # Load Defaults
             with open("songs.json", "r") as file:

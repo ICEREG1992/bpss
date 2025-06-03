@@ -16,7 +16,7 @@ def get_first_file(path):
         print(f"Error: {e}")
         return None
 
-def loadPtrs(settings):
+def loadPtrs(settings, filename):
     # Load JSON file
     with open('songs.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -163,7 +163,7 @@ def loadPtrs(settings):
             # out[song]["source"] = ""
 
     # Save the modified JSON back to file
-    with open('ptrs.json', 'w', encoding='utf-8') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         json.dump(out, f, indent=4, ensure_ascii=False)
 
     navigator.close()
@@ -262,10 +262,10 @@ def convertSong(file, stream, data, settings):
 
     
 
-settings = {
-    "game": r"C:\Program Files (x86)\Steam\steamapps\common\Burnout(TM) Paradise The Ultimate Box",
-    "yap": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\YAP\YAP.exe",
-    "sx": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\sx.exe"
-    }
-loadPtrs(settings)
+# settings = {
+#     "game": r"C:\Program Files (x86)\Steam\steamapps\common\Burnout(TM) Paradise The Ultimate Box",
+#     "yap": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\YAP\YAP.exe",
+#     "sx": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\sx.exe"
+#     }
+# loadPtrs(settings, "ptrs.json")
 # writePtrs(r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\valid.soundtrack", settings)
