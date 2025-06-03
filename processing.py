@@ -138,28 +138,28 @@ def loadPtrs(settings):
                     prefix = bytes.fromhex('03 00 01 00')
                     pos_bytes = struct.pack('<I', pos - offset)
                     search_string = prefix + pos_bytes
-                    print(navigator.find(search_string, hex=True))
+                    locs = navigator.find_all(search_string, start=0, hex=True)
                     if pos == song_pos:
-                        song_ptr = navigator.loc() + 4
+                        song_ptr = [loc + 4 for loc in locs]
                     if pos == stream_pos:
-                        stream_ptr = navigator.loc() + 4
+                        stream_ptr = [loc + 4 for loc in locs]
                     if pos == artist_pos:
-                        artist_ptr = navigator.loc() + 4
+                        artist_ptr = [loc + 4 for loc in locs]
                     if pos == album_pos:
-                        album_ptr = navigator.loc() + 4
+                        album_ptr = [loc + 4 for loc in locs]
                 else:
                     if pos == song_pos:
-                        song_ptr = 0
+                        song_ptr = []
                     if pos == stream_pos:
-                        stream_ptr = 0
+                        stream_ptr = []
                     if pos == artist_pos:
-                        artist_ptr = 0
+                        artist_ptr = []
                     if pos == album_pos:
-                        album_ptr = 0
+                        album_ptr = []
             navigator.seek(temp_pos)
             out[song]["ptrs"] = {"title":song_ptr, "stream":stream_ptr, "artist":artist_ptr, "album":album_ptr}
             game = r"C:\Program Files (x86)\Steam\steamapps\common\Burnout(TM) Paradise The Ultimate Box"
-            # out[song]["file"] = f"{game}\SOUND\STREAMS\{stream}.SNS"
+            out[song]["file"] = f"{game}\SOUND\STREAMS\{stream}.SNS"
             # out[song]["source"] = ""
 
     # Save the modified JSON back to file
@@ -268,4 +268,4 @@ settings = {
     "sx": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\sx.exe"
     }
 loadPtrs(settings)
-writePtrs(r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\valid.soundtrack", settings)
+# writePtrs(r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\valid.soundtrack", settings)

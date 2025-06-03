@@ -85,7 +85,7 @@ class HexNavigator:
         print("Pattern not found.")
         return -1
 
-    def find_all(self, pattern, hex=False, encoding='ascii'):
+    def find_all(self, pattern, start=0, hex=False, encoding='ascii'):
         """Finds all occurrences of pattern and returns a list of offsets."""
         if hex:
             if isinstance(pattern, bytes):
@@ -97,7 +97,7 @@ class HexNavigator:
 
         print(f"Searching for all instances of pattern: {needle.hex()}")
 
-        self.file.seek(0)
+        self.file.seek(start)
         chunk_size = 4096
         overlap = len(needle) - 1
 
