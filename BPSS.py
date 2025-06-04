@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderVie
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QColor, QIcon
 
-from processing import loadPtrs
+from processing import loadPtrs, writePtrs
 from settings import SettingsDialog
 from LockedCell import LockedCellWidget
 from FileBrowseCell import FileBrowseCellWidget
@@ -71,6 +71,12 @@ class SoundtrackViewer(QMainWindow):
         # Create actions widget
         # self.create_actions()
         # layout.addWidget(self.actions, 1)
+    
+    def update_window_title(self):
+        if self.file:
+            self.setWindowTitle(f"Burnout Paradise Soundtrack Switcher [{self.file}]")
+        else:
+            self.setWindowTitle("Burnout Paradise Soundtrack Switcher")
     
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
@@ -208,6 +214,10 @@ class SoundtrackViewer(QMainWindow):
                 index_item.setData(Qt.DisplayRole, row_index + 1)  # Store as number for sorting
                 index_item.setFlags(index_item.flags() & ~Qt.ItemIsEditable)
                 index_item.setTextAlignment(Qt.AlignCenter)
+
+                # Create file browse widget with update hook
+                file_browse_widget = FileBrowseCellWidget(source or "")
+                file_browse_widget.textChanged.connect(lambda new_text, r=row_index: self.table.item(r, 6).setText(""))
                 
                 match self.defaults[key]["type"]:
                     case 0: # regular soundtrack
@@ -218,7 +228,7 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.setItem(row_index, 2, QTableWidgetItem(album))
                                 self.table.setItem(row_index, 3, QTableWidgetItem(artist))
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
-                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))
                             case 1: # no album (FRICTION)
                                 self.table.setItem(row_index, 0, index_item)
@@ -226,7 +236,7 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
                                 self.table.setItem(row_index, 3, QTableWidgetItem(artist))
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
-                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))                                
                             case 3: # artist/album sync
                                 # self.synced_cells.append([(row_index, 2), (row_index, 3)])
@@ -239,7 +249,7 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.setItem(row_index, 3, self.make_unique_cell(artist, song_color))
 
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
-                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))                                
                             case 6: # stream/artist sync
                                 self.table.setItem(row_index, 0, index_item)
@@ -247,7 +257,7 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.setItem(row_index, 2, QTableWidgetItem(album))
                                 self.table.setCellWidget(row_index, 3, LockedCellWidget(artist))
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
-                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))                                
                             case 7: # stream/artist/album sync
                                 self.table.setItem(row_index, 0, index_item)
@@ -255,7 +265,7 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
                                 self.table.setCellWidget(row_index, 3, LockedCellWidget(artist))
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
-                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))
 
                             case 9: # song/album sync                               
@@ -268,7 +278,7 @@ class SoundtrackViewer(QMainWindow):
 
                                 self.table.setItem(row_index, 3, QTableWidgetItem(artist))
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
-                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))
 
                     case 1: # burnout soundtrack
@@ -302,7 +312,7 @@ class SoundtrackViewer(QMainWindow):
                         # look above for album cell
                         # look above for artist cell
                         self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
-                        self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
+                        self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
                         self.table.setItem(row_index, 6, QTableWidgetItem(file_path))                        
                     case 2: # classical soundtrack
                         # steal any duplicate strings
@@ -323,7 +333,7 @@ class SoundtrackViewer(QMainWindow):
                         self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
                         # look above for artist cell
                         self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
-                        self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
+                        self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
                         self.table.setItem(row_index, 6, QTableWidgetItem(file_path))
 
             # backfill
@@ -629,6 +639,10 @@ class SoundtrackViewer(QMainWindow):
     # Toolbar action methods (placeholder implementations)
     def new_file(self):
         print("New file action triggered")
+        self.file = None
+        self.load_data()
+        self.changes = False
+        self.update_window_title()
         
     def open_file(self):
         print("Load file action triggered")
@@ -641,6 +655,8 @@ class SoundtrackViewer(QMainWindow):
         if file_path:
             self.file = file_path
             self.load_file()
+            self.update_window_title()
+            self.changes = False
             print(file_path)
         
     def save_file(self):
@@ -649,6 +665,7 @@ class SoundtrackViewer(QMainWindow):
             print("Saving...")
             # We know the path of this file, let's just save
             self.write_file()
+            self.changes = False
         else:
             print("Saving As...")
             file_path, _ = QFileDialog.getSaveFileName(
@@ -661,6 +678,7 @@ class SoundtrackViewer(QMainWindow):
                 self.file = file_path
                 print(file_path)
                 self.write_file()
+                self.changes = False
             else:
                 print("Save As... canceled")
         
@@ -669,6 +687,9 @@ class SoundtrackViewer(QMainWindow):
         
     def apply_action(self):
         print("Apply action triggered")
+        self.save_file()
+        if self.file:
+            writePtrs(self.settings, self.file, self.get_ptrs_hash() + ".json")
         
     def unapply_action(self):
         print("Unapply action triggered")

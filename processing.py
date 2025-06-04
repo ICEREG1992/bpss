@@ -170,7 +170,7 @@ def loadPtrs(settings, filename):
     f.close()
 
 
-def writePtrs(soundtrack, settings):
+def writePtrs(settings, soundtrack, ptrs):
     with open(soundtrack, 'r', encoding='utf-8') as f:
         st = json.load(f)
     
@@ -207,10 +207,11 @@ def writePtrs(soundtrack, settings):
                 loc = navigator.loc()
                 print("got eof " + str(loc))
                 navigator.write_cstring(st[s]["strings"][k])
-                navigator.seek(ptrs[s]["ptrs"][k])
-                navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
+                for x in ptrs[s]["ptrs"][k]:
+                    navigator.seek(x)
+                    navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
         # add to conversion queue
-        to_convert.append([st[s]["file"], st[s]["strings"]["stream"].upper(), s])
+        to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
     # finally, adjust bin size
     navigator.seek_end()
     loc = navigator.loc()
@@ -219,9 +220,10 @@ def writePtrs(soundtrack, settings):
     # now everything is written, let's pack it up
     navigator.close()
 
-    # first turn the bin into bin.old
+    # first turn the bin into bin.old if one doesn't exist already
     backupLoc = binLoc + '.old'
-    shutil.move(binLoc, backupLoc)
+    if not os.path.exists(backupLoc):
+        shutil.move(binLoc, backupLoc)
 
     # create at the location of the bin
     subprocess.run([settings["yap"], 'c', tempLoc, binLoc])
@@ -245,10 +247,20 @@ def writePtrs(soundtrack, settings):
         # write new length
         dat_navigator.write_bytes(snr_data)
         dat_navigator.close()
+        
+        # write original .sns to .old
+        temp_sns_path = os.path.join("temp", s[1] + ".sns")
+        sns_path = os.path.join(settings["game"], "SOUND", "STREAMS", s[1].upper() + ".SNS")
+        backupSns = sns_path + ".old"
+        if not os.path.exists(backupSns):
+            shutil.move(sns_path, backupSns)
         # now slap the file into STREAMS
-        sns_path = os.path.join("temp", s[1] + ".sns")
-        shutil.copy(sns_path, os.path.join(settings["game"], "SOUND", "STREAMS", s[1].upper() + ".SNS"))
+        shutil.copy(temp_sns_path, sns_path)
+    # write original streamheaders to .old
     # repack streamheaders
+    backupHeaders = headersLoc + ".old"
+    if not os.path.exists(backupHeaders):
+        shutil.move(headersLoc, backupHeaders)
     subprocess.run([settings["yap"], 'c', tempLoc, headersLoc])
 
 
@@ -257,7 +269,7 @@ def convertSong(file, stream, data, settings):
     print(file)
     print(stream)
     temp_path = os.path.join("temp", stream)
-    subprocess.run([settings["sx"], '-sndplayer', '-ealayer3_int', '-playlocstream', file, f"-=\"{temp_path}\""])
+    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-playlocstream', file, f"-=\"{temp_path}\""])
     
 
     
@@ -265,7 +277,7 @@ def convertSong(file, stream, data, settings):
 # settings = {
 #     "game": r"C:\Program Files (x86)\Steam\steamapps\common\Burnout(TM) Paradise The Ultimate Box",
 #     "yap": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\YAP\YAP.exe",
-#     "sx": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\sx.exe"
+#     "audio": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\sx.exe"
 #     }
 # loadPtrs(settings, "ptrs.json")
 # writePtrs(r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\valid.soundtrack", settings)

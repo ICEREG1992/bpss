@@ -50,6 +50,7 @@ class FileBrowseCellWidget(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File")
         if file_path:
             self.label.setText(file_path)
+            self.textChanged.emit(self.label.text())
 
     def setText(self, text):
         self.label.setText(text)
