@@ -3,7 +3,7 @@ import sys
 import json
 import hashlib
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout,
-                            QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox)
+                            QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QBrush, QColor
@@ -13,8 +13,11 @@ from PyQt5.QtCore import Qt
 
 from processing import loadPtrs
 from settings import SettingsDialog
+from LockedCell import LockedCellWidget
+from FileBrowseCell import FileBrowseCellWidget
 
 SETTINGS_FILE = "settings.json"
+DEFAULTS_FILE = "songs.json"
 
 class SoundtrackViewer(QMainWindow):
     def __init__(self):
@@ -35,7 +38,10 @@ class SoundtrackViewer(QMainWindow):
         # Set the geometry: x, y, width, height
         self.setGeometry(center_x, center_y, window_width, window_height)
         self.setFixedSize(window_width, window_height)
-        
+
+        # establish important variables
+        self.changes = False
+        self.file = None
         self.synced_cells = []  # List of lists of (row, column) tuples
 
         # Create toolbar
@@ -56,6 +62,9 @@ class SoundtrackViewer(QMainWindow):
                 print("Settings canceled")
                 QMessageBox.warning(self, "Missing Input", "You will be unable to apply new soundtracks until you set all settings.")
         
+        # Load defaults
+        self.defaults = self.load_defaults()
+
         # Create table widget
         self.create_table()
 
@@ -64,13 +73,18 @@ class SoundtrackViewer(QMainWindow):
 
 
         # Create actions widget
-        self.create_actions()
-
-        layout.addWidget(self.actions, 1)
+        # self.create_actions()
+        # layout.addWidget(self.actions, 1)
     
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, "r") as f:
+                return json.load(f)
+        return {}
+    
+    def load_defaults(self):
+        if os.path.exists(DEFAULTS_FILE):
+            with open(DEFAULTS_FILE, "r") as f:
                 return json.load(f)
         return {}
 
@@ -90,7 +104,6 @@ class SoundtrackViewer(QMainWindow):
         else:
             return None
 
-        
     def create_toolbar(self):
         toolbar = QToolBar("Main Toolbar")
         toolbar.setMovable(False)
@@ -102,9 +115,9 @@ class SoundtrackViewer(QMainWindow):
         new_action.triggered.connect(self.new_file)
         toolbar.addAction(new_action)
         
-        load_action = QAction(self.style().standardIcon(QStyle.SP_DialogOpenButton), "Load", self)
-        load_action.triggered.connect(self.load_file)
-        toolbar.addAction(load_action)
+        open_action = QAction(self.style().standardIcon(QStyle.SP_DialogOpenButton), "Open", self)
+        open_action.triggered.connect(self.open_file)
+        toolbar.addAction(open_action)
         
         save_action = QAction(self.style().standardIcon(QStyle.SP_DialogSaveButton), "Save", self)
         save_action.triggered.connect(self.save_file)
@@ -157,6 +170,9 @@ class SoundtrackViewer(QMainWindow):
         # set up item syncing
         self.table.itemChanged.connect(self.handle_item_changed)
 
+        # set up highlighting of locked cells
+        self.table.itemSelectionChanged.connect(self.handle_selection_changed)
+
     def load_data(self):
         try:
             self.settings = self.load_settings()
@@ -170,10 +186,6 @@ class SoundtrackViewer(QMainWindow):
                 loadPtrs(self.settings, filename)
                 with open(filename, "r") as file:
                     ptrs = json.load(file)
-
-            # Load Defaults
-            with open("songs.json", "r") as file:
-                defaults = json.load(file)
                 
             # Set row count based on number of entries
             self.table.setRowCount(len(ptrs))
@@ -199,63 +211,67 @@ class SoundtrackViewer(QMainWindow):
                 index_item = QTableWidgetItem()
                 index_item.setData(Qt.DisplayRole, row_index + 1)  # Store as number for sorting
                 index_item.setFlags(index_item.flags() & ~Qt.ItemIsEditable)
-
-                sync_icon = QIcon("sync.png")
-                browse_icon = QIcon("browse.png")
                 
-                match defaults[key]["type"]:
+                match self.defaults[key]["type"]:
                     case 0: # regular soundtrack
-                        match defaults[key]["lock"]:
+                        match self.defaults[key]["lock"]:
                             case 0: # no lock
                                 self.table.setItem(row_index, 0, index_item)
                                 self.table.setItem(row_index, 1, QTableWidgetItem(title))
                                 self.table.setItem(row_index, 2, QTableWidgetItem(album))
                                 self.table.setItem(row_index, 3, QTableWidgetItem(artist))
-                                self.table.setCellWidget(row_index, 4, self.make_locked_cell(stream))
-                                self.table.setItem(row_index, 5, QTableWidgetItem(browse_icon, source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
+                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))
                             case 1: # no album (FRICTION)
                                 self.table.setItem(row_index, 0, index_item)
                                 self.table.setItem(row_index, 1, QTableWidgetItem(title))
-                                self.table.setCellWidget(row_index, 2, self.make_locked_cell(album))
+                                self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
                                 self.table.setItem(row_index, 3, QTableWidgetItem(artist))
-                                self.table.setCellWidget(row_index, 4, self.make_locked_cell(stream))
-                                self.table.setItem(row_index, 5, QTableWidgetItem(browse_icon, source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
+                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))                                
                             case 3: # artist/album sync
-                                self.synced_cells.append([(row_index, 2), (row_index, 3)])
+                                # self.synced_cells.append([(row_index, 2), (row_index, 3)])
                                 self.table.setItem(row_index, 0, index_item)
                                 self.table.setItem(row_index, 1, QTableWidgetItem(title))
-                                self.table.setItem(row_index, 2, QTableWidgetItem(sync_icon, album))
-                                self.table.setItem(row_index, 3, QTableWidgetItem(sync_icon, artist))
-                                self.table.setCellWidget(row_index, 4, self.make_locked_cell(stream))
-                                self.table.setItem(row_index, 5, QTableWidgetItem(browse_icon, source or ""))  # Ensure source is never None
+
+                                sync[self.defaults[key]["defaults"]["album"]] = [(row_index, 2), (row_index, 3)]
+                                song_color = list(sync).index(self.defaults[key]["defaults"]["album"])
+                                self.table.setItem(row_index, 2, self.make_unique_cell(album, song_color))
+                                self.table.setItem(row_index, 3, self.make_unique_cell(artist, song_color))
+
+                                self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
+                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))                                
                             case 6: # stream/artist sync
                                 self.table.setItem(row_index, 0, index_item)
                                 self.table.setItem(row_index, 1, QTableWidgetItem(title))
                                 self.table.setItem(row_index, 2, QTableWidgetItem(album))
-                                self.table.setCellWidget(row_index, 3, self.make_locked_cell(artist))
-                                self.table.setCellWidget(row_index, 4, self.make_locked_cell(stream))
-                                self.table.setItem(row_index, 5, QTableWidgetItem(browse_icon, source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 3, LockedCellWidget(artist))
+                                self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
+                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))                                
                             case 7: # stream/artist/album sync
                                 self.table.setItem(row_index, 0, index_item)
                                 self.table.setItem(row_index, 1, QTableWidgetItem(title))
-                                self.table.setCellWidget(row_index, 2, self.make_locked_cell(album))
-                                self.table.setCellWidget(row_index, 3, self.make_locked_cell(artist))
-                                self.table.setCellWidget(row_index, 4, self.make_locked_cell(stream))
-                                self.table.setItem(row_index, 5, QTableWidgetItem(browse_icon, source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
+                                self.table.setCellWidget(row_index, 3, LockedCellWidget(artist))
+                                self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
+                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))
 
-                            case 9: # song/album sync
-                                self.synced_cells.append([(row_index, 1), (row_index, 2)])
+                            case 9: # song/album sync                               
                                 self.table.setItem(row_index, 0, index_item)
-                                self.table.setItem(row_index, 1, QTableWidgetItem(sync_icon, title))
-                                self.table.setItem(row_index, 2, QTableWidgetItem(sync_icon, album))
+
+                                sync[self.defaults[key]["defaults"]["title"]] = [(row_index, 1), (row_index, 2)]
+                                song_color = list(sync).index(self.defaults[key]["defaults"]["title"])
+                                self.table.setItem(row_index, 1, self.make_unique_cell(title, song_color))
+                                self.table.setItem(row_index, 2, self.make_unique_cell(album, song_color))
+
                                 self.table.setItem(row_index, 3, QTableWidgetItem(artist))
-                                self.table.setCellWidget(row_index, 4, self.make_locked_cell(stream))
-                                self.table.setItem(row_index, 5, QTableWidgetItem(browse_icon, source or ""))  # Ensure source is never None
+                                self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
+                                self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
                                 self.table.setItem(row_index, 6, QTableWidgetItem(file_path))
 
                     case 1: # burnout soundtrack
@@ -263,11 +279,11 @@ class SoundtrackViewer(QMainWindow):
                         artist_ptrs = entry.get("ptrs").get("artist")
                         if len(artist_ptrs) > 1:
                             stock[artist] = artist_ptrs[1:]
-                            sync[defaults[key]["defaults"]["artist"]] = [(row_index, 3)]
-                            artist_color = list(sync).index(defaults[key]["defaults"]["artist"])
+                            sync[self.defaults[key]["defaults"]["artist"]] = [(row_index, 3)]
+                            artist_color = list(sync).index(self.defaults[key]["defaults"]["artist"])
                             self.table.setItem(row_index, 3, self.make_unique_cell(artist, artist_color))
                         elif len(artist_ptrs) == 0:
-                            backfill.append([row_index, 3, defaults[key]["defaults"]["artist"], 1])
+                            backfill.append([row_index, 3, self.defaults[key]["defaults"]["artist"], 1])
                             self.table.setItem(row_index, 3, QTableWidgetItem(artist))
                         else:
                             self.table.setItem(row_index, 3, QTableWidgetItem(artist))
@@ -275,11 +291,11 @@ class SoundtrackViewer(QMainWindow):
                         album_ptrs = entry.get("ptrs").get("album")
                         if len(album_ptrs) > 1:
                             stock[album] = album_ptrs[1:]
-                            sync[defaults[key]["defaults"]["album"]] = [(row_index, 2)]
-                            album_color = list(sync).index(defaults[key]["defaults"]["album"])
+                            sync[self.defaults[key]["defaults"]["album"]] = [(row_index, 2)]
+                            album_color = list(sync).index(self.defaults[key]["defaults"]["album"])
                             self.table.setItem(row_index, 2, self.make_unique_cell(album, album_color))
                         elif len(album_ptrs) == 0:
-                            backfill.append([row_index, 2, defaults[key]["defaults"]["album"], 0])
+                            backfill.append([row_index, 2, self.defaults[key]["defaults"]["album"], 0])
                             self.table.setItem(row_index, 2, QTableWidgetItem(album))
                         else:
                             self.table.setItem(row_index, 2, QTableWidgetItem(album))
@@ -288,29 +304,29 @@ class SoundtrackViewer(QMainWindow):
                         self.table.setItem(row_index, 1, QTableWidgetItem(title))
                         # look above for album cell
                         # look above for artist cell
-                        self.table.setCellWidget(row_index, 4, self.make_locked_cell(stream))
-                        self.table.setItem(row_index, 5, QTableWidgetItem(browse_icon, source or ""))  # Ensure source is never None
+                        self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
+                        self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
                         self.table.setItem(row_index, 6, QTableWidgetItem(file_path))                        
                     case 2: # classical soundtrack
                         # steal any duplicate strings
                         artist_ptrs = entry.get("ptrs").get("artist")
                         if len(artist_ptrs) > 1:
                             stock[artist] = artist_ptrs[1:]
-                            sync[defaults[key]["defaults"]["artist"]] = [(row_index, 3)]
-                            artist_color = list(sync).index(defaults[key]["defaults"]["artist"])
+                            sync[self.defaults[key]["defaults"]["artist"]] = [(row_index, 3)]
+                            artist_color = list(sync).index(self.defaults[key]["defaults"]["artist"])
                             self.table.setItem(row_index, 3, self.make_unique_cell(artist, artist_color))
                         elif len(artist_ptrs) == 0:
-                            backfill.append([row_index, 3, defaults[key]["defaults"]["artist"], 3])
+                            backfill.append([row_index, 3, self.defaults[key]["defaults"]["artist"], 3])
                             self.table.setItem(row_index, 3, QTableWidgetItem(artist))
                         else:
                             self.table.setItem(row_index, 3, QTableWidgetItem(artist))
                         
                         self.table.setItem(row_index, 0, index_item)
                         self.table.setItem(row_index, 1, QTableWidgetItem(title))
-                        self.table.setCellWidget(row_index, 2, self.make_locked_cell(album))
+                        self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
                         # look above for artist cell
-                        self.table.setCellWidget(row_index, 4, self.make_locked_cell(stream))
-                        self.table.setItem(row_index, 5, QTableWidgetItem(browse_icon, source or ""))  # Ensure source is never None
+                        self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
+                        self.table.setCellWidget(row_index, 5, FileBrowseCellWidget(source or ""))  # Ensure source is never None
                         self.table.setItem(row_index, 6, QTableWidgetItem(file_path))
 
             # backfill
@@ -332,48 +348,131 @@ class SoundtrackViewer(QMainWindow):
                 self.table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
         
         except FileNotFoundError:
-            print("Error: test.soundtrack file not found.")
+            print("Error: Pointers file not found.")
         except json.JSONDecodeError:
-            print("Error: Invalid JSON format in test.soundtrack.")
+            print("Error: Invalid JSON format in pointers file.")
         except Exception as e:
             print(f"Error loading data: {e}")
     
-    def make_locked_cell(self, text: str) -> QWidget:
-        widget = QWidget()
-        layout = QHBoxLayout()
-        layout.setContentsMargins(4, 0, 4, 0)
-        
-        text_label = QLabel(text)
-        lock_icon = QLabel()
-        lock_icon.setPixmap(QPixmap("lock.png").scaled(12, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        
-        layout.addWidget(text_label)
-        layout.addStretch()
-        layout.addWidget(lock_icon)
-        widget.setLayout(layout)
-        widget.setEnabled(False)
-        widget.setStyleSheet("background-color: #eeeeee;")
-        return widget
+    def load_file(self):
+        # get data from file
+        try:
+            self.settings = self.load_settings()
+            # Load JSON data
+            with open(self.file, "r") as file:
+                st = json.load(file)
+
+            # Edit table
+            for (key, entry) in st.items():
+                # Get strings data (title, stream, album, artist)
+                strings = entry.get("strings", {})
+                title = strings.get("title", "")
+                album = strings.get("album", "")
+                artist = strings.get("artist", "")
+                stream = strings.get("stream", "")
+                
+                # Get source and file
+                source = entry.get("source", "")
+                file_path = entry.get("file", "")
+
+                row_index = list(self.defaults.keys()).index(key)
+
+                # Apply soundtrack content
+                match self.defaults[key]["type"]:
+                    case 0: # regular soundtrack
+                        match self.defaults[key]["lock"]:
+                            case 0: # no lock
+                                self.table.item(row_index, 1).setText(title)
+                                self.table.item(row_index, 2).setText(album)
+                                self.table.item(row_index, 3).setText(artist)
+                                self.table.cellWidget(row_index, 4).setText(stream)
+                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
+                                self.table.item(row_index, 6).setText(file_path)
+                            case 1: # no album (FRICTION)
+                                self.table.item(row_index, 1).setText(title)
+                                # self.table.item(row_index, 2).setText(album)
+                                self.table.item(row_index, 3).setText(artist)
+                                self.table.item(row_index, 4).setText(stream)
+                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
+                                self.table.item(row_index, 6).setText(file_path)                              
+                            case 3: # artist/album sync
+                                self.table.item(row_index, 1).setText(title)
+                                self.table.item(row_index, 2).setText(album)
+                                self.table.item(row_index, 3).setText(artist)
+                                self.table.cellWidget(row_index, 4).setText(stream)
+                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
+                                self.table.item(row_index, 6).setText(file_path)
+                            case 6: # stream/artist sync
+                                self.table.item(row_index, 1).setText(title)
+                                self.table.item(row_index, 2).setText(album)
+                                self.table.cellWidget(row_index, 3).setText(artist)
+                                self.table.cellWidget(row_index, 4).setText(stream)
+                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
+                                self.table.item(row_index, 6).setText(file_path)                          
+                            case 7: # stream/artist/album sync
+                                self.table.item(row_index, 1).setText(title)
+                                self.table.cellWidget(row_index, 2).setText(album)
+                                self.table.cellWidget(row_index, 3).setText(artist)
+                                self.table.cellWidget(row_index, 4).setText(stream)
+                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
+                                self.table.item(row_index, 6).setText(file_path)
+
+                            case 9: # song/album sync                               
+                                self.table.item(row_index, 1).setText(title)
+                                self.table.item(row_index, 2).setText(album)
+                                self.table.item(row_index, 3).setText(artist)
+                                self.table.cellWidget(row_index, 4).setText(stream)
+                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
+                                self.table.item(row_index, 6).setText(file_path)
+
+                    case 1: # burnout soundtrack
+                        self.table.item(row_index, 1).setText(title)
+                        self.table.item(row_index, 2).setText(album)
+                        self.table.item(row_index, 3).setText(artist)
+                        self.table.cellWidget(row_index, 4).setText(stream)
+                        self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
+                        self.table.item(row_index, 6).setText(file_path)                  
+                    case 2: # classical soundtrack
+                        self.table.item(row_index, 1).setText(title)
+                        self.table.cellWidget(row_index, 2).setText(album)
+                        self.table.item(row_index, 3).setText(artist)
+                        self.table.cellWidget(row_index, 4).setText(stream)
+                        self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
+                        self.table.item(row_index, 6).setText(file_path)
+            
+        except FileNotFoundError:
+            print(f"Error: {self.file} file not found.")
+        except json.JSONDecodeError:
+            print(f"Error: Invalid JSON format in {self.file}.")
+        except Exception as e:
+            print(f"Error loading data: {e}")
     
     def make_unique_cell(self, text, color: int) -> QTableWidgetItem:
         colors = [
-        "#FFB3BA",  # Light Red
-        "#FFDFBA",  # Peach
-        "#FFFFBA",  # Pale Yellow
-        "#BAFFC9",  # Mint
-        "#BAE1FF",  # Baby Blue
-        "#E6BAFF",  # Lavender
-        "#FFD6E8",  # Pink Rose
-        "#A0E7E5",  # Sky Blue
-        "#D5FFB3",  # Pastel Lime
-        "#FFF0BA"   # Butter Yellow
+            "#A8E6A1",  # pastel forest green (replacing pastel red)
+            "#FFDFBA",  # pastel orange
+            "#FFFFBA",  # pastel yellow
+            "#BAFFC9",  # pastel green
+            "#BAE1FF",  # pastel blue
+            "#E3BAFF",  # pastel purple
+            "#FFCCE5",  # pastel pink
+            "#CCFFEE",  # mint
+            "#FFD0AA",  # pastel peach
+            "#FFF0BA",  # light gold
+            "#FFD1DC",  # cotton candy pink
+            "#C5E1A5",  # light lime
+            "#F8BBD0",  # light rose
+            "#D1C4E9",  # lavender
+            "#B3E5FC"   # baby blue
         ]
 
         widget = QTableWidgetItem(text)
         widget.setBackground(QBrush(QColor(colors[color])))
         return widget
+    
 
     def handle_item_changed(self, changed_item: QTableWidgetItem):
+        self.changes = True
         row = changed_item.row()
         col = changed_item.column()
         text = changed_item.text()
@@ -386,21 +485,17 @@ class SoundtrackViewer(QMainWindow):
                         self.table.item(r, c).setText(text)
                 break  # Only one group per cell
 
-        # handle file wiping
-        if col == 5:
-            self.table.item(row, 6).setText("")
-    
-    def add_sync_icon(self, row: int, col: int):
-        label = QLabel(self.table)
-        label.setPixmap(QPixmap("sync.png").scaled(12, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        label.setAttribute(Qt.WA_TransparentForMouseEvents)
-        label.setStyleSheet("background: transparent")
-        label.setFixedSize(12, 12)
-        label.move(
-            self.table.columnViewportPosition(col) + self.table.columnWidth(col) - 14,
-            self.table.rowViewportPosition(row) + 2
-        )
-        label.show()
+
+    def handle_selection_changed(self):
+        selected = self.table.selectedIndexes()
+        for row in range(self.table.rowCount()):
+            for col in range(self.table.columnCount()):
+                widget = self.table.cellWidget(row, col)
+                if isinstance(widget, LockedCellWidget):
+                    if any(index.row() == row and index.column() == col for index in selected):
+                        widget.setSelected(True)
+                    else:
+                        widget.setSelected(False)
 
 
     def create_actions(self):
@@ -444,11 +539,36 @@ class SoundtrackViewer(QMainWindow):
     def new_file(self):
         print("New file action triggered")
         
-    def load_file(self):
+    def open_file(self):
         print("Load file action triggered")
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open File",
+            "",
+            "Soundtrack Files (*.soundtrack)"
+        )
+        if file_path:
+            self.file = file_path
+            self.load_file()
+            print(file_path)
         
     def save_file(self):
         print("Save file action triggered")
+        if self.file:
+            print("Saving...")
+            # We know the path of this file, let's just save
+        else:
+            file_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Save File As",
+                "./",
+                "Soundtrack Files (*.soundtrack)"
+            )
+            if file_path:
+                self.file = file_path
+                print(file_path)
+            else:
+                print("Save As canceled")
         
     def export_file(self):
         print("Export file action triggered")
@@ -461,7 +581,24 @@ class SoundtrackViewer(QMainWindow):
         
     def reset_action(self):
         print("Reset action triggered")
+        if self.changes:
+            # Create the message box
+            msg = QMessageBox()
+            msg.setWindowTitle("Reset Soundtrack")
+            msg.setText("Are you sure you want to reset to defaults?")
+            msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            msg.setIcon(QMessageBox.Question)
+
+            # Show the message box and capture the response
+            result = msg.exec_()
+
+            if result != QMessageBox.Ok:
+                return
+            
         self.load_data()
+        if self.file:
+            self.load_file()
+        self.changes = False
         
     def show_settings(self):
         print("Settings action triggered")
