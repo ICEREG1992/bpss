@@ -207,6 +207,7 @@ class SoundtrackViewer(QMainWindow):
                 index_item = QTableWidgetItem()
                 index_item.setData(Qt.DisplayRole, row_index + 1)  # Store as number for sorting
                 index_item.setFlags(index_item.flags() & ~Qt.ItemIsEditable)
+                index_item.setTextAlignment(Qt.AlignCenter)
                 
                 match self.defaults[key]["type"]:
                     case 0: # regular soundtrack
