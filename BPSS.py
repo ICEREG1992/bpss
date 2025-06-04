@@ -2,14 +2,10 @@ import os
 import sys
 import json
 import hashlib
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout,
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout, QWidget, QHBoxLayout, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
 from PyQt5.QtCore import Qt
-from PyQt5 import QtGui
-from PyQt5.QtGui import QBrush, QColor
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QLineEdit
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QBrush, QColor, QIcon
 
 from processing import loadPtrs
 from settings import SettingsDialog
@@ -23,7 +19,7 @@ class SoundtrackViewer(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Burnout Paradise Soundtrack Switcher")
-        self.setWindowIcon(QtGui.QIcon("bpss.png"))
+        self.setWindowIcon(QIcon("bpss.png"))
         # Get screen geometry
         screen = QApplication.primaryScreen()
         screen_rect = screen.availableGeometry()
