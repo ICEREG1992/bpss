@@ -390,9 +390,9 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.item(row_index, 6).setText(file_path)
                             case 1: # no album (FRICTION)
                                 self.table.item(row_index, 1).setText(title)
-                                # self.table.item(row_index, 2).setText(album)
+                                self.table.item(row_index, 2).setText(album)
                                 self.table.item(row_index, 3).setText(artist)
-                                self.table.item(row_index, 4).setText(stream)
+                                self.table.cellWidget(row_index, 4).setText(stream)
                                 self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
                                 self.table.item(row_index, 6).setText(file_path)                              
                             case 3: # artist/album sync
@@ -416,8 +416,7 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.cellWidget(row_index, 4).setText(stream)
                                 self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
                                 self.table.item(row_index, 6).setText(file_path)
-
-                            case 9: # song/album sync                               
+                            case 9: # song/album sync
                                 self.table.item(row_index, 1).setText(title)
                                 self.table.item(row_index, 2).setText(album)
                                 self.table.item(row_index, 3).setText(artist)
@@ -446,6 +445,101 @@ class SoundtrackViewer(QMainWindow):
             print(f"Error: Invalid JSON format in {self.file}.")
         except Exception as e:
             print(f"Error loading data: {e}")
+    
+    def write_file(self):
+        rows = self.table.rowCount()
+
+        out = {}
+        for r in range(rows):
+            save = False
+            default = self.defaults[list(self.defaults.keys())[r]]
+            row_data = {}
+            match default["type"]:
+                case 0: # regular soundtrack
+                    match default["lock"]:
+                        case 0: # no lock
+                            row_data["strings"] = {
+                                "title": self.table.item(r, 1).text(),
+                                "album": self.table.item(r, 2).text(),
+                                "artist": self.table.item(r, 3).text(),
+                                "stream": self.table.cellWidget(r, 4).text()
+                            }
+                            row_data["source"] = self.table.cellWidget(r, 5).text()
+                            row_data["path"] = self.table.item(r, 6).text()
+                        case 1: # no album (FRICTION)
+                            row_data["strings"] = {
+                                "title": self.table.item(r, 1).text(),
+                                "album": self.table.cellWidget(r, 2).text(),
+                                "artist": self.table.item(r, 3).text(),
+                                "stream": self.table.cellWidget(r, 4).text()
+                            }
+                            row_data["source"] = self.table.cellWidget(r, 5).text()
+                            row_data["path"] = self.table.item(r, 6).text()
+                        case 3: # artist/album sync
+                            row_data["strings"] = {
+                                "title": self.table.item(r, 1).text(),
+                                "album": self.table.item(r, 2).text(),
+                                "artist": self.table.item(r, 3).text(),
+                                "stream": self.table.cellWidget(r, 4).text()
+                            }
+                            row_data["source"] = self.table.cellWidget(r, 5).text()
+                            row_data["path"] = self.table.item(r, 6).text()
+                        case 6: # stream/artist sync
+                            row_data["strings"] = {
+                                "title": self.table.item(r, 1).text(),
+                                "album": self.table.item(r, 2).text(),
+                                "artist": self.table.cellWidget(r, 3).text(),
+                                "stream": self.table.cellWidget(r, 4).text()
+                            }
+                            row_data["source"] = self.table.cellWidget(r, 5).text()
+                            row_data["path"] = self.table.item(r, 6).text()
+                        case 7: # stream/artist/album sync
+                            row_data["strings"] = {
+                                "title": self.table.item(r, 1).text(),
+                                "album": self.table.cellWidget(r, 2).text(),
+                                "artist": self.table.cellWidget(r, 3).text(),
+                                "stream": self.table.cellWidget(r, 4).text()
+                            }
+                            row_data["source"] = self.table.cellWidget(r, 5).text()
+                            row_data["path"] = self.table.item(r, 6).text()
+                        case 9: # song/album sync
+                            row_data["strings"] = {
+                                "title": self.table.item(r, 1).text(),
+                                "album": self.table.item(r, 2).text(),
+                                "artist": self.table.item(r, 3).text(),
+                                "stream": self.table.cellWidget(r, 4).text()
+                            }
+                            row_data["source"] = self.table.cellWidget(r, 5).text()
+                            row_data["path"] = self.table.item(r, 6).text()
+                case 1: # burnout soundtrack
+                    row_data["strings"] = {
+                        "title": self.table.item(r, 1).text(),
+                        "album": self.table.item(r, 2).text(),
+                        "artist": self.table.item(r, 3).text(),
+                        "stream": self.table.cellWidget(r, 4).text()
+                    }
+                    row_data["source"] = self.table.cellWidget(r, 5).text()
+                    row_data["path"] = self.table.item(r, 6).text()
+                case 2: # classical soundtrack
+                    row_data["strings"] = {
+                        "title": self.table.item(r, 1).text(),
+                        "album": self.table.cellWidget(r, 2).text(),
+                        "artist": self.table.item(r, 3).text(),
+                        "stream": self.table.cellWidget(r, 4).text()
+                    }
+                    row_data["source"] = self.table.cellWidget(r, 5).text()
+                    row_data["path"] = self.table.item(r, 6).text()
+            
+            for key, value in row_data["strings"].items():
+                if value != default["defaults"][key]:
+                    save = True
+            
+            if save:
+                out[list(self.defaults.keys())[r]] = row_data
+        
+        with open(self.file, "w", encoding="utf-8") as file:
+            json.dump(out, file, indent=2)
+        
     
     def make_unique_cell(self, text, color: int) -> QTableWidgetItem:
         colors = [
@@ -558,6 +652,7 @@ class SoundtrackViewer(QMainWindow):
             print("Saving...")
             # We know the path of this file, let's just save
         else:
+            print("Saving As...")
             file_path, _ = QFileDialog.getSaveFileName(
                 self,
                 "Save File As",
@@ -567,8 +662,9 @@ class SoundtrackViewer(QMainWindow):
             if file_path:
                 self.file = file_path
                 print(file_path)
+                self.write_file()
             else:
-                print("Save As canceled")
+                print("Save As... canceled")
         
     def export_file(self):
         print("Export file action triggered")
