@@ -651,6 +651,7 @@ class SoundtrackViewer(QMainWindow):
         if self.file:
             print("Saving...")
             # We know the path of this file, let's just save
+            self.write_file()
         else:
             print("Saving As...")
             file_path, _ = QFileDialog.getSaveFileName(
