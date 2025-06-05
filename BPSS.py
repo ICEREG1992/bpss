@@ -218,7 +218,6 @@ class SoundtrackViewer(QMainWindow):
 
                 # Create file browse widget with update hook
                 file_browse_widget = FileBrowseCellWidget(source or "")
-                file_browse_widget.textChanged.connect(lambda new_text, r=row_index: self.table.item(r, 6).setText(""))
                 
                 match self.defaults[key]["type"]:
                     case 0: # regular soundtrack
