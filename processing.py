@@ -158,8 +158,6 @@ def load_pointers(settings, filename):
                         album_ptr = []
             navigator.seek(temp_pos)
             out[song]["ptrs"] = {"title":song_ptr, "stream":stream_ptr, "artist":artist_ptr, "album":album_ptr}
-            game = r"C:\Program Files (x86)\Steam\steamapps\common\Burnout(TM) Paradise The Ultimate Box"
-            out[song]["file"] = f"{game}\SOUND\STREAMS\{stream}.SNS"
             # out[song]["source"] = ""
 
     # Save the modified JSON back to file
@@ -170,7 +168,7 @@ def load_pointers(settings, filename):
     f.close()
 
 
-def write_pointers(settings, soundtrack, ptrs, progress=None):
+def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     with open(soundtrack, 'r', encoding='utf-8') as f:
         st = json.load(f)
     
@@ -180,7 +178,7 @@ def write_pointers(settings, soundtrack, ptrs, progress=None):
     with open('songs.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    if progress: progress.set_progress(3)
+    if set_progress: set_progress(3)
 
     # get some paths
     binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
@@ -190,7 +188,7 @@ def write_pointers(settings, soundtrack, ptrs, progress=None):
     vaultLoc = os.path.join(tempLoc, 'AttribSysVault')
     navigator = HexNavigator(get_first_file(vaultLoc))
 
-    if progress: progress.set_progress(8)
+    if set_progress: set_progress(8)
 
     # Find the pointer to strings
     navigator.seek(0x08)
@@ -201,10 +199,10 @@ def write_pointers(settings, soundtrack, ptrs, progress=None):
     navigator.seek_end()
     navigator.write_bytes(b'\x00')
 
-    if progress: progress.set_progress(10)
+    if set_progress: set_progress(10)
     steps = len(st.keys()) or 1
     step = int(20 / steps)
-
+    count = 1
     for s in st.keys():
         # get defaults
         default = data[s]["defaults"]
@@ -219,9 +217,9 @@ def write_pointers(settings, soundtrack, ptrs, progress=None):
                     navigator.seek(x)
                     navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
         # add to conversion queue
-        if not st[s]["path"]:
-            to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
-        if progress: progress.add_progress(step)
+        to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
+        if set_progress: set_progress((step * count) + 10)
+        count += 1
     # finally, adjust bin size
     navigator.seek_end()
     loc = navigator.loc()
@@ -230,7 +228,7 @@ def write_pointers(settings, soundtrack, ptrs, progress=None):
     # now everything is written, let's pack it up
     navigator.close()
 
-    if progress: progress.set_progress(35)
+    if set_progress: set_progress(35)
 
     # first turn the bin into bin.old if one doesn't exist already
     backupLoc = binLoc + '.old'
@@ -240,7 +238,7 @@ def write_pointers(settings, soundtrack, ptrs, progress=None):
     # create at the location of the bin
     subprocess.run([settings["yap"], 'c', tempLoc, binLoc])
 
-    if progress: progress.set_progress(40)
+    if set_progress: set_progress(40)
 
     # now that the song strings are written, let's convert the songs and update stream headers
     # start by unpacking streamheaders
@@ -248,10 +246,10 @@ def write_pointers(settings, soundtrack, ptrs, progress=None):
     tempLoc = os.path.join("temp", "streamheaders")
     subprocess.run([settings["yap"], 'e', headersLoc, tempLoc])
 
-    if progress: progress.set_progress(45)
+    if set_progress: set_progress(45)
     steps = len(to_convert) or 1
     step = int(50 / steps)
-
+    count = 1
     for s in to_convert:
         # start by converting the song
         convertSong(s[0], s[1], settings)
@@ -275,8 +273,8 @@ def write_pointers(settings, soundtrack, ptrs, progress=None):
             shutil.move(sns_path, backupSns)
         # now slap the file into STREAMS
         shutil.copy(temp_sns_path, sns_path)
-        st[s[2]]["path"] = sns_path
-        if progress: progress.add_progress(step)
+        if set_progress: set_progress((step * count) + 45)
+        count += 1
     # write original streamheaders to .old
     # repack streamheaders
     backupHeaders = headersLoc + ".old"
@@ -288,23 +286,23 @@ def write_pointers(settings, soundtrack, ptrs, progress=None):
     with open(soundtrack, 'w', encoding='utf-8') as f:
         json.dump(st, f, indent=4, ensure_ascii=False)
 
-    if progress: progress.set_progress(100)
+    if set_progress: set_progress(100)
 
-def reset_files(settings, progress=None):
+def reset_files(settings, set_progress=None):
     # search for restore .old files at locations we'd expect them
     binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
     backupLoc = binLoc + '.old'
     if os.path.exists(backupLoc):
         shutil.move(backupLoc, binLoc)
 
-    if progress: progress.set_progress(10)
+    if set_progress: set_progress(10)
 
     headersLoc = os.path.join(settings["game"], "SOUND", "STREAMS", "STREAMHEADERS.BUNDLE")
     backupHeaders = headersLoc + ".old"
     if os.path.exists(backupHeaders):
         shutil.move(backupHeaders, headersLoc)
 
-    if progress: progress.set_progress(20)
+    if set_progress: set_progress(20)
 
     # look for files
     snsLoc = os.path.join(settings["game"], "SOUND", "STREAMS")
@@ -319,11 +317,14 @@ def reset_files(settings, progress=None):
                     file_queue.append((old_path, new_path))
     
     step = int(80 / (len(file_queue) or 1))
-    
+    count = 1
     for old_path, new_path in file_queue:
         print(f"Restoring: {old_path} -> {new_path}")
         shutil.move(old_path, new_path)
-        if progress: progress.add_progress(step)
+        if set_progress: set_progress((step * count) + 20)
+        count += 1
+
+    if set_progress: set_progress(100)
 
 
 def convertSong(file, stream, settings):

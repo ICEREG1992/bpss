@@ -4,7 +4,7 @@ class ProgressWidget(QWidget):
     def __init__(self, text):
         super().__init__()
         self.setWindowTitle(text)
-        self.setGeometry(100, 100, 300, 100)
+        self.setFixedSize(300, 100)
 
         # Create widgets
         self.progress = QProgressBar(self)

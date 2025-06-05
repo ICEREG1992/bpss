@@ -17,7 +17,7 @@ class FileBrowseCellWidget(QWidget):
 
         self.line_edit = QLineEdit(text)
         self.line_edit.hide()
-        self.line_edit.editingFinished.connect(self.finish_edit)
+        self.line_edit.textEdited.connect(self.finish_edit)
         
         self.browse_button = QPushButton()
         self.browse_button.setIcon(QIcon(QPixmap("browse.png").scaled(12, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation)))
