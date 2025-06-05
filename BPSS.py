@@ -7,10 +7,11 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderVie
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QColor, QIcon
 
-from processing import loadPtrs, writePtrs
-from settings import SettingsDialog
+from processing import load_pointers, write_pointers, reset_files
+from Settings import SettingsDialog
 from LockedCell import LockedCellWidget
 from FileBrowseCell import FileBrowseCellWidget
+from Progress import ProgressWidget
 
 SETTINGS_FILE = "settings.json"
 DEFAULTS_FILE = "songs.json"
@@ -185,7 +186,7 @@ class SoundtrackViewer(QMainWindow):
                     ptrs = json.load(file)
             else:
                 print("Generating new ptrs")
-                loadPtrs(self.settings, filename)
+                load_pointers(self.settings, filename)
                 with open(filename, "r") as file:
                     ptrs = json.load(file)
                 
@@ -689,10 +690,17 @@ class SoundtrackViewer(QMainWindow):
         print("Apply action triggered")
         self.save_file()
         if self.file:
-            writePtrs(self.settings, self.file, self.get_ptrs_hash() + ".json")
+            progress = ProgressWidget("Applying Soundtrack to Burnout Paradise")
+            progress.show()
+            write_pointers(self.settings, self.file, self.get_ptrs_hash() + ".json")
+            progress.close()
         
     def unapply_action(self):
         print("Unapply action triggered")
+        #progress = ProgressWidget("Reverting Changes to Burnout Paradise Soundtrack")
+        #progress.show()
+        reset_files(self.settings)
+        #progress.close()
         
     def reset_action(self):
         print("Reset action triggered")
