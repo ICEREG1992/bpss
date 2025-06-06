@@ -13,6 +13,7 @@ from LockedCell import LockedCellWidget
 from FileBrowseCell import FileBrowseCellWidget
 from Progress import ProgressWidget
 from Workers import ResetWorker, WriteWorker
+from About import AboutDialog
 
 SETTINGS_FILE = "settings.json"
 DEFAULTS_FILE = "songs.json"
@@ -127,10 +128,6 @@ class SoundtrackViewer(QMainWindow):
         save_action.triggered.connect(self.save_file)
         toolbar.addAction(save_action)
         
-        export_action = QAction(self.style().standardIcon(QStyle.SP_DriveHDIcon), "Export", self)
-        export_action.triggered.connect(self.export_file)
-        toolbar.addAction(export_action)
-        
         # First vertical spacer
         toolbar.addSeparator()
         
@@ -150,14 +147,14 @@ class SoundtrackViewer(QMainWindow):
         # Second vertical spacer
         toolbar.addSeparator()
         
-        # Settings and help
+        # Settings and about
         settings_action = QAction(self.style().standardIcon(QStyle.SP_ComputerIcon), "Settings", self)
         settings_action.triggered.connect(self.show_settings)
         toolbar.addAction(settings_action)
         
-        help_action = QAction(self.style().standardIcon(QStyle.SP_MessageBoxQuestion), "Help", self)
-        help_action.triggered.connect(self.show_help)
-        toolbar.addAction(help_action)
+        about_action = QAction(self.style().standardIcon(QStyle.SP_MessageBoxQuestion), "About", self)
+        about_action.triggered.connect(self.show_about)
+        toolbar.addAction(about_action)
 
     def create_table(self):
         self.table = QTableWidget()
@@ -662,29 +659,30 @@ class SoundtrackViewer(QMainWindow):
         
     def apply_action(self):
         print("Apply action triggered")
-        self.save_file()
-        if self.file:
-            self.progress = ProgressWidget("Applying Soundtrack to Burnout Paradise")
-            self.progress.show()
-            
-            self.thread = QThread()
-            self.worker = WriteWorker(self.settings, self.file, self.get_ptrs_hash() + ".json")
-            self.worker.moveToThread(self.thread)
+        if self.changes:
+            self.save_file()
+        self.progress = ProgressWidget("Applying Soundtrack...")
+        self.progress.show()
+        
+        self.thread = QThread()
+        self.worker = WriteWorker(self.settings, self.file, self.get_ptrs_hash() + ".json")
+        self.worker.moveToThread(self.thread)
 
-            # Connect signals
-            self.thread.started.connect(self.worker.run)
-            self.worker.progress_changed.connect(self.progress.set_progress)
-            self.worker.finished.connect(self.progress.close)
-            self.worker.finished.connect(self.thread.quit)
-            self.worker.finished.connect(self.worker.deleteLater)
-            self.thread.finished.connect(self.load_file)
-            self.thread.finished.connect(self.thread.deleteLater)
-            
-            self.thread.start()
+        # Connect signals
+        self.thread.started.connect(self.worker.run)
+        self.worker.progress_changed.connect(self.progress.set_progress)
+        self.worker.finished.connect(self.progress.close)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.load_file)
+        self.thread.finished.connect(self.thread.deleteLater)
+        
+        self.thread.start()
+
         
     def unapply_action(self):
         print("Unapply action triggered")
-        self.progress = ProgressWidget("Reverting Changes to Burnout Paradise Soundtrack")
+        self.progress = ProgressWidget("Reverting Changes...")
         self.progress.show()
 
         self.thread = QThread()
@@ -730,8 +728,11 @@ class SoundtrackViewer(QMainWindow):
         else:
             print("Settings canceled")
         
-    def show_help(self):
-        print("Help action triggered")
+    def show_about(self):
+        print("About action triggered")
+        dialog = AboutDialog()
+        if dialog.exec_():
+            print("Showing About")
 
     def move_song_up(self):
         print("Move song up action triggered")
