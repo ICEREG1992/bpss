@@ -237,7 +237,8 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
                     navigator.seek(x)
                     navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
         # add to conversion queue
-        to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
+        if st[s]["source"]:
+            to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
         count += 1
 
     if set_progress: set_progress(30, "Adjusting bin size...")
