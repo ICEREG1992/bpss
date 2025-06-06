@@ -654,7 +654,6 @@ class SoundtrackViewer(QMainWindow):
         
     def save_file(self):
         print("Save file action triggered")
-
         file_path, _ = QFileDialog.getSaveFileName(
             self,
             "Save File As",
@@ -674,7 +673,9 @@ class SoundtrackViewer(QMainWindow):
         
     def apply_action(self):
         print("Apply action triggered")
-        if self.changes:
+        if self.changes and self.file:
+            self.write_file()
+        elif self.changes:
             self.save_file()
         self.progress = ProgressWidget("Applying Soundtrack...")
         self.progress.show()
