@@ -189,7 +189,7 @@ class SoundtrackViewer(QMainWindow):
             self.progress.show()
             
             self.thread = QThread()
-            self.worker = LoadWorker(self.settings, filename, self.defaults_file)
+            self.worker = LoadWorker(self.settings, filename)
             self.worker.moveToThread(self.thread)
 
             # Connect signals
