@@ -633,26 +633,20 @@ class SoundtrackViewer(QMainWindow):
         
     def save_file(self):
         print("Save file action triggered")
-        if self.file:
-            print("Saving...")
-            # We know the path of this file, let's just save
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save File As",
+            "./" if not self.file else self.file,
+            "Soundtrack Files (*.soundtrack)"
+        )
+        if file_path:
+            self.file = file_path
+            print(file_path)
             self.write_file()
             self.changes = False
         else:
-            print("Saving As...")
-            file_path, _ = QFileDialog.getSaveFileName(
-                self,
-                "Save File As",
-                "./",
-                "Soundtrack Files (*.soundtrack)"
-            )
-            if file_path:
-                self.file = file_path
-                print(file_path)
-                self.write_file()
-                self.changes = False
-            else:
-                print("Save As... canceled")
+            print("Save As... canceled")
         
     def export_file(self):
         print("Export file action triggered")
