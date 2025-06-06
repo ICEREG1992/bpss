@@ -7,12 +7,11 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderVie
 from PyQt5.QtCore import Qt, QThread
 from PyQt5.QtGui import QBrush, QColor, QIcon
 
-from processing import load_pointers
 from Settings import SettingsDialog
 from LockedCell import LockedCellWidget
 from FileBrowseCell import FileBrowseCellWidget
 from Progress import ProgressWidget
-from Workers import ResetWorker, WriteWorker
+from Workers import ResetWorker, WriteWorker, LoadWorker
 from About import AboutDialog
 
 SETTINGS_FILE = "settings.json"
@@ -82,9 +81,8 @@ class SoundtrackViewer(QMainWindow):
             self.setWindowTitle("Burnout Paradise Soundtrack Switcher")
     
     def resource_path(self, path):
-        if hasattr(sys, '_MEIPASS'):
-            return os.path.join(sys._MEIPASS, path)
-        return os.path.join(os.path.abspath("."), path)
+        base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+        return os.path.join(base_path, path)
     
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
@@ -171,6 +169,8 @@ class SoundtrackViewer(QMainWindow):
         
         # Enable sorting
         self.table.setSortingEnabled(True)
+
+        # Load table with data
         self.load_data()
         
         # set up item syncing
@@ -180,19 +180,39 @@ class SoundtrackViewer(QMainWindow):
         self.table.itemSelectionChanged.connect(self.handle_selection_changed)
 
     def load_data(self):
+        # Check for JSON data
+        filename = self.get_ptrs_hash() + ".json"
+        if os.path.isfile(filename):
+            with open(filename, "r") as file:
+                ptrs = json.load(file)
+        else:
+            print("Generating new ptrs")
+            
+            self.progress = ProgressWidget("Finding pointers...")
+            self.progress.show()
+            
+            self.thread = QThread()
+            self.worker = LoadWorker(self.settings, filename)
+            self.worker.moveToThread(self.thread)
+
+            # Connect signals
+            self.thread.started.connect(self.worker.run)
+            self.worker.progress_changed.connect(self.progress.set_progress)
+            self.worker.finished.connect(self.progress.close)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.fill_table)
+            self.thread.finished.connect(self.thread.deleteLater)
+            
+            self.thread.start()
+
+    def fill_table(self):
         try:
             self.settings = self.load_settings()
-            # Load JSON data
             filename = self.get_ptrs_hash() + ".json"
-            if os.path.isfile(filename):
-                with open(filename, "r") as file:
-                    ptrs = json.load(file)
-            else:
-                print("Generating new ptrs")
-                load_pointers(self.settings, filename)
-                with open(filename, "r") as file:
-                    ptrs = json.load(file)
-                
+            with open(filename, "r") as file:
+                ptrs = json.load(file)
+
             # Set row count based on number of entries
             self.table.setRowCount(len(ptrs))
             

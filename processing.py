@@ -16,15 +16,21 @@ def get_first_file(path):
         print(f"Error: {e}")
         return None
 
-def load_pointers(settings, filename):
+def load_pointers(settings, filename, set_progress=None):
+    if set_progress: set_progress(0, "Loading data from files...")
     # Load JSON file
     with open('songs.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
+
+    if set_progress: set_progress(5, "Extracting string data...")
 
     # Extract data vault
     binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
     tempLoc = os.path.join('temp', 'globaldata')
     subprocess.run([settings["yap"], 'e', binLoc, tempLoc])
+
+    if set_progress: set_progress(10, "Navigating string data...")
+
     # Create a navigator
     vaultLoc = os.path.join(tempLoc, 'AttribSysVault')
 
@@ -43,6 +49,8 @@ def load_pointers(settings, filename):
     out = {}
     for s in data.keys():
         out[s] = {}
+
+    if set_progress: set_progress(20, "Finding strings...")
     # start consuming tokens
     navigator.seek(offset)
     while (navigator.loc() < offset + bin_size):
@@ -132,6 +140,9 @@ def load_pointers(settings, filename):
             out[song]["strings"] = {"title":song, "stream":stream, "artist":artist, "album":album}
             out[song]["locs"] = {"title":song_pos, "stream":stream_pos, "artist":artist_pos, "album":album_pos}
             # get pointers
+
+            if set_progress: set_progress(60, "Finding pointers...")
+
             temp_pos = navigator.loc()
             for pos in [song_pos, stream_pos, artist_pos, album_pos]:
                 if pos != 0:
@@ -160,12 +171,15 @@ def load_pointers(settings, filename):
             out[song]["ptrs"] = {"title":song_ptr, "stream":stream_ptr, "artist":artist_ptr, "album":album_ptr}
             # out[song]["source"] = ""
 
+    if set_progress: set_progress(90, "Writing pointer data...")
+
     # Save the modified JSON back to file
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(out, f, indent=4, ensure_ascii=False)
 
     navigator.close()
     f.close()
+    if set_progress: set_progress(100, "Done!")
 
 
 def write_pointers(settings, soundtrack, ptrs, set_progress=None):
