@@ -81,7 +81,7 @@ class SoundtrackViewer(QMainWindow):
         else:
             self.setWindowTitle("Burnout Paradise Soundtrack Switcher")
     
-    def resource_path(path):
+    def resource_path(self, path):
         if hasattr(sys, '_MEIPASS'):
             return os.path.join(sys._MEIPASS, path)
         return os.path.join(os.path.abspath("."), path)
