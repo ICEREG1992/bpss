@@ -180,8 +180,7 @@ class SoundtrackViewer(QMainWindow):
         # Check for JSON data
         filename = self.get_ptrs_hash() + ".json"
         if os.path.isfile(filename):
-            with open(filename, "r") as file:
-                ptrs = json.load(file)
+            self.fill_table()
         else:
             print("Generating new ptrs")
             
