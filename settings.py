@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QFileDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QSpacerItem, QSizePolicy, QMessageBox
 )
 from PyQt5.QtGui import QIcon
+from Helpers import resource_path
 
 SETTINGS_FILE = "settings.json"
 
@@ -14,7 +15,7 @@ class SettingsDialog(QDialog):
         super().__init__()
         window_title = "First Time Setup" if first else "Settings"
         self.setWindowTitle(window_title)
-        self.setWindowIcon(QIcon("bpss.png"))
+        self.setWindowIcon(QIcon(resource_path("bpss.png")))
         self.setFixedSize(450, 250)
         self.settings = self.load_settings()
         self.init_ui()

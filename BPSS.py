@@ -13,6 +13,7 @@ from FileBrowseCell import FileBrowseCellWidget
 from Progress import ProgressWidget
 from Workers import ResetWorker, WriteWorker, LoadWorker
 from About import AboutDialog
+from Helpers import resource_path
 
 SETTINGS_FILE = "settings.json"
 
@@ -20,7 +21,7 @@ class SoundtrackViewer(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Burnout Paradise Soundtrack Switcher")
-        self.setWindowIcon(QIcon("bpss.png"))
+        self.setWindowIcon(QIcon(resource_path("bpss.png")))
         # Get screen geometry
         screen = QApplication.primaryScreen()
         screen_rect = screen.availableGeometry()
@@ -40,7 +41,7 @@ class SoundtrackViewer(QMainWindow):
         self.changes = False
         self.file = None
         self.synced_cells = []  # List of lists of (row, column) tuples
-        self.defaults_file = self.resource_path("songs.json")
+        self.defaults_file = resource_path("songs.json")
 
         # Create toolbar
         self.create_toolbar()
@@ -79,10 +80,6 @@ class SoundtrackViewer(QMainWindow):
             self.setWindowTitle(f"Burnout Paradise Soundtrack Switcher [{self.file}]")
         else:
             self.setWindowTitle("Burnout Paradise Soundtrack Switcher")
-    
-    def resource_path(self, path):
-        base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
-        return os.path.join(base_path, path)
     
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):

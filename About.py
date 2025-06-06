@@ -1,13 +1,14 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
+from Helpers import resource_path
 
 class AboutDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("About")
         self.setFixedSize(300, 150)
-        self.setWindowIcon(QIcon("bpss.png"))
+        self.setWindowIcon(QIcon(resource_path("bpss.png")))
 
         layout = QVBoxLayout()
 

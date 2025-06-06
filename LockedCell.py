@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
+from Helpers import resource_path
 
 class LockedCellWidget(QWidget):
     def __init__(self, text):
@@ -10,7 +11,7 @@ class LockedCellWidget(QWidget):
 
         self.label = QLabel(text)
         lock_icon = QLabel()
-        lock_icon.setPixmap(QPixmap("lock.png").scaled(12, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        lock_icon.setPixmap(QPixmap(resource_path("lock.png")).scaled(12, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
         layout.addWidget(self.label)
         layout.addStretch()
