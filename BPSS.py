@@ -673,6 +673,7 @@ class SoundtrackViewer(QMainWindow):
         
     def apply_action(self):
         print("Apply action triggered")
+        # todo: change this to a yes/no dialogue that asks if you'd like to save before applying, if there are changes
         if self.changes and self.file:
             self.write_file()
         elif self.changes:
