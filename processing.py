@@ -16,10 +16,10 @@ def get_first_file(path):
         print(f"Error: {e}")
         return None
 
-def load_pointers(settings, filename, set_progress=None):
+def load_pointers(settings, filename, defaults, set_progress=None):
     if set_progress: set_progress(0, "Loading data from files...")
     # Load JSON file
-    with open('songs.json', 'r', encoding='utf-8') as f:
+    with open(defaults, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     if set_progress: set_progress(5, "Extracting string data...")

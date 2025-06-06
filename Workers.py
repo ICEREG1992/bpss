@@ -40,15 +40,16 @@ class LoadWorker(QObject):
     progress_changed = pyqtSignal(int, str)
     finished = pyqtSignal()
 
-    def __init__(self, settings, filename):
+    def __init__(self, settings, filename, defaults):
         super().__init__()
         self.settings = settings
         self.filename = filename
+        self.defaults = defaults
 
     def run(self):
         def update_progress(val, string):
             self.progress_changed.emit(val, string)
 
-        load_pointers(self.settings, self.filename, update_progress)
+        load_pointers(self.settings, self.filename, self.defaults, update_progress)
         time.sleep(.5)
         self.finished.emit()
