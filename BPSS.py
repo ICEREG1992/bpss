@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderVie
 from PyQt5.QtCore import Qt, QThread
 from PyQt5.QtGui import QBrush, QColor, QIcon
 
-from processing import load_pointers, write_pointers, reset_files
+from processing import load_pointers
 from Settings import SettingsDialog
 from LockedCell import LockedCellWidget
 from FileBrowseCell import FileBrowseCellWidget
@@ -16,7 +16,6 @@ from Workers import ResetWorker, WriteWorker
 from About import AboutDialog
 
 SETTINGS_FILE = "settings.json"
-DEFAULTS_FILE = "songs.json"
 
 class SoundtrackViewer(QMainWindow):
     def __init__(self):
@@ -42,6 +41,7 @@ class SoundtrackViewer(QMainWindow):
         self.changes = False
         self.file = None
         self.synced_cells = []  # List of lists of (row, column) tuples
+        self.defaults_file = self.resource_path("songs.json")
 
         # Create toolbar
         self.create_toolbar()
@@ -81,6 +81,11 @@ class SoundtrackViewer(QMainWindow):
         else:
             self.setWindowTitle("Burnout Paradise Soundtrack Switcher")
     
+    def resource_path(path):
+        if hasattr(sys, '_MEIPASS'):
+            return os.path.join(sys._MEIPASS, path)
+        return os.path.join(os.path.abspath("."), path)
+    
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, "r") as f:
@@ -88,8 +93,8 @@ class SoundtrackViewer(QMainWindow):
         return {}
     
     def load_defaults(self):
-        if os.path.exists(DEFAULTS_FILE):
-            with open(DEFAULTS_FILE, "r") as f:
+        if os.path.exists(self.defaults_file):
+            with open(self.defaults_file, "r") as f:
                 return json.load(f)
         return {}
 
