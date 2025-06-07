@@ -405,7 +405,7 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
                             case 1: # no album (FRICTION)
                                 self.table.item(row_index, 1).setText(title)
-                                self.table.item(row_index, 2).setText(album)
+                                # self.table.item(row_index, 2).setText(album)
                                 self.table.item(row_index, 3).setText(artist)
                                 self.table.cellWidget(row_index, 4).setText(stream)
                                 self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
