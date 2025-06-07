@@ -747,7 +747,7 @@ class SoundtrackViewer(QMainWindow):
         
     def show_about(self):
         print("About action triggered")
-        dialog = AboutDialog()
+        dialog = AboutDialog(self.get_ptrs_hash())
         if dialog.exec_():
             print("Showing About")
 
