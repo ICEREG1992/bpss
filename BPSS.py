@@ -682,7 +682,7 @@ class SoundtrackViewer(QMainWindow):
         self.progress.show()
         
         self.thread = QThread()
-        self.worker = WriteWorker(self.settings, self.file, self.get_ptrs_hash() + ".json")
+        self.worker = WriteWorker(self.settings, self.file, str(self.get_ptrs_hash()) + ".json")
         self.worker.moveToThread(self.thread)
 
         # Connect signals

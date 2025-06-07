@@ -322,7 +322,12 @@ def reset_files(settings, set_progress=None):
     if set_progress: set_progress(0, "Restoring strings...")
 
     # search for restore .old files at locations we'd expect them
-    binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
+    if "game" in settings.keys() and os.path.isfile(settings["game"]):
+        binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
+    else:
+        if set_progress: set_progress(100, "Failed to find Burnout Paradise installation!")
+        return
+
     backupLoc = binLoc + '.old'
     if os.path.exists(backupLoc):
         print(f"Restoring {binLoc}")
