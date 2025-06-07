@@ -1,13 +1,15 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QProgressBar, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QProgressBar, QLabel, QDialog
 from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
 from Helpers import resource_path
 
-class ProgressWidget(QWidget):
+class ProgressWidget(QDialog):
     def __init__(self, text):
         super().__init__()
         self.setWindowTitle(text)
         self.setFixedSize(400, 100)
         self.setWindowIcon(QIcon(resource_path("bpss.png")))
+        self.setWindowModality(Qt.ApplicationModal)
 
         # Create widgets
         self.status_label = QLabel("", self)  # <-- status text
