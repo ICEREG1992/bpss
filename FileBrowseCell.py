@@ -11,6 +11,12 @@ class FileBrowseCellWidget(QWidget):
         layout = QHBoxLayout()
         layout.setContentsMargins(6, 0, 4, 0)
 
+        # File drop behavior
+
+        self.setAcceptDrops(True)
+
+        # Build layout
+
         self.label = QLabel(text)
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.label.mouseDoubleClickEvent = self.enable_edit_mode
@@ -33,6 +39,19 @@ class FileBrowseCellWidget(QWidget):
         
         self.setLayout(layout)
         self.setAttribute(Qt.WA_StyledBackground, True)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.setDropAction(Qt.LinkAction)
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        urls = event.mimeData().urls()
+        if urls:
+            file_path = urls[0].toLocalFile()
+            self.setText(file_path)
 
     def enable_edit_mode(self, event):
         self.label.hide()
