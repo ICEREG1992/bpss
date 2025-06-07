@@ -26,11 +26,12 @@ def load_pointers(settings, filename, set_progress=None):
     if set_progress: set_progress(5, "Extracting string data...")
 
     # Extract data vault
-    if "game" in settings.keys() and os.path.isfile(settings["game"]):
+    if "game" in settings.keys() and os.path.isdir(settings["game"]):
         binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
         tempLoc = os.path.join('temp', 'globaldata')
         subprocess.run([settings["yap"], 'e', binLoc, tempLoc])
     else:
+        print("failing out")
         if set_progress: set_progress(100, "Failed to find Burnout Paradise installation!")
         return
 
@@ -183,7 +184,6 @@ def load_pointers(settings, filename, set_progress=None):
         json.dump(out, f, indent=4, ensure_ascii=False)
 
     navigator.close()
-    f.close()
     if set_progress: set_progress(100, "Done!")
 
 
@@ -322,7 +322,7 @@ def reset_files(settings, set_progress=None):
     if set_progress: set_progress(0, "Restoring strings...")
 
     # search for restore .old files at locations we'd expect them
-    if "game" in settings.keys() and os.path.isfile(settings["game"]):
+    if "game" in settings.keys() and os.path.isdir(settings["game"]):
         binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
     else:
         if set_progress: set_progress(100, "Failed to find Burnout Paradise installation!")

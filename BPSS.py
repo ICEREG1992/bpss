@@ -182,7 +182,7 @@ class SoundtrackViewer(QMainWindow):
         if os.path.isfile(filename):
             self.fill_table()
         else:
-            print("Generating new ptrs")
+            print(f"Generating new ptrs for {filename}")
             
             self.progress = ProgressWidget("Finding pointers...")
             self.progress.show()
@@ -197,7 +197,7 @@ class SoundtrackViewer(QMainWindow):
             self.worker.finished.connect(self.progress.close)
             self.worker.finished.connect(self.thread.quit)
             self.worker.finished.connect(self.worker.deleteLater)
-            self.thread.finished.connect(self.fill_table)
+            self.worker.finished.connect(self.fill_table)
             self.thread.finished.connect(self.thread.deleteLater)
             
             self.thread.start()
