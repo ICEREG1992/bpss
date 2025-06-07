@@ -271,7 +271,8 @@
             "stream": "Never_Heard_Of_It",
             "artist": "Never Heard Of It",
             "album": "Never Heard Of It"
-        }
+        },
+        "id": "eaa7774d"
     },
     "Everyone Has Their Secrets": {
         "type": 0,
@@ -281,7 +282,8 @@
             "stream": "Showing_Off_To_Theives",
             "artist": "Showing Off To Thieves",
             "album": "Everyone Has Their Secrets"
-        }
+        },
+        "id": "b632a357"
     },
     "Paradise City": {
         "type": 0,
