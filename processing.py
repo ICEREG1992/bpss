@@ -26,9 +26,13 @@ def load_pointers(settings, filename, set_progress=None):
     if set_progress: set_progress(5, "Extracting string data...")
 
     # Extract data vault
-    binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
-    tempLoc = os.path.join('temp', 'globaldata')
-    subprocess.run([settings["yap"], 'e', binLoc, tempLoc])
+    if "game" in settings.keys() and os.path.isfile(settings["game"]):
+        binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
+        tempLoc = os.path.join('temp', 'globaldata')
+        subprocess.run([settings["yap"], 'e', binLoc, tempLoc])
+    else:
+        if set_progress: set_progress(100, "Failed to find Burnout Paradise installation!")
+        return
 
     if set_progress: set_progress(10, "Navigating string data...")
 

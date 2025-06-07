@@ -104,7 +104,7 @@ class SoundtrackViewer(QMainWindow):
         return not missing
     
     def get_ptrs_hash(self):
-        if self.settings["game"]:
+        if "game" in self.settings.keys():
             return hashlib.sha256(self.settings["game"].encode()).hexdigest()[:8]
         else:
             return None
@@ -178,7 +178,7 @@ class SoundtrackViewer(QMainWindow):
 
     def load_data(self):
         # Check for JSON data
-        filename = self.get_ptrs_hash() + ".json"
+        filename = str(self.get_ptrs_hash()) + ".json"
         if os.path.isfile(filename):
             self.fill_table()
         else:
