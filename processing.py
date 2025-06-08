@@ -274,10 +274,10 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     subprocess.run([settings["yap"], 'e', headersLoc, tempLoc])
 
     steps = len(to_convert) or 1
-    step = int(50 / steps)
+    step = (50 / steps)
     count = 0
     for s in to_convert:
-        if set_progress: set_progress((step * count) + 45, f"Converting \"{st[s[2]]['strings']['title']}\"...")
+        if set_progress: set_progress(int((step * count) + 45), f"Converting \"{st[s[2]]['strings']['title']}\"...")
         # start by converting the song
         convertSong(s[0], s[1], settings)
         # get the .snr file, then write those contents at 0x10 of the corresponding data file
