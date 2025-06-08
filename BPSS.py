@@ -678,6 +678,19 @@ class SoundtrackViewer(QMainWindow):
             self.write_file()
         elif self.changes:
             self.save_file()
+
+        # make sure all of the files are legit
+        rows = self.table.rowCount()
+        for r in range(rows):
+            source = self.table.cellWidget(r, 5).text()
+            if source:
+                if not source.lower().endswith(('.wav', '.mp3')):
+                    QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.table.item(r, 1).text()} is not wav.")
+                    return
+                if not os.path.isfile(source):
+                    QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.table.item(r, 1).text()}.")
+                    return
+        
         self.progress = ProgressWidget("Applying Soundtrack...")
         self.progress.show()
         
