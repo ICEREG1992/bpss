@@ -193,6 +193,7 @@ class SoundtrackViewer(QMainWindow):
             self.progress.show()
             
             self.thread = QThread()
+            self.progress.worker_thread = self.thread
             self.worker = LoadWorker(self.settings, filename)
             self.worker.moveToThread(self.thread)
 
@@ -730,6 +731,7 @@ class SoundtrackViewer(QMainWindow):
         self.progress.show()
 
         self.thread = QThread()
+        self.progress.thread = self.thread
         self.worker = ResetWorker(self.settings)
         self.worker.moveToThread(self.thread)
 
@@ -780,6 +782,7 @@ class SoundtrackViewer(QMainWindow):
                 self.progress.show()
                 
                 self.thread = QThread()
+                self.progress.thread = self.thread
                 self.worker = LoadWorker(self.settings, filename)
                 self.worker.moveToThread(self.thread)
 

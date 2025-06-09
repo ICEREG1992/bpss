@@ -30,3 +30,10 @@ class ProgressWidget(QDialog):
             self.progress.setValue(val)
         if status:
             self.status_label.setText(status)
+
+    def closeEvent(self, event):
+        if hasattr(self, 'worker_thread') and self.worker_thread and self.worker_thread.isRunning():
+            self.worker_thread.requestInterruption()
+            self.worker_thread.quit()
+            self.worker_thread.wait()
+        event.accept()
