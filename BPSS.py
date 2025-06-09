@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderVie
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
 from PyQt5.QtCore import Qt, QThread
 from PyQt5.QtGui import QBrush, QColor, QIcon
+import mutagen
 
 from Settings import SettingsDialog
 from LockedCell import LockedCellWidget
@@ -86,6 +87,10 @@ class SoundtrackViewer(QMainWindow):
             with open(SETTINGS_FILE, "r") as f:
                 return json.load(f)
         return {}
+    
+    def write_settings(self):
+        with open(SETTINGS_FILE, "w") as f:
+            json.dump(self.settings, f, indent=4)
     
     def load_defaults(self):
         if os.path.exists(self.defaults_file):
@@ -642,7 +647,7 @@ class SoundtrackViewer(QMainWindow):
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Open File",
-            "",
+            self.settings["prev"] or "",
             "Soundtrack Files (*.soundtrack)"
         )
         if file_path:
@@ -650,6 +655,8 @@ class SoundtrackViewer(QMainWindow):
             self.load_file()
             self.update_window_title()
             self.changes = False
+            self.settings["prev"] = file_path
+            self.write_settings()
             print(file_path)
         
     def save_file(self):
@@ -684,9 +691,16 @@ class SoundtrackViewer(QMainWindow):
         for r in range(rows):
             source = self.table.cellWidget(r, 5).text()
             if source:
-                if not source.lower().endswith(('.wav', '.mp3')):
+                if not source.lower().endswith(('.wav', '.mp3', '.aiff')):
                     QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.table.item(r, 1).text()} is not wav.")
                     return
+                elif source.lower().endswith(('.mp3')):
+                    # codec check
+                    audio = mutagen.File(source)
+                    if audio.__class__.__name__ == "MP4":
+                        QMessageBox.warning(self, "Unsupported Codec", f"The source file for {self.table.item(r, 1).text()} uses an unsupported codec (mp4a). Please use the mpga codec or covert it to a different audio format.")
+                        return
+                
                 if not os.path.isfile(source):
                     QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.table.item(r, 1).text()}.")
                     return
@@ -752,9 +766,33 @@ class SoundtrackViewer(QMainWindow):
         
     def show_settings(self):
         print("Settings action triggered")
+        prev_hash = self.get_ptrs_hash()
         dialog = SettingsDialog()
         if dialog.exec_():
             print("Settings updated")
+            self.settings = self.load_settings()
+            if self.get_ptrs_hash() != prev_hash:
+                # create a new pts json
+                filename = self.get_ptrs_hash() + ".json"
+                print(f"Generating new ptrs for {filename}")
+                
+                self.progress = ProgressWidget("Finding pointers...")
+                self.progress.show()
+                
+                self.thread = QThread()
+                self.worker = LoadWorker(self.settings, filename)
+                self.worker.moveToThread(self.thread)
+
+                # Connect signals
+                self.thread.started.connect(self.worker.run)
+                self.worker.progress_changed.connect(self.progress.set_progress)
+                self.worker.finished.connect(self.progress.close)
+                self.worker.finished.connect(self.thread.quit)
+                self.worker.finished.connect(self.worker.deleteLater)
+                self.worker.finished.connect(self.fill_table)
+                self.thread.finished.connect(self.thread.deleteLater)
+                
+                self.thread.start()
         else:
             print("Settings canceled")
         
