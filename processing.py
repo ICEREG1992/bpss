@@ -224,11 +224,11 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     navigator.write_bytes(b'\x00')
 
     steps = len(st.keys()) or 1
-    step = int(20 / steps)
+    step = 20 / steps
     count = 0
     for s in st.keys():
         print(s)
-        if set_progress: set_progress((step * count) + 10, f"Writing strings for \"{st[s]['strings']['title']}\"...")
+        if set_progress: set_progress(int((step * count) + 10), f"Writing strings for \"{st[s]['strings']['title']}\"...")
         # get defaults
         default = data[s]["defaults"]
         # if something differs between default and soundtrack, write it to the end of the vault and point the pointer to it
@@ -359,10 +359,10 @@ def reset_files(settings, set_progress=None):
                 if os.path.exists(new_path):
                     file_queue.append((old_path, new_path))
 
-    step = int(75 / (len(file_queue) or 1))
+    step = 75 / (len(file_queue) or 1)
     count = 0
     for old_path, new_path in file_queue:
-        if set_progress: set_progress((step * count) + 25, f"Restoring \"{new_path}\"...")
+        if set_progress: set_progress(int((step * count) + 25), f"Restoring \"{new_path}\"...")
         print(f"Restoring {new_path}")
         shutil.move(old_path, new_path)
         changed = True
