@@ -11,6 +11,6 @@ Just point BPSS at your install folder for Burnout Paradise, your sx.exe file, a
 ## How to Use
 Make your desired soundtrack changes in the table, save it to a file, then press Apply to apply those changes to your game. Press Unapply to revert all changes, and Reset to reset the table back to defaults, or to your currently loaded file.
 
-BPSS supports the same formats as sx, which includes .wav and .mp3, and maybe others. **.ogg and .flac are NOT supported.**
+BPSS supports the same formats as sx, which includes .wav, .aiff, and .mp3 (mpga), and maybe others. **.ogg, .flac, and .mp3 (mp4a) are NOT supported.**
 
 Cells with matching background colors are **synced**, which means they use the same string variable. In the future, you will be able to disambiguate these synced boxes (at the risk of crashing).
