@@ -227,6 +227,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     step = int(20 / steps)
     count = 0
     for s in st.keys():
+        print(s)
         if set_progress: set_progress((step * count) + 10, f"Writing strings for \"{st[s]['strings']['title']}\"...")
         # get defaults
         default = data[s]["defaults"]
@@ -237,9 +238,10 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
                 loc = navigator.loc()
                 print("got eof " + str(loc))
                 navigator.write_cstring(st[s]["strings"][k])
-                for x in ptrs[s]["ptrs"][k]:
-                    navigator.seek(x)
-                    navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
+                if ptrs[s]:
+                    for x in ptrs[s]["ptrs"][k]:
+                        navigator.seek(x)
+                        navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
         # add to conversion queue
         if st[s]["source"]:
             to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
