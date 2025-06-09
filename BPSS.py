@@ -648,7 +648,7 @@ class SoundtrackViewer(QMainWindow):
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Open File",
-            self.settings["prev"] or "",
+            os.path.dirname(self.settings["prev"]) if self.settings["prev"] else "",
             "Soundtrack Files (*.soundtrack)"
         )
         if file_path:
