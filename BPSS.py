@@ -652,7 +652,9 @@ class SoundtrackViewer(QMainWindow):
             "Soundtrack Files (*.soundtrack)"
         )
         if file_path:
+               
             self.file = file_path
+            self.load_data()
             self.load_file()
             self.update_window_title()
             self.changes = False
@@ -693,7 +695,7 @@ class SoundtrackViewer(QMainWindow):
             source = self.table.cellWidget(r, 5).text()
             if source:
                 if not source.lower().endswith(('.wav', '.mp3', '.aiff')):
-                    QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.table.item(r, 1).text()} is not wav.")
+                    QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.table.item(r, 1).text()} is not wav, mp3, or aiff.")
                     return
                 elif source.lower().endswith(('.mp3')):
                     # codec check
