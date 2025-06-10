@@ -780,26 +780,29 @@ class SoundtrackViewer(QMainWindow):
             if self.get_ptrs_hash() != prev_hash:
                 # create a new pts json
                 filename = self.get_ptrs_hash() + ".json"
-                print(f"Generating new ptrs for {filename}")
-                
-                self.progress = ProgressWidget("Finding pointers...")
-                self.progress.show()
-                
-                self.thread = QThread()
-                self.progress.thread = self.thread
-                self.worker = LoadWorker(self.settings, filename)
-                self.worker.moveToThread(self.thread)
+                if not os.path.isfile(filename):
+                    print(f"Generating new ptrs for {filename}")
+                    
+                    self.progress = ProgressWidget("Finding pointers...")
+                    self.progress.show()
+                    
+                    self.thread = QThread()
+                    self.progress.thread = self.thread
+                    self.worker = LoadWorker(self.settings, filename)
+                    self.worker.moveToThread(self.thread)
 
-                # Connect signals
-                self.thread.started.connect(self.worker.run)
-                self.worker.progress_changed.connect(self.progress.set_progress)
-                self.worker.finished.connect(self.progress.close)
-                self.worker.finished.connect(self.thread.quit)
-                self.worker.finished.connect(self.worker.deleteLater)
-                self.worker.finished.connect(self.fill_table)
-                self.thread.finished.connect(self.thread.deleteLater)
-                
-                self.thread.start()
+                    # Connect signals
+                    self.thread.started.connect(self.worker.run)
+                    self.worker.progress_changed.connect(self.progress.set_progress)
+                    self.worker.finished.connect(self.progress.close)
+                    self.worker.finished.connect(self.thread.quit)
+                    self.worker.finished.connect(self.worker.deleteLater)
+                    self.worker.finished.connect(self.fill_table)
+                    self.thread.finished.connect(self.thread.deleteLater)
+                    
+                    self.thread.start()
+                else:
+                    self.fill_table()
         else:
             print("Settings canceled")
         
