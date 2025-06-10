@@ -708,19 +708,20 @@ class SoundtrackViewer(QMainWindow):
                     QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.table.item(r, 1).text()}.")
                     return
         
-        self.progress = ProgressWidget("Applying Soundtrack...")
-        self.progress.show()
-        
         self.thread = QThread()
         self.worker = WriteWorker(self.settings, self.file, str(self.get_ptrs_hash()) + ".json")
         self.worker.moveToThread(self.thread)
 
+        self.progress = ProgressWidget("Applying Soundtrack...")
+        self.progress.worker_thread = self.thread
+        self.progress.show()
+
         # Connect signals
         self.thread.started.connect(self.worker.run)
         self.worker.progress_changed.connect(self.progress.set_progress)
-        self.worker.finished.connect(self.progress.close)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.progress.close)
         self.thread.finished.connect(self.load_file)
         self.thread.finished.connect(self.thread.deleteLater)
         
@@ -729,20 +730,21 @@ class SoundtrackViewer(QMainWindow):
         
     def unapply_action(self):
         print("Unapply action triggered")
-        self.progress = ProgressWidget("Reverting Changes...")
-        self.progress.show()
 
         self.thread = QThread()
-        self.progress.thread = self.thread
         self.worker = ResetWorker(self.settings)
         self.worker.moveToThread(self.thread)
+
+        self.progress = ProgressWidget("Reverting Changes...")
+        self.progress.worker_thread = self.thread
+        self.progress.show()
 
         # Connect signals
         self.thread.started.connect(self.worker.run)
         self.worker.progress_changed.connect(self.progress.set_progress)
-        self.worker.finished.connect(self.progress.close)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.progress.close)
         self.thread.finished.connect(self.thread.deleteLater)
 
         self.thread.start()

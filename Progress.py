@@ -34,6 +34,6 @@ class ProgressWidget(QDialog):
     def closeEvent(self, event):
         if hasattr(self, 'worker_thread') and self.worker_thread and self.worker_thread.isRunning():
             self.worker_thread.requestInterruption()
-            self.worker_thread.quit()
-            self.worker_thread.wait()
-        event.accept()
+            event.ignore()
+        else:
+            event.accept()
