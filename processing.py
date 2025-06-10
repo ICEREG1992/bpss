@@ -5,6 +5,7 @@ import struct
 import subprocess
 from HexNavigator import HexNavigator
 from Helpers import resource_path
+from PyQt5.QtCore import QThread
 
 def get_first_file(path):
     try:
@@ -19,6 +20,7 @@ def get_first_file(path):
 
 def load_pointers(settings, filename, set_progress=None):
     if set_progress: set_progress(0, "Loading data from files...")
+    
     # Load JSON file
     with open(resource_path("songs.json"), 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -192,6 +194,9 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
         if set_progress: set_progress(100, "Nothing to apply.")
         return
     if set_progress: set_progress(0, "Loading data from files...")
+
+    # Establish thread in case we want to cancel later
+    thread = QThread.currentThread()
     
     with open(soundtrack, 'r', encoding='utf-8') as f:
         st = json.load(f)
@@ -279,6 +284,9 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     step = (50 / steps)
     count = 0
     for s in to_convert:
+        if thread.isInterruptionRequested():
+            if set_progress: set_progress(100, "Apply action canceled. Changes may be partially applied.")
+            return
         if set_progress: set_progress(int((step * count) + 45), f"Converting \"{st[s[2]]['strings']['title']}\"...")
         # start by converting the song
         convertSong(s[0], s[1], settings)
@@ -323,6 +331,9 @@ def reset_files(settings, set_progress=None):
     changed = False
     if set_progress: set_progress(0, "Restoring strings...")
 
+    # Establish thread in case we want to cancel later
+    thread = QThread.currentThread()
+
     # search for restore .old files at locations we'd expect them
     if "game" in settings.keys() and os.path.isdir(settings["game"]):
         binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
@@ -353,6 +364,9 @@ def reset_files(settings, set_progress=None):
     for dirpath, _, filenames in os.walk(snsLoc):
         for filename in filenames:
             if filename.endswith('.old'):
+                if thread.isInterruptionRequested():
+                    if set_progress: set_progress(100, "Reset action canceled. Changes may be partially applied.")
+                    return
                 original_name = filename[:-4]
                 old_path = os.path.join(dirpath, filename)
                 new_path = os.path.join(dirpath, original_name)
