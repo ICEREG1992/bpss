@@ -200,7 +200,7 @@ class SoundtrackViewer(QMainWindow):
             # Connect signals
             self.thread.started.connect(self.worker.run)
             self.worker.progress_changed.connect(self.progress.set_progress)
-            self.worker.finished.connect(self.progress.close)
+            self.thread.finished.connect(self.progress.close)
             self.worker.finished.connect(self.thread.quit)
             self.worker.finished.connect(self.worker.deleteLater)
             self.worker.finished.connect(self.fill_table)
@@ -211,6 +211,8 @@ class SoundtrackViewer(QMainWindow):
     def fill_table(self):
         try:
             self.settings = self.load_settings()
+            if not self.get_ptrs_hash():
+                return
             filename = self.get_ptrs_hash() + ".json"
             with open(filename, "r") as file:
                 ptrs = json.load(file)
