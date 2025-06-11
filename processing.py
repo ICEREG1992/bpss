@@ -390,7 +390,7 @@ def convertSong(file, stream, settings):
     print(file)
     print(stream)
     temp_path = os.path.join("temp", stream)
-    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-playlocstream', file, f"-=\"{temp_path}\""])
+    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', file, f"-=\"{temp_path}\""])
     
 
     
