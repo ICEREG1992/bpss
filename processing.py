@@ -80,8 +80,15 @@ def load_pointers(settings, filename, set_progress=None):
                             stream = navigator.read_cstring()
                             artist_pos = navigator.loc()
                             artist = navigator.read_cstring()
-                            album_pos = 0
-                            album = ""
+                            # check for the almighty empty string
+                            temp_pos = navigator.loc()
+                            album = navigator.read_cstring()
+                            if album == data[song]["defaults"]["album"]:
+                                album_pos = temp_pos
+                            else:
+                                album = ""
+                                album_pos = 0
+                                navigator.seek(temp_pos)
                         case 3: # artist/album sync
                             stream_pos = navigator.loc()
                             stream = navigator.read_cstring()
@@ -143,8 +150,15 @@ def load_pointers(settings, filename, set_progress=None):
                         artist = ""
                         artist_pos = 0
                         navigator.seek(temp_pos)
-                    album_pos = 0
-                    album = ""
+                    # check for the almighty empty string
+                    temp_pos = navigator.loc()
+                    album = navigator.read_cstring()
+                    if album == data[song]["defaults"]["album"]:
+                        album_pos = temp_pos
+                    else:
+                        album = ""
+                        album_pos = 0
+                        navigator.seek(temp_pos)
             out[song]["strings"] = {"title":song, "stream":stream, "artist":artist, "album":album}
             out[song]["locs"] = {"title":song_pos, "stream":stream_pos, "artist":artist_pos, "album":album_pos}
             # get pointers

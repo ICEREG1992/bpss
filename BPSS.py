@@ -256,9 +256,21 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
                                 self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
                             case 1: # no album (FRICTION)
+                                album_ptrs = entry.get("ptrs").get("album")
+                                if len(album_ptrs) > 1:
+                                    stock[album] = album_ptrs[1:]
+                                    sync[self.defaults[key]["defaults"]["album"]] = [(row_index, 2)]
+                                    album_color = list(sync).index(self.defaults[key]["defaults"]["album"])
+                                    self.table.setItem(row_index, 2, self.make_unique_cell(album, album_color))
+                                elif len(album_ptrs) == 0:
+                                    backfill.append([row_index, 2, self.defaults[key]["defaults"]["album"], 0])
+                                    self.table.setItem(row_index, 2, QTableWidgetItem(album))
+                                else:
+                                    self.table.setItem(row_index, 2, QTableWidgetItem(album))
+                                
                                 self.table.setItem(row_index, 0, index_item)
                                 self.table.setItem(row_index, 1, QTableWidgetItem(title))
-                                self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
+                                # look above for album cell
                                 self.table.setItem(row_index, 3, QTableWidgetItem(artist))
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
                                 self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
@@ -347,9 +359,21 @@ class SoundtrackViewer(QMainWindow):
                         else:
                             self.table.setItem(row_index, 3, QTableWidgetItem(artist))
                         
+                        album_ptrs = entry.get("ptrs").get("album")
+                        if len(album_ptrs) > 1:
+                            stock[album] = album_ptrs[1:]
+                            sync[self.defaults[key]["defaults"]["album"]] = [(row_index, 2)]
+                            album_color = list(sync).index(self.defaults[key]["defaults"]["album"])
+                            self.table.setItem(row_index, 2, self.make_unique_cell(album, album_color))
+                        elif len(album_ptrs) == 0:
+                            backfill.append([row_index, 2, self.defaults[key]["defaults"]["album"], 0])
+                            self.table.setItem(row_index, 2, QTableWidgetItem(album))
+                        else:
+                            self.table.setItem(row_index, 2, QTableWidgetItem(album))
+
                         self.table.setItem(row_index, 0, index_item)
                         self.table.setItem(row_index, 1, QTableWidgetItem(title))
-                        self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
+                        # look above for album cell
                         # look above for artist cell
                         self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
                         self.table.setCellWidget(row_index, 5, file_browse_widget)  # Ensure source is never None
@@ -413,7 +437,7 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
                             case 1: # no album (FRICTION)
                                 self.table.item(row_index, 1).setText(title)
-                                # self.table.item(row_index, 2).setText(album)
+                                self.table.item(row_index, 2).setText(album)
                                 self.table.item(row_index, 3).setText(artist)
                                 self.table.cellWidget(row_index, 4).setText(stream)
                                 self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
@@ -450,7 +474,7 @@ class SoundtrackViewer(QMainWindow):
                         self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
                     case 2: # classical soundtrack
                         self.table.item(row_index, 1).setText(title)
-                        self.table.cellWidget(row_index, 2).setText(album)
+                        self.table.item(row_index, 2).setText(album)
                         self.table.item(row_index, 3).setText(artist)
                         self.table.cellWidget(row_index, 4).setText(stream)
                         self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
@@ -484,7 +508,7 @@ class SoundtrackViewer(QMainWindow):
                         case 1: # no album (FRICTION)
                             row_data["strings"] = {
                                 "title": self.table.item(r, 1).text(),
-                                "album": self.table.cellWidget(r, 2).text(),
+                                "album": self.table.item(r, 2).text(),
                                 "artist": self.table.item(r, 3).text(),
                                 "stream": self.table.cellWidget(r, 4).text()
                             }
@@ -532,7 +556,7 @@ class SoundtrackViewer(QMainWindow):
                 case 2: # classical soundtrack
                     row_data["strings"] = {
                         "title": self.table.item(r, 1).text(),
-                        "album": self.table.cellWidget(r, 2).text(),
+                        "album": self.table.item(r, 2).text(),
                         "artist": self.table.item(r, 3).text(),
                         "stream": self.table.cellWidget(r, 4).text()
                     }
