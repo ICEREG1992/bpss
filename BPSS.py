@@ -5,7 +5,7 @@ import hashlib
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout, QWidget, QHBoxLayout, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
 from PyQt5.QtCore import Qt, QThread
-from PyQt5.QtGui import QBrush, QColor, QIcon
+from PyQt5.QtGui import QBrush, QColor, QIcon, QPixmap
 import mutagen
 
 from Settings import SettingsDialog
@@ -50,7 +50,7 @@ class SoundtrackViewer(QMainWindow):
         # Create central widget to hold table
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        layout = QHBoxLayout(central_widget)
+        self.layout = QHBoxLayout(central_widget)
 
         # Load settings
         self.settings = self.load_settings()
@@ -69,9 +69,9 @@ class SoundtrackViewer(QMainWindow):
         self.create_table()
 
         # Add table to layout
-        layout.addWidget(self.table, 3)
+        self.layout.addWidget(self.table, 3)
 
-
+        self.actions = None
         # Create actions widget
         # self.create_actions()
         # layout.addWidget(self.actions, 1)
@@ -151,6 +151,12 @@ class SoundtrackViewer(QMainWindow):
         
         # Second vertical spacer
         toolbar.addSeparator()
+
+        # Actions pane
+        actions_action = QAction(self.style().standardIcon(QStyle.SP_FileDialogDetailedView), "Actions", self)
+        actions_action.triggered.connect(self.toggle_actions)
+        actions_action.setCheckable = True
+        toolbar.addAction(actions_action)
         
         # Settings and about
         settings_action = QAction(self.style().standardIcon(QStyle.SP_ComputerIcon), "Settings", self)
@@ -642,21 +648,28 @@ class SoundtrackViewer(QMainWindow):
         move_down_btn.clicked.connect(self.move_song_down)
         
         # File operations
-        browse_file_btn = QPushButton("Browse for File")
-        browse_file_btn.setStyleSheet("text-align: left;")
-        browse_file_btn.setIcon(self.style().standardIcon(QStyle.SP_DirOpenIcon))
-        browse_file_btn.clicked.connect(self.browse_for_file)
+        insert_btn = QPushButton("Insert New Song")
+        insert_btn.setStyleSheet("text-align: left;")
+        insert_btn.setIcon(QIcon(QPixmap(resource_path("plus.png")).scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation)))
+        insert_btn.clicked.connect(self.insert_song)
         
         delete_btn = QPushButton("Delete Song")
         delete_btn.setStyleSheet("text-align: left;")
         delete_btn.setIcon(self.style().standardIcon(QStyle.SP_TrashIcon))
         delete_btn.clicked.connect(self.delete_song)
+
+        # Disambiguation
+        disambiguate_btn = QPushButton("Disambiguate Cell")
+        disambiguate_btn.setStyleSheet("text-align: left;")
+        disambiguate_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
+        disambiguate_btn.clicked.connect(self.disambiguate_cell)
         
         # Add to layout
         actions_layout.addWidget(move_up_btn)
         actions_layout.addWidget(move_down_btn)
-        actions_layout.addWidget(browse_file_btn)
+        actions_layout.addWidget(insert_btn)
         actions_layout.addWidget(delete_btn)
+        actions_layout.addWidget(disambiguate_btn)
         actions_layout.addStretch()  # Push buttons to top
         
         self.actions = actions_frame
@@ -795,7 +808,17 @@ class SoundtrackViewer(QMainWindow):
         if self.file:
             self.load_file()
         self.changes = False
-        
+
+    def toggle_actions(self):
+        print("Toggle actions pane")
+        if self.actions:
+            self.layout.removeWidget(self.actions)
+            self.actions.hide()
+            self.actions = None
+        else:
+            self.create_actions()
+            self.layout.addWidget(self.actions, 1)
+
     def show_settings(self):
         print("Settings action triggered")
         prev_hash = self.get_ptrs_hash()
@@ -844,20 +867,17 @@ class SoundtrackViewer(QMainWindow):
     def move_song_down(self):
         print("Move song down action triggered")
 
-    def browse_for_file(self):
+    def insert_song(self):
         print("Browse for file action triggered")
-
-    def duplicate_song(self):
-        print("Duplicate song action triggered")
 
     def delete_song(self):
         print("Delete song action triggered")
 
-    def edit_song(self):
-        print("Edit song action triggered")
-
     def play_song(self):
         print("Play song action triggered")
+
+    def disambiguate_cell(self):
+        print("Disambiguating cell")
 
 
 if __name__ == "__main__":
