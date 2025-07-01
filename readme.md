@@ -8,6 +8,8 @@ Requires [sx](https://burnout.wiki/wiki/Sounds_(Burnout_Paradise)) and [YAP](htt
 ## How to Setup
 Just point BPSS at your install folder for Burnout Paradise, your sx.exe file, and your YAP.exe file.
 
+If you are on Windows 8.1 or earlier, please install the [Visual Studio 2015 C++ Redistributable](https://www.microsoft.com/en-gb/download/details.aspx?id=48145).
+
 ## How to Use
 Make your desired soundtrack changes in the table, save it to a file, then press Apply to apply those changes to your game. Press Unapply to revert all changes, and Reset to reset the table back to defaults, or to your currently loaded file.
 
