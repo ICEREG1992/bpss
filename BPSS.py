@@ -22,7 +22,7 @@ class SoundtrackViewer(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Burnout Paradise Soundtrack Switcher")
-        self.setWindowIcon(QIcon(resource_path("bpss.png")))
+        self.setWindowIcon(QIcon(resource_path("media/bpss.png")))
         # Get screen geometry
         screen = QApplication.primaryScreen()
         screen_rect = screen.availableGeometry()
@@ -419,71 +419,10 @@ class SoundtrackViewer(QMainWindow):
 
             # Edit table
             for (key, entry) in st.items():
-                # Get strings data (title, stream, album, artist)
-                strings = entry.get("strings", {})
-                title = strings.get("title", "")
-                album = strings.get("album", "")
-                artist = strings.get("artist", "")
-                stream = strings.get("stream", "")
-                
-                # Get source and file
-                source = entry.get("source", "")
 
                 row_index = list(self.defaults.keys()).index(key)
 
-                # Apply soundtrack content
-                match self.defaults[key]["type"]:
-                    case 0: # regular soundtrack
-                        match self.defaults[key]["lock"]:
-                            case 0: # no lock
-                                self.table.item(row_index, 1).setText(title)
-                                self.table.item(row_index, 2).setText(album)
-                                self.table.item(row_index, 3).setText(artist)
-                                self.table.cellWidget(row_index, 4).setText(stream)
-                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
-                            case 1: # no album (FRICTION)
-                                self.table.item(row_index, 1).setText(title)
-                                self.table.item(row_index, 2).setText(album)
-                                self.table.item(row_index, 3).setText(artist)
-                                self.table.cellWidget(row_index, 4).setText(stream)
-                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
-                            case 3: # artist/album sync
-                                self.table.item(row_index, 1).setText(title)
-                                self.table.item(row_index, 2).setText(album)
-                                self.table.item(row_index, 3).setText(artist)
-                                self.table.cellWidget(row_index, 4).setText(stream)
-                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
-                            case 6: # stream/artist sync
-                                self.table.item(row_index, 1).setText(title)
-                                self.table.item(row_index, 2).setText(album)
-                                self.table.cellWidget(row_index, 3).setText(artist)
-                                self.table.cellWidget(row_index, 4).setText(stream)
-                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
-                            case 7: # stream/artist/album sync
-                                self.table.item(row_index, 1).setText(title)
-                                self.table.cellWidget(row_index, 2).setText(album)
-                                self.table.cellWidget(row_index, 3).setText(artist)
-                                self.table.cellWidget(row_index, 4).setText(stream)
-                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
-                            case 9: # song/album sync
-                                self.table.item(row_index, 1).setText(title)
-                                self.table.item(row_index, 2).setText(album)
-                                self.table.item(row_index, 3).setText(artist)
-                                self.table.cellWidget(row_index, 4).setText(stream)
-                                self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
-
-                    case 1: # burnout soundtrack
-                        self.table.item(row_index, 1).setText(title)
-                        self.table.item(row_index, 2).setText(album)
-                        self.table.item(row_index, 3).setText(artist)
-                        self.table.cellWidget(row_index, 4).setText(stream)
-                        self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
-                    case 2: # classical soundtrack
-                        self.table.item(row_index, 1).setText(title)
-                        self.table.item(row_index, 2).setText(album)
-                        self.table.item(row_index, 3).setText(artist)
-                        self.table.cellWidget(row_index, 4).setText(stream)
-                        self.table.cellWidget(row_index, 5).setText(source or "")  # Ensure source is never None
+                self.set_table_row(row_index, entry)
             
         except FileNotFoundError:
             print(f"Error: {self.file} file not found.")
@@ -499,74 +438,7 @@ class SoundtrackViewer(QMainWindow):
         for r in range(rows):
             save = False
             default = self.defaults[list(self.defaults.keys())[r]]
-            row_data = {}
-            match default["type"]:
-                case 0: # regular soundtrack
-                    match default["lock"]:
-                        case 0: # no lock
-                            row_data["strings"] = {
-                                "title": self.table.item(r, 1).text(),
-                                "album": self.table.item(r, 2).text(),
-                                "artist": self.table.item(r, 3).text(),
-                                "stream": self.table.cellWidget(r, 4).text()
-                            }
-                            row_data["source"] = self.table.cellWidget(r, 5).text()
-                        case 1: # no album (FRICTION)
-                            row_data["strings"] = {
-                                "title": self.table.item(r, 1).text(),
-                                "album": self.table.item(r, 2).text(),
-                                "artist": self.table.item(r, 3).text(),
-                                "stream": self.table.cellWidget(r, 4).text()
-                            }
-                            row_data["source"] = self.table.cellWidget(r, 5).text()
-                        case 3: # artist/album sync
-                            row_data["strings"] = {
-                                "title": self.table.item(r, 1).text(),
-                                "album": self.table.item(r, 2).text(),
-                                "artist": self.table.item(r, 3).text(),
-                                "stream": self.table.cellWidget(r, 4).text()
-                            }
-                            row_data["source"] = self.table.cellWidget(r, 5).text()
-                        case 6: # stream/artist sync
-                            row_data["strings"] = {
-                                "title": self.table.item(r, 1).text(),
-                                "album": self.table.item(r, 2).text(),
-                                "artist": self.table.cellWidget(r, 3).text(),
-                                "stream": self.table.cellWidget(r, 4).text()
-                            }
-                            row_data["source"] = self.table.cellWidget(r, 5).text()
-                        case 7: # stream/artist/album sync
-                            row_data["strings"] = {
-                                "title": self.table.item(r, 1).text(),
-                                "album": self.table.cellWidget(r, 2).text(),
-                                "artist": self.table.cellWidget(r, 3).text(),
-                                "stream": self.table.cellWidget(r, 4).text()
-                            }
-                            row_data["source"] = self.table.cellWidget(r, 5).text()
-                        case 9: # song/album sync
-                            row_data["strings"] = {
-                                "title": self.table.item(r, 1).text(),
-                                "album": self.table.item(r, 2).text(),
-                                "artist": self.table.item(r, 3).text(),
-                                "stream": self.table.cellWidget(r, 4).text()
-                            }
-                            row_data["source"] = self.table.cellWidget(r, 5).text()
-                case 1: # burnout soundtrack
-                    row_data["strings"] = {
-                        "title": self.table.item(r, 1).text(),
-                        "album": self.table.item(r, 2).text(),
-                        "artist": self.table.item(r, 3).text(),
-                        "stream": self.table.cellWidget(r, 4).text()
-                    }
-                    row_data["source"] = self.table.cellWidget(r, 5).text()
-                case 2: # classical soundtrack
-                    row_data["strings"] = {
-                        "title": self.table.item(r, 1).text(),
-                        "album": self.table.item(r, 2).text(),
-                        "artist": self.table.item(r, 3).text(),
-                        "stream": self.table.cellWidget(r, 4).text()
-                    }
-                    row_data["source"] = self.table.cellWidget(r, 5).text()
+            row_data = self.get_table_row(r)
             
             for key, value in row_data["strings"].items():
                 if value != default["defaults"][key]:
@@ -600,6 +472,7 @@ class SoundtrackViewer(QMainWindow):
 
         widget = QTableWidgetItem(text)
         widget.setBackground(QBrush(QColor(colors[color])))
+        widget.innerText = ""
         return widget
     
 
@@ -650,7 +523,7 @@ class SoundtrackViewer(QMainWindow):
         # File operations
         insert_btn = QPushButton("Insert New Song")
         insert_btn.setStyleSheet("text-align: left;")
-        insert_btn.setIcon(QIcon(QPixmap(resource_path("plus.png")).scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation)))
+        insert_btn.setIcon(QIcon(QPixmap(resource_path("media/plus.png")).scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation)))
         insert_btn.clicked.connect(self.insert_song)
         
         delete_btn = QPushButton("Delete Song")
@@ -862,13 +735,28 @@ class SoundtrackViewer(QMainWindow):
             print("Showing About")
 
     def move_song_up(self):
-        print("Move song up action triggered")
+        self.move_song(down=False)
 
     def move_song_down(self):
+        self.move_song(down=True)
+    
+    def move_song(self, down):
         print("Move song down action triggered")
+        row = self.table.currentRow()
+        col = self.table.currentColumn()
+        next_row = (row+1) % self.table.rowCount() if down else (row-1) % self.table.rowCount()
+
+        row_data = self.get_table_row(row, inner=True)
+        below_data = self.get_table_row(next_row, inner=True)
+        print(str(below_data))
+
+        self.set_table_row(row, below_data, inner=True)
+        self.set_table_row(next_row, row_data, inner=True)
+
+        self.table.setCurrentCell(next_row, col)
 
     def insert_song(self):
-        print("Browse for file action triggered")
+        print("Insert blank song action triggered")
 
     def delete_song(self):
         print("Delete song action triggered")
@@ -879,6 +767,173 @@ class SoundtrackViewer(QMainWindow):
     def disambiguate_cell(self):
         print("Disambiguating cell")
 
+    def get_table_row(self, ind, inner=False):
+        print("Getting table row " + str(ind))
+        row_data = {}
+        default = self.defaults[list(self.defaults.keys())[ind]]
+        match default["type"]:
+            case 0: # regular soundtrack
+                match default["lock"]:
+                    case 0: # no lock
+                        row_data["strings"] = {
+                            "title": self.table.item(ind, 1).text(),
+                            "album": self.table.item(ind, 2).text(),
+                            "artist": self.table.item(ind, 3).text(),
+                            "stream": self.table.cellWidget(ind, 4).text()
+                        }
+                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                    case 1: # no album (FRICTION)
+                        row_data["strings"] = {
+                            "title": self.table.item(ind, 1).text(),
+                            "album": self.table.item(ind, 2).text(),
+                            "artist": self.table.item(ind, 3).text(),
+                            "stream": self.table.cellWidget(ind, 4).text()
+                        }
+                        if inner and self.table.item(ind, 2).innerText:
+                            row_data["strings"]["album"] = self.table.item(ind, 2).innerText
+                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                    case 3: # artist/album sync
+                        row_data["strings"] = {
+                            "title": self.table.item(ind, 1).text(),
+                            "album": self.table.item(ind, 2).text(),
+                            "artist": self.table.item(ind, 3).text(),
+                            "stream": self.table.cellWidget(ind, 4).text()
+                        }
+                        if inner and self.table.item(ind, 2).innerText:
+                            row_data["strings"]["album"] = self.table.item(ind, 2).innerText
+                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                    case 6: # stream/artist sync
+                        row_data["strings"] = {
+                            "title": self.table.item(ind, 1).text(),
+                            "album": self.table.item(ind, 2).text(),
+                            "artist": self.table.cellWidget(ind, 3).text(),
+                            "stream": self.table.cellWidget(ind, 4).text()
+                        }
+                        if inner and self.table.cellWidget(ind, 3).innerText:
+                            row_data["strings"]["artist"] = self.table.cellWidget(ind, 3).innerText
+                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                    case 7: # stream/artist/album sync
+                        row_data["strings"] = {
+                            "title": self.table.item(ind, 1).text(),
+                            "album": self.table.cellWidget(ind, 2).text(),
+                            "artist": self.table.cellWidget(ind, 3).text(),
+                            "stream": self.table.cellWidget(ind, 4).text()
+                        }
+                        if inner and self.table.cellWidget(ind, 2).innerText:
+                            row_data["strings"]["album"] = self.table.cellWidget(ind, 2).innerText
+                        if inner and self.table.cellWidget(ind, 3).innerText:
+                            row_data["strings"]["artist"] = self.table.cellWidget(ind, 3).innerText
+                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                    case 9: # song/album sync
+                        row_data["strings"] = {
+                            "title": self.table.item(ind, 1).text(),
+                            "album": self.table.item(ind, 2).text(),
+                            "artist": self.table.item(ind, 3).text(),
+                            "stream": self.table.cellWidget(ind, 4).text()
+                        }
+                        if inner and self.table.item(ind, 1).innerText:
+                            row_data["strings"]["title"] = self.table.item(ind, 1).innerText
+                        if inner and self.table.item(ind, 2).innerText:
+                            row_data["strings"]["album"] = self.table.item(ind, 2).innerText
+                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+            case 1: # burnout soundtrack
+                row_data["strings"] = {
+                    "title": self.table.item(ind, 1).text(),
+                    "album": self.table.item(ind, 2).text(),
+                    "artist": self.table.item(ind, 3).text(),
+                    "stream": self.table.cellWidget(ind, 4).text()
+                }
+                row_data["source"] = self.table.cellWidget(ind, 5).text()
+            case 2: # classical soundtrack
+                row_data["strings"] = {
+                    "title": self.table.item(ind, 1).text(),
+                    "album": self.table.item(ind, 2).text(),
+                    "artist": self.table.item(ind, 3).text(),
+                    "stream": self.table.cellWidget(ind, 4).text()
+                }
+                row_data["source"] = self.table.cellWidget(ind, 5).text()
+        
+        return row_data
+
+    def set_table_row(self, ind, row, inner=False):
+        print("Setting table row " + str(ind))
+        strings = row.get("strings", "")
+        title = strings.get("title", "")
+        album = strings.get("album", "")
+        artist = strings.get("artist", "")
+        stream = strings.get("stream", "")
+        
+        # Get source and file
+        source = strings.get("source", "")
+
+        key = list(self.defaults.keys())[ind]
+
+        print(title)
+
+        if not inner:
+            self.table.cellWidget(ind, 4).setText(stream)
+
+        # Apply soundtrack content
+        match self.defaults[key]["type"]:
+            case 0: # regular soundtrack
+                match self.defaults[key]["lock"]:
+                    case 0: # no lock
+                        self.table.item(ind, 1).setText(title)
+                        self.table.item(ind, 2).setText(album)
+                        self.table.item(ind, 3).setText(artist)
+                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                    case 1: # no album (FRICTION)
+                        self.table.item(ind, 1).setText(title)
+                        if inner:
+                            self.table.item(ind, 2).innerText = album
+                        else:
+                            self.table.item(ind, 2).setText(album)
+                        self.table.item(ind, 3).setText(artist)
+                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                    case 3: # artist/album sync
+                        self.table.item(ind, 1).setText(title)
+                        if inner:
+                            self.table.item(ind, 2).innerText = album
+                        else:
+                            self.table.item(ind, 2).setText(album)
+                        self.table.item(ind, 3).setText(artist)
+                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                    case 6: # stream/artist sync
+                        self.table.item(ind, 1).setText(title)
+                        self.table.item(ind, 2).setText(album)
+                        if inner:
+                            self.table.cellWidget(ind, 3).setInnerText(artist)
+                        else:
+                            self.table.cellWidget(ind, 3).setText(artist)
+                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                    case 7: # stream/artist/album sync
+                        self.table.item(ind, 1).setText(title)
+                        if inner:
+                            self.table.cellWidget(ind, 2).setInnerText(album)
+                            self.table.cellWidget(ind, 3).setInnerText(artist)
+                        else:
+                            self.table.cellWidget(ind, 2).setText(album)
+                            self.table.cellWidget(ind, 3).setText(artist)
+                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                    case 9: # song/album sync
+                        if inner:
+                            self.table.item(ind, 2).innerText = album
+                        else:
+                            self.table.item(ind, 2).setText(album) # do it out of order so events propagate and prioritize title
+                        self.table.item(ind, 1).setText(title)
+                        self.table.item(ind, 3).setText(artist)
+                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+
+            case 1: # burnout soundtrack
+                self.table.item(ind, 1).setText(title)
+                self.table.item(ind, 2).setText(album)
+                self.table.item(ind, 3).setText(artist)
+                self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+            case 2: # classical soundtrack
+                self.table.item(ind, 1).setText(title)
+                self.table.item(ind, 2).setText(album)
+                self.table.item(ind, 3).setText(artist)
+                self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

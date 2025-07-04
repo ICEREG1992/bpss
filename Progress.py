@@ -8,7 +8,7 @@ class ProgressWidget(QDialog):
         super().__init__()
         self.setWindowTitle(text)
         self.setFixedSize(400, 100)
-        self.setWindowIcon(QIcon(resource_path("bpss.png")))
+        self.setWindowIcon(QIcon(resource_path("media/bpss.png")))
         self.setWindowModality(Qt.ApplicationModal)
 
         # Create widgets

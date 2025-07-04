@@ -15,7 +15,7 @@ class SettingsDialog(QDialog):
         super().__init__()
         window_title = "First Time Setup" if first else "Settings"
         self.setWindowTitle(window_title)
-        self.setWindowIcon(QIcon(resource_path("bpss.png")))
+        self.setWindowIcon(QIcon(resource_path("media/bpss.png")))
         self.setFixedSize(450, 250)
         self.settings = self.load_settings()
         self.init_ui()

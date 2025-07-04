@@ -6,13 +6,14 @@ from Helpers import resource_path
 import webbrowser
 
 class AboutDialog(QDialog):
+
     def __init__(self, hash=None):
         super().__init__()
         self.setWindowTitle("About")
         self.setFixedSize(320, 150)
-        self.setWindowIcon(QIcon(resource_path("bpss.png")))
+        self.setWindowIcon(QIcon(resource_path("media/bpss.png")))
 
-        layout = QVBoxLayout()
+        layout = QVBoxLayout()     
 
         version_layout = QHBoxLayout()
         version_label = QLabel("Version 0.2.2")
@@ -24,13 +25,13 @@ class AboutDialog(QDialog):
         layout.addLayout(version_layout, 2)
 
         dev_layout = QHBoxLayout()
-        dev_label = QLabel("Developed by ")
-        link_label = QLabel("William Sullivan")
-        link_label.setStyleSheet("color: blue; text-decoration: underline;")
-        link_label.setCursor(QCursor(Qt.PointingHandCursor))
-        link_label.mousePressEvent = lambda event: webbrowser.open("https://github.com/ICEREG1992/bpss")
 
-        dev_layout.addWidget(dev_label)
+        link_label = QLabel()
+        link_label.setText('Developed by <a href="https://github.com/ICEREG1992/bpss">William Sullivan</a>')
+        link_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        link_label.setOpenExternalLinks(False)  # So we can handle the click ourselves
+        link_label.linkActivated.connect(lambda url: webbrowser.open(url))
+
         dev_layout.addWidget(link_label)
         dev_layout.addStretch()
         layout.addLayout(dev_layout, 2)
@@ -45,3 +46,6 @@ class AboutDialog(QDialog):
         layout.addWidget(close_button, alignment=Qt.AlignRight)
 
         self.setLayout(layout)
+
+    def open_link(event):
+            webbrowser.open("https://github.com/ICEREG1992/bpss")   
