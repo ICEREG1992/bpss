@@ -109,6 +109,7 @@ class SettingsDialog(QDialog):
         # Retain existing optional fields if they exist
         self.settings.setdefault("prev", "")
         self.settings.setdefault("mod", "")
+        self.settings.setdefault("actions", False)
 
         with open(SETTINGS_FILE, "w") as f:
             json.dump(self.settings, f, indent=4)

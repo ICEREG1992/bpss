@@ -17,6 +17,7 @@ from About import AboutDialog
 from Helpers import resource_path
 
 SETTINGS_FILE = "settings.json"
+BLANK_ROW = {'strings': {'title': '', 'album': '', 'artist': '', 'stream': ''}, 'source': ''}
 
 class SoundtrackViewer(QMainWindow):
     def __init__(self):
@@ -72,9 +73,16 @@ class SoundtrackViewer(QMainWindow):
         self.layout.addWidget(self.table, 3)
 
         self.actions = None
+
         # Create actions widget
-        # self.create_actions()
-        # layout.addWidget(self.actions, 1)
+        if "actions" in self.settings.keys():
+            if self.settings["actions"]:
+                self.create_actions()
+                self.layout.addWidget(self.actions, 1)
+                self.actions_action.setChecked(True)
+        else:
+            self.settings["actions"] = False
+            self.write_settings
     
     def update_window_title(self):
         if self.file:
@@ -118,6 +126,7 @@ class SoundtrackViewer(QMainWindow):
         toolbar = QToolBar("Main Toolbar")
         toolbar.setMovable(False)
         toolbar.setFloatable(False)
+        toolbar.setContextMenuPolicy(Qt.PreventContextMenu)
         self.addToolBar(toolbar)
         
         # File operations
@@ -153,10 +162,10 @@ class SoundtrackViewer(QMainWindow):
         toolbar.addSeparator()
 
         # Actions pane
-        actions_action = QAction(self.style().standardIcon(QStyle.SP_FileDialogDetailedView), "Actions", self)
-        actions_action.triggered.connect(self.toggle_actions)
-        actions_action.setCheckable = True
-        toolbar.addAction(actions_action)
+        self.actions_action = QAction(self.style().standardIcon(QStyle.SP_FileDialogDetailedView), "Actions", self)
+        self.actions_action.triggered.connect(self.toggle_actions)
+        self.actions_action.setCheckable(True)
+        toolbar.addAction(self.actions_action)
         
         # Settings and about
         settings_action = QAction(self.style().standardIcon(QStyle.SP_ComputerIcon), "Settings", self)
@@ -493,6 +502,7 @@ class SoundtrackViewer(QMainWindow):
 
     def handle_selection_changed(self):
         selected = self.table.selectedIndexes()
+        # handle selection and de-selection of cellwidgets with a full table sweep
         for row in range(self.table.rowCount()):
             for col in range(self.table.columnCount()):
                 widget = self.table.cellWidget(row, col)
@@ -501,6 +511,40 @@ class SoundtrackViewer(QMainWindow):
                         widget.setSelected(True)
                     else:
                         widget.setSelected(False)
+        # show/hide disambiguate button
+        self.disambiguate_btn.hide()
+        if len(selected) == 1:
+            if self.is_disambiguatable(selected[0]):
+                self.disambiguate_btn.show()
+
+    def is_disambiguatable(self, cell):
+        row = cell.row()
+        col = cell.column()
+        key = list(self.defaults.keys())[row]
+        match self.defaults[key]["type"]:
+            case 0: # regular soundtrack
+                match self.defaults[key]["lock"]:
+                    case 1:
+                        if col == 2:
+                            return True
+                    case 3:
+                        if col == 2 or col == 3:
+                            return True
+                    case 6:
+                        if col == 3:
+                            return True
+                    case 7:
+                        if col == 2 or col == 3:
+                            return True
+                    case 9:
+                        if col == 1 or col == 2:
+                            return True
+            case 1: # burnout soundtrack
+                if col == 2 or col == 3:
+                    return True
+            case 2: # classical soundtrack
+                if col == 2 or col == 3:
+                    return True
 
 
     def create_actions(self):
@@ -521,28 +565,29 @@ class SoundtrackViewer(QMainWindow):
         move_down_btn.clicked.connect(self.move_song_down)
         
         # File operations
-        insert_btn = QPushButton("Insert New Song")
-        insert_btn.setStyleSheet("text-align: left;")
-        insert_btn.setIcon(QIcon(QPixmap(resource_path("media/plus.png")).scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation)))
-        insert_btn.clicked.connect(self.insert_song)
-        
-        delete_btn = QPushButton("Delete Song")
-        delete_btn.setStyleSheet("text-align: left;")
-        delete_btn.setIcon(self.style().standardIcon(QStyle.SP_TrashIcon))
-        delete_btn.clicked.connect(self.delete_song)
+        clear_btn = QPushButton("Clear Song")
+        clear_btn.setStyleSheet("text-align: left;")
+        clear_btn.setIcon(self.style().standardIcon(QStyle.SP_TrashIcon))
+        clear_btn.clicked.connect(self.clear_song)
+
+        # insert_btn = QPushButton("Insert New Song")
+        # insert_btn.setStyleSheet("text-align: left;")
+        # insert_btn.setIcon(QIcon(QPixmap(resource_path("media/plus.png")).scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation)))
+        # insert_btn.clicked.connect(self.insert_song)
 
         # Disambiguation
-        disambiguate_btn = QPushButton("Disambiguate Cell")
-        disambiguate_btn.setStyleSheet("text-align: left;")
-        disambiguate_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
-        disambiguate_btn.clicked.connect(self.disambiguate_cell)
+        self.disambiguate_btn = QPushButton("Disambiguate Cell")
+        self.disambiguate_btn.setStyleSheet("text-align: left;")
+        self.disambiguate_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
+        self.disambiguate_btn.clicked.connect(self.disambiguate_cell)
+        self.disambiguate_btn.hide()
         
         # Add to layout
         actions_layout.addWidget(move_up_btn)
         actions_layout.addWidget(move_down_btn)
-        actions_layout.addWidget(insert_btn)
-        actions_layout.addWidget(delete_btn)
-        actions_layout.addWidget(disambiguate_btn)
+        # actions_layout.addWidget(insert_btn)
+        actions_layout.addWidget(clear_btn)
+        actions_layout.addWidget(self.disambiguate_btn)
         actions_layout.addStretch()  # Push buttons to top
         
         self.actions = actions_frame
@@ -688,9 +733,15 @@ class SoundtrackViewer(QMainWindow):
             self.layout.removeWidget(self.actions)
             self.actions.hide()
             self.actions = None
+            self.settings["actions"] = False
+            self.write_settings()
+            self.actions_action.setChecked(False)
         else:
             self.create_actions()
             self.layout.addWidget(self.actions, 1)
+            self.settings["actions"] = True
+            self.write_settings()
+            self.actions_action.setChecked(True)
 
     def show_settings(self):
         print("Settings action triggered")
@@ -757,9 +808,11 @@ class SoundtrackViewer(QMainWindow):
 
     def insert_song(self):
         print("Insert blank song action triggered")
-
-    def delete_song(self):
+        
+    def clear_song(self):
         print("Delete song action triggered")
+        row = self.table.currentRow()
+        self.set_table_row(row, BLANK_ROW, inner=True)
 
     def play_song(self):
         print("Play song action triggered")
