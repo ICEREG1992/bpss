@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QThread
 from PyQt5.QtGui import QBrush, QColor, QIcon, QPixmap
 import mutagen
 
+from Disambiguate import DisambiguateDialog
 from Settings import SettingsDialog
 from LockedCell import LockedCellWidget
 from FileBrowseCell import FileBrowseCellWidget
@@ -819,6 +820,39 @@ class SoundtrackViewer(QMainWindow):
 
     def disambiguate_cell(self):
         print("Disambiguating cell")
+
+        selected = self.table.selectedIndexes()[0]
+        key = list(self.defaults.keys())[selected.row()]
+
+        try:
+            if not self.get_ptrs_hash():
+                return
+            filename = self.get_ptrs_hash() + ".json"
+            with open(filename, "r") as file:
+                ptrs = json.load(file)
+                match selected.column():
+                    case 1:
+                        col = "title"
+                    case 2:
+                        col = "album"
+                    case 3:
+                        col = "artist"
+                options = ptrs[key]["ptrs"][col]
+                if len(options) <= 1:
+                    # look elsewhere
+                    print("your pointers are in another castle...")
+        except FileNotFoundError:
+            print(f"Error: {self.file} file not found.")
+        except json.JSONDecodeError:
+            print(f"Error: Invalid JSON format in {self.file}.")
+        except Exception as e:
+            print(f"Error loading data: {e}")
+
+        dialog = DisambiguateDialog(options)
+        if dialog.exec_():
+            print("Disambiguation submitted")
+        else:
+            print("Disambiguation canceled")
 
     def get_table_row(self, ind, inner=False):
         print("Getting table row " + str(ind))
