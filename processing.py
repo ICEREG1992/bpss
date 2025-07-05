@@ -127,7 +127,7 @@ def load_pointers(settings, filename, set_progress=None):
                     if artist == data[song]["defaults"]["artist"]:
                         artist_pos = temp_pos
                     else:
-                        artist = ""
+                        artist = data[song]["defaults"]["artist"]
                         artist_pos = 0
                         navigator.seek(temp_pos)
                     temp_pos = navigator.loc()
@@ -135,7 +135,7 @@ def load_pointers(settings, filename, set_progress=None):
                     if album == data[song]["defaults"]["album"]:
                         album_pos = temp_pos
                     else:
-                        album = ""
+                        album = data[song]["defaults"]["album"]
                         album_pos = 0
                         navigator.seek(temp_pos)
                 case 2: # classical soundtrack
@@ -147,7 +147,7 @@ def load_pointers(settings, filename, set_progress=None):
                     if artist == data[song]["defaults"]["artist"]:
                         artist_pos = temp_pos
                     else:
-                        artist = ""
+                        artist = data[song]["defaults"]["artist"]
                         artist_pos = 0
                         navigator.seek(temp_pos)
                     # check for the almighty empty string
@@ -156,7 +156,7 @@ def load_pointers(settings, filename, set_progress=None):
                     if album == data[song]["defaults"]["album"]:
                         album_pos = temp_pos
                     else:
-                        album = ""
+                        album = data[song]["defaults"]["album"]
                         album_pos = 0
                         navigator.seek(temp_pos)
             out[song]["strings"] = {"title":song, "stream":stream, "artist":artist, "album":album}

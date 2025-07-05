@@ -824,31 +824,10 @@ class SoundtrackViewer(QMainWindow):
         selected = self.table.selectedIndexes()[0]
         key = list(self.defaults.keys())[selected.row()]
 
-        try:
-            if not self.get_ptrs_hash():
-                return
-            filename = self.get_ptrs_hash() + ".json"
-            with open(filename, "r") as file:
-                ptrs = json.load(file)
-                match selected.column():
-                    case 1:
-                        col = "title"
-                    case 2:
-                        col = "album"
-                    case 3:
-                        col = "artist"
-                options = ptrs[key]["ptrs"][col]
-                if len(options) <= 1:
-                    # look elsewhere
-                    print("your pointers are in another castle...")
-        except FileNotFoundError:
-            print(f"Error: {self.file} file not found.")
-        except json.JSONDecodeError:
-            print(f"Error: Invalid JSON format in {self.file}.")
-        except Exception as e:
-            print(f"Error loading data: {e}")
+        # if cell is locked, show warning
+        # TODO
 
-        dialog = DisambiguateDialog(options)
+        dialog = DisambiguateDialog(self.get_ptrs_hash(), key, selected.column())
         if dialog.exec_():
             print("Disambiguation submitted")
         else:
