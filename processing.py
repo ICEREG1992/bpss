@@ -258,9 +258,14 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
                 print("got eof " + str(loc))
                 navigator.write_cstring(st[s]["strings"][k])
                 if ptrs[s]:
-                    for x in ptrs[s]["ptrs"][k]:
-                        navigator.seek(x)
+                    # if override specified, use that
+                    if ptrs[s]["override"][k]:
+                        navigator.seek(ptrs[s]["override"][k])
                         navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
+                    else:
+                        for x in ptrs[s]["ptrs"][k]:
+                            navigator.seek(x)
+                            navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
         # add to conversion queue
         if st[s]["source"]:
             to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
