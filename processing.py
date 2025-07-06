@@ -245,6 +245,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     steps = len(st.keys()) or 1
     step = 20 / steps
     count = 0
+    written_pointers = []
     for s in st.keys():
         print(s)
         if set_progress: set_progress(int((step * count) + 10), f"Writing strings for \"{st[s]['strings']['title']}\"...")
@@ -258,14 +259,17 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
                 print("got eof " + str(loc))
                 navigator.write_cstring(st[s]["strings"][k])
                 if ptrs[s]:
-                    # if override specified, use that
-                    if ptrs[s]["override"][k]:
-                        navigator.seek(ptrs[s]["override"][k])
+                    # if overrides specified, use that
+                    if ptrs[s].get("overrides") and ptrs[s]["overrides"].get(k):
+                        navigator.seek(ptrs[s]["overrides"][k])
                         navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
+                        written_pointers.append(x)
                     else:
                         for x in ptrs[s]["ptrs"][k]:
-                            navigator.seek(x)
-                            navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
+                            if x not in written_pointers:
+                                navigator.seek(x)
+                                navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
+                                written_pointers.append(x)
         # add to conversion queue
         if st[s]["source"]:
             to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
