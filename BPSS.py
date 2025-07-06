@@ -186,7 +186,7 @@ class SoundtrackViewer(QMainWindow):
         self.table.verticalHeader().setVisible(False)
         
         # Enable sorting
-        self.table.setSortingEnabled(True)
+        self.table.setSortingEnabled(False)
 
         # Load table with data
         self.load_data()
@@ -512,11 +512,12 @@ class SoundtrackViewer(QMainWindow):
                         widget.setSelected(True)
                     else:
                         widget.setSelected(False)
-        # show/hide disambiguate button
-        self.disambiguate_btn.hide()
-        if len(selected) == 1:
-            if self.is_disambiguatable(selected[0]):
-                self.disambiguate_btn.show()
+        # show/hide disambiguate button if actions pane is open
+        if self.actions:
+            self.disambiguate_btn.hide()
+            if len(selected) == 1:
+                if self.is_disambiguatable(selected[0]):
+                    self.disambiguate_btn.show()
 
     def is_disambiguatable(self, cell):
         row = cell.row()
