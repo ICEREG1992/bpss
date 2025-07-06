@@ -2,6 +2,7 @@ import json
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QLabel, QComboBox, QDialogButtonBox, QApplication
 )
+from Helpers import col_to_key
 
 class DisambiguateDialog(QDialog):
     def __init__(self, hash, key, col, parent=None):
@@ -51,7 +52,7 @@ class DisambiguateDialog(QDialog):
         dropdown = QComboBox()
         
         # get options from file
-        col = self.col_to_key(self.col)
+        col = col_to_key(self.col)
         options = self.ptrs[self.key]["ptrs"][col]
         if len(options) <= 1:
             # look elsewhere
@@ -67,23 +68,14 @@ class DisambiguateDialog(QDialog):
 
     def selected_option(self):
         return int(self.dropdown.currentText())
-    
-    def col_to_key(self, col):
-        match col:
-            case 1:
-                return "title"
-            case 2:
-                return "album"
-            case 3:
-                return "artist"
 
     def save_and_accept(self):
         # write the override to data
         if self.ptrs[self.key].get("overrides"):
-            self.ptrs[self.key]["overrides"][self.col_to_key(self.col)] = self.selected_option()
+            self.ptrs[self.key]["overrides"][col_to_key(self.col)] = self.selected_option()
         else:
             self.ptrs[self.key]["overrides"] = {}
-            self.ptrs[self.key]["overrides"][self.col_to_key(self.col)] = self.selected_option()
+            self.ptrs[self.key]["overrides"][col_to_key(self.col)] = self.selected_option()
         # save it to file
         self.write_ptrs()
         self.accept()

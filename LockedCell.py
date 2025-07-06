@@ -9,8 +9,6 @@ class LockedCellWidget(QWidget):
         layout = QHBoxLayout()
         layout.setContentsMargins(4, 0, 4, 0)
 
-        self.innerText = ""
-
         self.label = QLabel(text)
         lock_icon = QLabel()
         lock_icon.setPixmap(QPixmap(resource_path("media/lock.png")).scaled(12, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation))
@@ -29,12 +27,6 @@ class LockedCellWidget(QWidget):
 
     def text(self):
         return self.label.text()
-    
-    def setInnerText(self, text):
-        self.innerText = text
-
-    def innerText(self):
-        return self.innerText
 
     def setSelected(self, selected: bool):
         if selected:
