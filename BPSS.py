@@ -872,8 +872,9 @@ class SoundtrackViewer(QMainWindow):
         selected = self.table.selectedIndexes()[0]
         key = list(self.defaults.keys())[selected.row()]
 
-        # if cell is locked, show warning
-        # TODO
+        # TODO if cell is locked, show warning here
+
+        # also TODO handle locked cells in the first place
 
         dialog = DisambiguateDialog(self.get_ptrs_hash(), key, selected.column())
         if dialog.exec_():
