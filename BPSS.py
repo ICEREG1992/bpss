@@ -538,10 +538,10 @@ class SoundtrackViewer(QMainWindow):
 
         # handle synced cells
         for group in self.synced_cells:
-            if (row, col) in group and not hasattr(self.table.item(row, col), "disambiguated"):
+            if (row, col) in group and not hasattr(self.get_item_or_cellwidget(row, col), "disambiguated"):
                 for (r, c) in group:
-                    if (r, c) != (row, col) and not hasattr(self.table.item(r, c), "disambiguated"):
-                        self.table.item(r, c).setText(text)
+                    if (r, c) != (row, col) and not hasattr(self.get_item_or_cellwidget(r, c), "disambiguated"):
+                        self.get_item_or_cellwidget(r, c).setText(text)
                 break  # Only one group per cell
 
 
@@ -564,7 +564,7 @@ class SoundtrackViewer(QMainWindow):
                 cell = selected[0]
                 if self.is_disambiguatable(cell):
                     self.disambiguate_btn.show()
-                if hasattr(self.table.item(cell.row(), cell.column()), "disambiguated"):
+                if hasattr(self.get_item_or_cellwidget(cell.row(), cell.column()), "disambiguated"):
                     self.undisambiguate_btn.show()
                 
 
@@ -710,17 +710,17 @@ class SoundtrackViewer(QMainWindow):
             source = self.table.cellWidget(r, 5).text()
             if source:
                 if not source.lower().endswith(('.wav', '.mp3', '.aiff')):
-                    QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.table.item(r, 1).text()} is not wav, mp3, or aiff.")
+                    QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.get_item_or_cellwidget(r, 1).text()} is not wav, mp3, or aiff.")
                     return
                 elif source.lower().endswith(('.mp3')):
                     # codec check
                     audio = mutagen.File(source)
                     if audio.__class__.__name__ == "MP4":
-                        QMessageBox.warning(self, "Unsupported Codec", f"The source file for {self.table.item(r, 1).text()} uses an unsupported codec (mp4a). Please use the mpga codec or covert it to a different audio format.")
+                        QMessageBox.warning(self, "Unsupported Codec", f"The source file for {self.get_item_or_cellwidget(r, 1).text()} uses an unsupported codec (mp4a). Please use the mpga codec or covert it to a different audio format.")
                         return
                 
                 if not os.path.isfile(source):
-                    QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.table.item(r, 1).text()}.")
+                    QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.get_item_or_cellwidget(r, 1).text()}.")
                     return
         
         self.thread = QThread()
@@ -801,6 +801,7 @@ class SoundtrackViewer(QMainWindow):
             self.settings["actions"] = True
             self.write_settings()
             self.actions_action.setChecked(True)
+            self.handle_selection_changed()
 
     def show_settings(self):
         print("Settings action triggered")
@@ -884,10 +885,10 @@ class SoundtrackViewer(QMainWindow):
         row = selected.row()
         col = selected.column()
 
-        cell = self.table.item(row, col)
+        cell = self.get_item_or_cellwidget(row, col)
 
         # TODO if cell is locked, show warning here
-        if not cell:
+        if isinstance(cell, LockedCellWidget):
             msg = QMessageBox()
             msg.setWindowTitle("Warning")
             msg.setText("Disambiguating a locked cell can lead to crashes when viewing or playing the associated song. Would you like to continue?")
@@ -905,12 +906,12 @@ class SoundtrackViewer(QMainWindow):
         if dialog.exec_():
             print("Disambiguation submitted")
             # remove cell color, add disambiguated tag, replace cell widget
-            if cell:
-                self.table.setItem(row, col, self.make_disambiguated_cell(cell.text(), cell.background(), dialog.selected_option()))
-            else:
+            if isinstance(cell, LockedCellWidget):
                 cell = self.table.cellWidget(row, col)
                 self.table.setItem(row, col, self.make_disambiguated_cell(cell.text(), cell.text(), dialog.selected_option()))
                 self.table.setCellWidget(row, col, None)
+            else:
+                self.table.setItem(row, col, self.make_disambiguated_cell(cell.text(), cell.background(), dialog.selected_option()))
             # reveal Un-disambiguate button
             self.undisambiguate_btn.show()
         else:
@@ -948,6 +949,12 @@ class SoundtrackViewer(QMainWindow):
             self.table.setItem(selected.row(), selected.column(), None)
             self.table.setCellWidget(selected.row(), selected.column(), LockedCellWidget(cell.prev_color))
     
+    def get_item_or_cellwidget(self, row, col):
+        if self.table.item(row, col):
+            return self.table.item(row, col)
+        else:
+            return self.table.cellWidget(row, col)
+    
     def get_table_row(self, ind, inner=False):
         print("Getting table row " + str(ind))
         row_data = {}
@@ -957,82 +964,82 @@ class SoundtrackViewer(QMainWindow):
                 match default["lock"]:
                     case 0: # no lock
                         row_data["strings"] = {
-                            "title": self.table.item(ind, 1).text(),
-                            "album": self.table.item(ind, 2).text(),
-                            "artist": self.table.item(ind, 3).text(),
-                            "stream": self.table.cellWidget(ind, 4).text()
+                            "title": self.get_item_or_cellwidget(ind, 1).text(),
+                            "album": self.get_item_or_cellwidget(ind, 2).text(),
+                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
+                            "stream": self.get_item_or_cellwidget(ind, 4).text()
                         }
-                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
                     case 1: # no album (FRICTION)
                         row_data["strings"] = {
-                            "title": self.table.item(ind, 1).text(),
-                            "album": self.table.item(ind, 2).text(),
-                            "artist": self.table.item(ind, 3).text(),
-                            "stream": self.table.cellWidget(ind, 4).text()
+                            "title": self.get_item_or_cellwidget(ind, 1).text(),
+                            "album": self.get_item_or_cellwidget(ind, 2).text(),
+                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
+                            "stream": self.get_item_or_cellwidget(ind, 4).text()
                         }
-                        if inner and hasattr(self.table.item(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.table.item(ind, 2).innerText
-                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
+                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
+                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
                     case 3: # artist/album sync
                         row_data["strings"] = {
-                            "title": self.table.item(ind, 1).text(),
-                            "album": self.table.item(ind, 2).text(),
-                            "artist": self.table.item(ind, 3).text(),
-                            "stream": self.table.cellWidget(ind, 4).text()
+                            "title": self.get_item_or_cellwidget(ind, 1).text(),
+                            "album": self.get_item_or_cellwidget(ind, 2).text(),
+                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
+                            "stream": self.get_item_or_cellwidget(ind, 4).text()
                         }
-                        if inner and hasattr(self.table.item(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.table.item(ind, 2).innerText
-                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
+                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
+                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
                     case 6: # stream/artist sync
                         row_data["strings"] = {
-                            "title": self.table.item(ind, 1).text(),
-                            "album": self.table.item(ind, 2).text(),
-                            "artist": self.table.cellWidget(ind, 3).text(),
-                            "stream": self.table.cellWidget(ind, 4).text()
+                            "title": self.get_item_or_cellwidget(ind, 1).text(),
+                            "album": self.get_item_or_cellwidget(ind, 2).text(),
+                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
+                            "stream": self.get_item_or_cellwidget(ind, 4).text()
                         }
-                        if inner and hasattr(self.table.cellWidget(ind, 3), "innerText"):
-                            row_data["strings"]["artist"] = self.table.cellWidget(ind, 3).innerText
-                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                        if inner and hasattr(self.get_item_or_cellwidget(ind, 3), "innerText"):
+                            row_data["strings"]["artist"] = self.get_item_or_cellwidget(ind, 3).innerText
+                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
                     case 7: # stream/artist/album sync
                         row_data["strings"] = {
-                            "title": self.table.item(ind, 1).text(),
-                            "album": self.table.cellWidget(ind, 2).text(),
-                            "artist": self.table.cellWidget(ind, 3).text(),
-                            "stream": self.table.cellWidget(ind, 4).text()
+                            "title": self.get_item_or_cellwidget(ind, 1).text(),
+                            "album": self.get_item_or_cellwidget(ind, 2).text(),
+                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
+                            "stream": self.get_item_or_cellwidget(ind, 4).text()
                         }
-                        if inner and hasattr(self.table.cellWidget(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.table.cellWidget(ind, 2).innerText
-                        if inner and hasattr(self.table.cellWidget(ind, 3), "innerText"):
-                            row_data["strings"]["artist"] = self.table.cellWidget(ind, 3).innerText
-                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
+                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
+                        if inner and hasattr(self.get_item_or_cellwidget(ind, 3), "innerText"):
+                            row_data["strings"]["artist"] = self.get_item_or_cellwidget(ind, 3).innerText
+                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
                     case 9: # song/album sync
                         row_data["strings"] = {
-                            "title": self.table.item(ind, 1).text(),
-                            "album": self.table.item(ind, 2).text(),
-                            "artist": self.table.item(ind, 3).text(),
-                            "stream": self.table.cellWidget(ind, 4).text()
+                            "title": self.get_item_or_cellwidget(ind, 1).text(),
+                            "album": self.get_item_or_cellwidget(ind, 2).text(),
+                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
+                            "stream": self.get_item_or_cellwidget(ind, 4).text()
                         }
-                        if inner and hasattr(self.table.item(ind, 1), "innerText"):
-                            row_data["strings"]["title"] = self.table.item(ind, 1).innerText
-                        if inner and hasattr(self.table.item(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.table.item(ind, 2).innerText
-                        row_data["source"] = self.table.cellWidget(ind, 5).text()
+                        if inner and hasattr(self.get_item_or_cellwidget(ind, 1), "innerText"):
+                            row_data["strings"]["title"] = self.get_item_or_cellwidget(ind, 1).innerText
+                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
+                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
+                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
             case 1: # burnout soundtrack
                 row_data["strings"] = {
-                    "title": self.table.item(ind, 1).text(),
-                    "album": self.table.item(ind, 2).text(),
-                    "artist": self.table.item(ind, 3).text(),
-                    "stream": self.table.cellWidget(ind, 4).text()
+                    "title": self.get_item_or_cellwidget(ind, 1).text(),
+                    "album": self.get_item_or_cellwidget(ind, 2).text(),
+                    "artist": self.get_item_or_cellwidget(ind, 3).text(),
+                    "stream": self.get_item_or_cellwidget(ind, 4).text()
                 }
-                row_data["source"] = self.table.cellWidget(ind, 5).text()
+                row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
             case 2: # classical soundtrack
                 row_data["strings"] = {
-                    "title": self.table.item(ind, 1).text(),
-                    "album": self.table.item(ind, 2).text(),
-                    "artist": self.table.item(ind, 3).text(),
-                    "stream": self.table.cellWidget(ind, 4).text()
+                    "title": self.get_item_or_cellwidget(ind, 1).text(),
+                    "album": self.get_item_or_cellwidget(ind, 2).text(),
+                    "artist": self.get_item_or_cellwidget(ind, 3).text(),
+                    "stream": self.get_item_or_cellwidget(ind, 4).text()
                 }
-                row_data["source"] = self.table.cellWidget(ind, 5).text()
+                row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
         
         return row_data
 
@@ -1059,65 +1066,74 @@ class SoundtrackViewer(QMainWindow):
             case 0: # regular soundtrack
                 match self.defaults[key]["lock"]:
                     case 0: # no lock
-                        self.table.item(ind, 1).setText(title)
-                        self.table.item(ind, 2).setText(album)
-                        self.table.item(ind, 3).setText(artist)
-                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                        self.get_item_or_cellwidget(ind, 1).setText(title)
+                        self.get_item_or_cellwidget(ind, 2).setText(album)
+                        self.get_item_or_cellwidget(ind, 3).setText(artist)
+                        self.get_item_or_cellwidget(ind, 5).setText(source or "")  # Ensure source is never None
                     case 1: # no album (FRICTION)
-                        self.table.item(ind, 1).setText(title)
+                        self.get_item_or_cellwidget(ind, 1).setText(title)
                         if inner:
-                            self.table.item(ind, 2).innerText = album
-                            self.table.item(ind, 2).setText(album)
+                            self.get_item_or_cellwidget(ind, 2).innerText = album
+                            self.get_item_or_cellwidget(ind, 2).setText(album)
                         else:
-                            self.table.item(ind, 2).setText(album)
-                        self.table.item(ind, 3).setText(artist)
-                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                            self.get_item_or_cellwidget(ind, 2).setText(album)
+                        self.get_item_or_cellwidget(ind, 3).setText(artist)
+                        self.get_item_or_cellwidget(ind, 5).setText(source or "")  # Ensure source is never None
                     case 3: # artist/album sync
-                        self.table.item(ind, 1).setText(title)
+                        self.get_item_or_cellwidget(ind, 1).setText(title)
                         if inner:
-                            self.table.item(ind, 2).innerText = album
-                            self.table.item(ind, 2).setText(album)
+                            self.get_item_or_cellwidget(ind, 2).innerText = album
+                            self.get_item_or_cellwidget(ind, 2).setText(album)
                         else:
-                            self.table.item(ind, 2).setText(album)
-                        self.table.item(ind, 3).setText(artist)
-                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                            self.get_item_or_cellwidget(ind, 2).setText(album)
+                        self.get_item_or_cellwidget(ind, 3).setText(artist)
+                        self.get_item_or_cellwidget(ind, 5).setText(source or "")  # Ensure source is never None
                     case 6: # stream/artist sync
-                        self.table.item(ind, 1).setText(title)
-                        self.table.item(ind, 2).setText(album)
+                        self.get_item_or_cellwidget(ind, 1).setText(title)
+                        self.get_item_or_cellwidget(ind, 2).setText(album)
                         if inner:
-                            self.table.cellWidget(ind, 3).innerText = artist
+                            if hasattr(self.get_item_or_cellwidget(ind, 3), "disambiguated"):
+                                self.get_item_or_cellwidget(ind, 3).setText(artist)
+                            else:
+                                self.get_item_or_cellwidget(ind, 3).innerText = artist
                         else:
-                            self.table.cellWidget(ind, 3).setText(artist)
-                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                            self.get_item_or_cellwidget(ind, 3).setText(artist)
+                        self.get_item_or_cellwidget(ind, 5).setText(source or "")  # Ensure source is never None
                     case 7: # stream/artist/album sync
-                        self.table.item(ind, 1).setText(title)
+                        self.get_item_or_cellwidget(ind, 1).setText(title)
                         if inner:
-                            self.table.cellWidget(ind, 2).innerText = album
-                            self.table.cellWidget(ind, 3).innerText = artist
+                            if hasattr(self.get_item_or_cellwidget(ind, 2), "disambiguated"):
+                                self.get_item_or_cellwidget(ind, 2).setText(album)
+                            else:
+                                self.get_item_or_cellwidget(ind, 2).innerText = album
+                            if hasattr(self.get_item_or_cellwidget(ind, 3), "disambiguated"):
+                                self.get_item_or_cellwidget(ind, 3).setText(artist)
+                            else:
+                                self.get_item_or_cellwidget(ind, 3).innerText = artist
                         else:
-                            self.table.cellWidget(ind, 2).setText(album)
-                            self.table.cellWidget(ind, 3).setText(artist)
-                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                            self.get_item_or_cellwidget(ind, 2).setText(album)
+                            self.get_item_or_cellwidget(ind, 3).setText(artist)
+                        self.get_item_or_cellwidget(ind, 5).setText(source or "")  # Ensure source is never None
                     case 9: # song/album sync
                         if inner:
-                            self.table.item(ind, 2).innerText = album
-                            self.table.item(ind, 2).setText(album)
+                            self.get_item_or_cellwidget(ind, 2).innerText = album
+                            self.get_item_or_cellwidget(ind, 2).setText(album)
                         else:
-                            self.table.item(ind, 2).setText(album) # do it out of order so events propagate and prioritize title
-                        self.table.item(ind, 1).setText(title)
-                        self.table.item(ind, 3).setText(artist)
-                        self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                            self.get_item_or_cellwidget(ind, 2).setText(album) # do it out of order so events propagate and prioritize title
+                        self.get_item_or_cellwidget(ind, 1).setText(title)
+                        self.get_item_or_cellwidget(ind, 3).setText(artist)
+                        self.get_item_or_cellwidget(ind, 5).setText(source or "")  # Ensure source is never None
 
             case 1: # burnout soundtrack
-                self.table.item(ind, 1).setText(title)
-                self.table.item(ind, 2).setText(album)
-                self.table.item(ind, 3).setText(artist)
-                self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                self.get_item_or_cellwidget(ind, 1).setText(title)
+                self.get_item_or_cellwidget(ind, 2).setText(album)
+                self.get_item_or_cellwidget(ind, 3).setText(artist)
+                self.get_item_or_cellwidget(ind, 5).setText(source or "")  # Ensure source is never None
             case 2: # classical soundtrack
-                self.table.item(ind, 1).setText(title)
-                self.table.item(ind, 2).setText(album)
-                self.table.item(ind, 3).setText(artist)
-                self.table.cellWidget(ind, 5).setText(source or "")  # Ensure source is never None
+                self.get_item_or_cellwidget(ind, 1).setText(title)
+                self.get_item_or_cellwidget(ind, 2).setText(album)
+                self.get_item_or_cellwidget(ind, 3).setText(artist)
+                self.get_item_or_cellwidget(ind, 5).setText(source or "")  # Ensure source is never None
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
