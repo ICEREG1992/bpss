@@ -22,7 +22,7 @@ def load_pointers(settings, filename, set_progress=None):
     if set_progress: set_progress(0, "Loading data from files...")
     
     # Load JSON file
-    with open(resource_path("songs.json"), 'r', encoding='utf-8') as f:
+    with open(resource_path("defaults.json"), 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     if set_progress: set_progress(5, "Extracting string data...")
@@ -218,7 +218,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     with open(ptrs, 'r', encoding='utf-8') as f:
         ptrs = json.load(f)
 
-    with open(resource_path("songs.json"), 'r', encoding='utf-8') as f:
+    with open(resource_path("defaults.json"), 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     if set_progress: set_progress(3, "Locating string data...")
