@@ -5,7 +5,7 @@ a = Analysis(
     ['BPSS.py'],
     pathex=[],
     binaries=[],
-    datas=[('defaults.json', '.'), ('media/bpss.png', '.'), ('media/lock.png', '.'), ('media/browse.png', '.'), ('media/plus.png', '.'), ('media/star.png', '.')],
+    datas=[('defaults.json', '.'), ('media/bpss.png', 'media'), ('media/lock.png', 'media'), ('media/browse.png', 'media'), ('media/plus.png', 'media'), ('media/star.png', 'media')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
