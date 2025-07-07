@@ -888,7 +888,7 @@ class SoundtrackViewer(QMainWindow):
         cell = self.get_item_or_cellwidget(row, col)
 
         # TODO if cell is locked, show warning here
-        if isinstance(cell, LockedCellWidget):
+        if isinstance(cell, LockedCellWidget) and self.settings["warn"]:
             msg = QMessageBox()
             msg.setWindowTitle("Warning")
             msg.setText("Disambiguating a locked cell can lead to crashes when viewing or playing the associated song. Would you like to continue?")
