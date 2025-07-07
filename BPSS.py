@@ -60,6 +60,8 @@ class SoundtrackViewer(QMainWindow):
             dialog = SettingsDialog(first=True)
             if dialog.exec_():
                 print("First time settings updated")
+                # force a reload of settings
+                self.settings = self.load_settings()
             else:
                 print("Settings canceled")
                 QMessageBox.warning(self, "Missing Input", "You will be unable to apply new soundtracks until you set all settings.")
