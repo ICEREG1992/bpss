@@ -2,7 +2,7 @@ import sys
 import json
 import os
 from PyQt5.QtWidgets import (
-    QApplication, QDialog, QLabel, QLineEdit, QPushButton,
+    QApplication, QDialog, QLabel, QLineEdit, QPushButton, QCheckBox,
     QFileDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QSpacerItem, QSizePolicy, QMessageBox
 )
 from PyQt5.QtGui import QIcon
@@ -13,9 +13,10 @@ SETTINGS_FILE = "settings.json"
 class SettingsDialog(QDialog):
     def __init__(self, first=False):
         super().__init__()
+        self.first = first
         window_title = "First Time Setup" if first else "Settings"
         self.setWindowTitle(window_title)
-        self.setWindowIcon(QIcon(resource_path("bpss.png")))
+        self.setWindowIcon(QIcon(resource_path("media/bpss.png")))
         self.setFixedSize(450, 250)
         self.settings = self.load_settings()
         self.init_ui()
@@ -27,6 +28,10 @@ class SettingsDialog(QDialog):
         self.burnout_path = self.create_dir_selector("Burnout Paradise Installation Path", "game", layout)
         self.soundx_path = self.create_file_selector("EA SoundXchange Path", "audio", layout)
         self.yap_path = self.create_file_selector("YAP Path", "yap", layout)
+        self.warn_disambiguation_checkbox = QCheckBox("Warn when disambiguating locked cells")
+        self.warn_disambiguation_checkbox.setChecked(self.settings.get("warn", True))
+        if self.first: self.warn_disambiguation_checkbox.hide()
+        layout.addWidget(self.warn_disambiguation_checkbox)
         spacer = QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addSpacerItem(spacer)
         # OK and Cancel buttons
@@ -95,10 +100,11 @@ class SettingsDialog(QDialog):
         required_fields = {
             "game": self.game_input.text(),
             "audio": self.audio_input.text(),
-            "yap": self.yap_input.text()
+            "yap": self.yap_input.text(),
+            "warn": self.warn_disambiguation_checkbox.isChecked()
         }
 
-        missing = [key for key, val in required_fields.items() if not val]
+        missing = [key for key, val in required_fields.items() if val is None]
 
         if missing:
             QMessageBox.warning(self, "Missing Input", "Please fill in all required paths.")
@@ -107,8 +113,7 @@ class SettingsDialog(QDialog):
         for f in required_fields.keys():
             self.settings[f] = required_fields[f]
         # Retain existing optional fields if they exist
-        self.settings.setdefault("prev", "")
-        self.settings.setdefault("mod", "")
+        self.settings.setdefault("actions", False)
 
         with open(SETTINGS_FILE, "w") as f:
             json.dump(self.settings, f, indent=4)

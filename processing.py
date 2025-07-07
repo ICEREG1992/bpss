@@ -127,7 +127,7 @@ def load_pointers(settings, filename, set_progress=None):
                     if artist == data[song]["defaults"]["artist"]:
                         artist_pos = temp_pos
                     else:
-                        artist = ""
+                        artist = data[song]["defaults"]["artist"]
                         artist_pos = 0
                         navigator.seek(temp_pos)
                     temp_pos = navigator.loc()
@@ -135,7 +135,7 @@ def load_pointers(settings, filename, set_progress=None):
                     if album == data[song]["defaults"]["album"]:
                         album_pos = temp_pos
                     else:
-                        album = ""
+                        album = data[song]["defaults"]["album"]
                         album_pos = 0
                         navigator.seek(temp_pos)
                 case 2: # classical soundtrack
@@ -147,7 +147,7 @@ def load_pointers(settings, filename, set_progress=None):
                     if artist == data[song]["defaults"]["artist"]:
                         artist_pos = temp_pos
                     else:
-                        artist = ""
+                        artist = data[song]["defaults"]["artist"]
                         artist_pos = 0
                         navigator.seek(temp_pos)
                     # check for the almighty empty string
@@ -156,7 +156,7 @@ def load_pointers(settings, filename, set_progress=None):
                     if album == data[song]["defaults"]["album"]:
                         album_pos = temp_pos
                     else:
-                        album = ""
+                        album = data[song]["defaults"]["album"]
                         album_pos = 0
                         navigator.seek(temp_pos)
             out[song]["strings"] = {"title":song, "stream":stream, "artist":artist, "album":album}
@@ -245,6 +245,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     steps = len(st.keys()) or 1
     step = 20 / steps
     count = 0
+    written_pointers = []
     for s in st.keys():
         print(s)
         if set_progress: set_progress(int((step * count) + 10), f"Writing strings for \"{st[s]['strings']['title']}\"...")
@@ -258,9 +259,17 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
                 print("got eof " + str(loc))
                 navigator.write_cstring(st[s]["strings"][k])
                 if ptrs[s]:
-                    for x in ptrs[s]["ptrs"][k]:
-                        navigator.seek(x)
+                    # if overrides specified, use that
+                    if ptrs[s].get("overrides") and ptrs[s]["overrides"].get(k):
+                        navigator.seek(ptrs[s]["overrides"][k])
                         navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
+                        written_pointers.append(x)
+                    else:
+                        for x in ptrs[s]["ptrs"][k]:
+                            if x not in written_pointers:
+                                navigator.seek(x)
+                                navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
+                                written_pointers.append(x)
         # add to conversion queue
         if st[s]["source"]:
             to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])

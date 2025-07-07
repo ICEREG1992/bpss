@@ -27,7 +27,7 @@ class FileBrowseCellWidget(QWidget):
         self.line_edit.editingFinished.connect(self.finish_edit)
         
         self.browse_button = QPushButton()
-        self.browse_button.setIcon(QIcon(QPixmap(resource_path("browse.png")).scaled(12, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation)))
+        self.browse_button.setIcon(QIcon(QPixmap(resource_path("media/browse.png")).scaled(12, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation)))
         self.browse_button.setIconSize(self.browse_button.icon().actualSize(self.browse_button.size()))
         self.browse_button.setFlat(True)  # Remove button border
         self.browse_button.setFixedSize(16, 16)  # Optional: size constraint
