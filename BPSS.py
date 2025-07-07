@@ -44,7 +44,7 @@ class SoundtrackViewer(QMainWindow):
         self.changes = False
         self.file = None
         self.synced_cells = []  # List of lists of (row, column) tuples
-        self.defaults_file = resource_path("songs.json")
+        self.defaults_file = resource_path("defaults.json")
 
         # Create toolbar
         self.create_toolbar()
