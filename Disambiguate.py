@@ -2,13 +2,15 @@ import json
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QLabel, QComboBox, QDialogButtonBox, QApplication
 )
-from Helpers import col_to_key
+from PyQt5.QtGui import QPixmap, QIcon
+from Helpers import col_to_key, resource_path
 
 class DisambiguateDialog(QDialog):
     def __init__(self, hash, key, col, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Disambiguate Cell")
         self.setFixedSize(220, 100)
+        self.setWindowIcon(QIcon(resource_path("media/bpss.png")))
 
         self.hash = hash
         self.key = key

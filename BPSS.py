@@ -313,14 +313,23 @@ class SoundtrackViewer(QMainWindow):
                                 self.table.setItem(row_index, 0, index_item)
                                 self.table.setItem(row_index, 1, QTableWidgetItem(title))
                                 self.table.setItem(row_index, 2, QTableWidgetItem(album))
-                                self.table.setCellWidget(row_index, 3, LockedCellWidget(artist))
+                                if overrides.get("artist"):
+                                    self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, artist, overrides.get("artist")))
+                                else:
+                                    self.table.setCellWidget(row_index, 3, LockedCellWidget(artist))
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
                                 self.table.setCellWidget(row_index, 5, file_browse_widget)
                             case 7: # stream/artist/album sync
                                 self.table.setItem(row_index, 0, index_item)
                                 self.table.setItem(row_index, 1, QTableWidgetItem(title))
-                                self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
-                                self.table.setCellWidget(row_index, 3, LockedCellWidget(artist))
+                                if overrides.get("album"):
+                                    self.table.setItem(row_index, 2, self.make_disambiguated_cell(album, album, overrides.get("album")))
+                                else:
+                                    self.table.setCellWidget(row_index, 2, LockedCellWidget(album))
+                                if overrides.get("artist"):
+                                    self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, artist, overrides.get("artist")))
+                                else:
+                                    self.table.setCellWidget(row_index, 3, LockedCellWidget(artist))
                                 self.table.setCellWidget(row_index, 4, LockedCellWidget(stream))
                                 self.table.setCellWidget(row_index, 5, file_browse_widget)
 
@@ -515,7 +524,7 @@ class SoundtrackViewer(QMainWindow):
         return widget
     
     def make_disambiguated_cell(self, text, prev_color, override) -> QTableWidgetItem:
-        widget = QTableWidgetItem(QIcon(QPixmap("media/star.png")), text)
+        widget = QTableWidgetItem(QIcon(resource_path("media/star.png")), text)
         widget.disambiguated = True
         widget.prev_color = prev_color
         widget.setToolTip(str(override))
@@ -764,6 +773,7 @@ class SoundtrackViewer(QMainWindow):
             msg.setText("Are you sure you want to reset to defaults?")
             msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
             msg.setIcon(QMessageBox.Question)
+            msg.setWindowIcon(QIcon(resource_path("media/bpss.png")))
 
             # Show the message box and capture the response
             result = msg.exec_()
@@ -871,17 +881,36 @@ class SoundtrackViewer(QMainWindow):
 
         selected = self.table.selectedIndexes()[0]
         key = list(self.defaults.keys())[selected.row()]
+        row = selected.row()
+        col = selected.column()
+
+        cell = self.table.item(row, col)
 
         # TODO if cell is locked, show warning here
+        if not cell:
+            msg = QMessageBox()
+            msg.setWindowTitle("Warning")
+            msg.setText("Disambiguating a locked cell can lead to crashes when viewing or playing the associated song. Would you like to continue?")
+            msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            msg.setIcon(QMessageBox.Warning)
+            msg.setWindowIcon(QIcon(resource_path("media/bpss.png")))
 
-        # also TODO handle locked cells in the first place
+            # Show the message box and capture the response
+            result = msg.exec_()
 
-        dialog = DisambiguateDialog(self.get_ptrs_hash(), key, selected.column())
+            if result != QMessageBox.Ok:
+                return
+
+        dialog = DisambiguateDialog(self.get_ptrs_hash(), key, col)
         if dialog.exec_():
             print("Disambiguation submitted")
             # remove cell color, add disambiguated tag, replace cell widget
-            cell = self.table.item(selected.row(), selected.column())
-            self.table.setItem(selected.row(), selected.column(), self.make_disambiguated_cell(cell.text(), cell.background(), dialog.selected_option()))
+            if cell:
+                self.table.setItem(row, col, self.make_disambiguated_cell(cell.text(), cell.background(), dialog.selected_option()))
+            else:
+                cell = self.table.cellWidget(row, col)
+                self.table.setItem(row, col, self.make_disambiguated_cell(cell.text(), cell.text(), dialog.selected_option()))
+                self.table.setCellWidget(row, col, None)
             # reveal Un-disambiguate button
             self.undisambiguate_btn.show()
         else:
@@ -911,8 +940,13 @@ class SoundtrackViewer(QMainWindow):
         except Exception as e:
             print(f"Error loading data: {e}")
         # revert cell to previous state
+        # test for locked cell via jank method
         cell = self.table.item(selected.row(), selected.column())
-        self.table.setItem(selected.row(), selected.column(), self.make_unique_cell(cell.text(), cell.prev_color))
+        if isinstance(cell.prev_color, QBrush) or isinstance(cell.prev_color, int):
+            self.table.setItem(selected.row(), selected.column(), self.make_unique_cell(cell.text(), cell.prev_color))
+        else:
+            self.table.setItem(selected.row(), selected.column(), None)
+            self.table.setCellWidget(selected.row(), selected.column(), LockedCellWidget(cell.prev_color))
     
     def get_table_row(self, ind, inner=False):
         print("Getting table row " + str(ind))
