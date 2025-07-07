@@ -16,7 +16,7 @@ class AboutDialog(QDialog):
         layout = QVBoxLayout()     
 
         version_layout = QHBoxLayout()
-        version_label = QLabel("Version 0.2.2")
+        version_label = QLabel("Version 0.3.0")
         hash_label = QLabel(hash)
         hash_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         version_layout.addWidget(version_label)
@@ -48,4 +48,4 @@ class AboutDialog(QDialog):
         self.setLayout(layout)
 
     def open_link(event):
-            webbrowser.open("https://github.com/ICEREG1992/bpss")   
+        webbrowser.open("https://github.com/ICEREG1992/bpss")   
