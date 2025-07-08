@@ -1054,7 +1054,7 @@ class SoundtrackViewer(QMainWindow):
         stream = strings.get("stream", "")
         
         # Get source and file
-        source = strings.get("source", "")
+        source = row.get("source", "")
 
         key = list(self.defaults.keys())[ind]
 
