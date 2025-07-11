@@ -692,6 +692,7 @@ class SoundtrackViewer(QMainWindow):
             print(file_path)
             self.write_file()
             self.changes = False
+            self.update_window_title()
         else:
             print("Save As... canceled")
         
@@ -950,6 +951,7 @@ class SoundtrackViewer(QMainWindow):
         else:
             self.table.setItem(selected.row(), selected.column(), None)
             self.table.setCellWidget(selected.row(), selected.column(), LockedCellWidget(cell.prev_color))
+        self.undisambiguate_btn.show()
     
     def get_item_or_cellwidget(self, row, col):
         if self.table.item(row, col):
