@@ -4,8 +4,8 @@ import json
 import hashlib
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout, QWidget, QHBoxLayout, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
-from PyQt5.QtCore import Qt, QThread
-from PyQt5.QtGui import QBrush, QColor, QIcon, QPixmap
+from PyQt5.QtCore import Qt, QThread, QEvent
+from PyQt5.QtGui import QBrush, QColor, QIcon, QPixmap, QKeySequence
 import mutagen
 
 from Disambiguate import DisambiguateDialog
@@ -134,14 +134,17 @@ class SoundtrackViewer(QMainWindow):
         
         # File operations
         new_action = QAction(self.style().standardIcon(QStyle.SP_FileIcon), "New", self)
+        new_action.setShortcut(QKeySequence("Ctrl+N"))
         new_action.triggered.connect(self.new_file)
         toolbar.addAction(new_action)
         
         open_action = QAction(self.style().standardIcon(QStyle.SP_DialogOpenButton), "Open", self)
+        open_action.setShortcut(QKeySequence("Ctrl+O"))
         open_action.triggered.connect(self.open_file)
         toolbar.addAction(open_action)
         
         save_action = QAction(self.style().standardIcon(QStyle.SP_DialogSaveButton), "Save", self)
+        save_action.setShortcut(QKeySequence("Ctrl+S"))
         save_action.triggered.connect(self.save_file)
         toolbar.addAction(save_action)
         
@@ -150,14 +153,17 @@ class SoundtrackViewer(QMainWindow):
         
         # Filter/Apply operations
         apply_action = QAction(self.style().standardIcon(QStyle.SP_DialogApplyButton), "Apply", self)
+        apply_action.setShortcut(QKeySequence("Ctrl+Return"))
         apply_action.triggered.connect(self.apply_action)
         toolbar.addAction(apply_action)
         
         unapply_action = QAction(self.style().standardIcon(QStyle.SP_DialogCancelButton), "Unapply", self)
+        unapply_action.setShortcut(QKeySequence("Ctrl+Shift+Return"))
         unapply_action.triggered.connect(self.unapply_action)
         toolbar.addAction(unapply_action)
         
         reset_action = QAction(self.style().standardIcon(QStyle.SP_BrowserReload), "Reset", self)
+        reset_action.setShortcut(QKeySequence("Ctrl+R"))
         reset_action.triggered.connect(self.reset_action)
         toolbar.addAction(reset_action)
         
@@ -166,6 +172,7 @@ class SoundtrackViewer(QMainWindow):
 
         # Actions pane
         self.actions_action = QAction(self.style().standardIcon(QStyle.SP_FileDialogDetailedView), "Actions", self)
+        self.actions_action.setShortcut(QKeySequence("Space"))
         self.actions_action.triggered.connect(self.toggle_actions)
         self.actions_action.setCheckable(True)
         toolbar.addAction(self.actions_action)
@@ -546,7 +553,6 @@ class SoundtrackViewer(QMainWindow):
                         self.get_item_or_cellwidget(r, c).setText(text)
                 break  # Only one group per cell
 
-
     def handle_selection_changed(self):
         selected = self.table.selectedIndexes()
         # handle selection and de-selection of cellwidgets with a full table sweep
@@ -568,7 +574,6 @@ class SoundtrackViewer(QMainWindow):
                     self.disambiguate_btn.show()
                 if hasattr(self.get_item_or_cellwidget(cell.row(), cell.column()), "disambiguated"):
                     self.undisambiguate_btn.show()
-                
 
     def is_disambiguatable(self, cell):
         row = cell.row()
