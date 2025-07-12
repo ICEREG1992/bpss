@@ -4,7 +4,7 @@ import json
 import hashlib
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout, QWidget, QHBoxLayout, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
-from PyQt5.QtCore import Qt, QThread, QEvent
+from PyQt5.QtCore import Qt, QThread, QEvent, QItemSelectionModel
 from PyQt5.QtGui import QBrush, QColor, QIcon, QPixmap, QKeySequence
 import mutagen
 
@@ -611,16 +611,29 @@ class SoundtrackViewer(QMainWindow):
         actions_frame.setFrameStyle(QFrame.StyledPanel)
         actions_layout = QVBoxLayout(actions_frame)
 
+        # Song manipulation shortcuts
+        self.action_move_up = QAction("Move Song Up", self)
+        self.action_move_up.setShortcut(QKeySequence("Ctrl+Up"))
+        self.action_move_up.setIcon(self.style().standardIcon(QStyle.SP_ArrowUp))
+        self.action_move_up.triggered.connect(self.move_song_up)
+        self.addAction(self.action_move_up)  # Needed so shortcut works
+
+        self.action_move_down = QAction("Move Song Down", self)
+        self.action_move_down.setShortcut(QKeySequence("Ctrl+Down"))
+        self.action_move_down.setIcon(self.style().standardIcon(QStyle.SP_ArrowDown))
+        self.action_move_down.triggered.connect(self.move_song_down)
+        self.addAction(self.action_move_down)
+
         # Song manipulation actions
-        move_up_btn = QPushButton("Move Song Up")
+        move_up_btn = QPushButton(self.action_move_up.text())
         move_up_btn.setStyleSheet("text-align: left;")
-        move_up_btn.setIcon(self.style().standardIcon(QStyle.SP_ArrowUp))
-        move_up_btn.clicked.connect(self.move_song_up)
-        
-        move_down_btn = QPushButton("Move Song Down") 
+        move_up_btn.setIcon(self.action_move_up.icon())
+        move_up_btn.clicked.connect(self.action_move_up.trigger)
+
+        move_down_btn = QPushButton(self.action_move_down.text())
         move_down_btn.setStyleSheet("text-align: left;")
-        move_down_btn.setIcon(self.style().standardIcon(QStyle.SP_ArrowDown))
-        move_down_btn.clicked.connect(self.move_song_down)
+        move_down_btn.setIcon(self.action_move_down.icon())
+        move_down_btn.clicked.connect(self.action_move_down.trigger)
         
         # File operations
         clear_btn = QPushButton("Clear Song")
@@ -872,7 +885,13 @@ class SoundtrackViewer(QMainWindow):
         self.set_table_row(row, below_data, inner=True)
         self.set_table_row(next_row, row_data, inner=True)
 
-        self.table.setCurrentCell(next_row, col)
+        index = self.table.model().index(next_row, col)
+
+        # Clear existing selection and select this index
+        
+        self.table.setCurrentIndex(index)
+        self.table.selectionModel().select(index, QItemSelectionModel.ClearAndSelect)
+
 
     def insert_song(self):
         print("Insert blank song action triggered")
