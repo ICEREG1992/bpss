@@ -230,6 +230,8 @@ class SoundtrackViewer(QMainWindow):
             self.worker.finished.connect(self.worker.deleteLater)
             self.worker.finished.connect(self.fill_table)
             self.thread.finished.connect(self.thread.deleteLater)
+
+            self.worker.error.connect(self.handle_load_exception)
             
             self.thread.start()
 
@@ -458,33 +460,34 @@ class SoundtrackViewer(QMainWindow):
                 self.table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
         
         except FileNotFoundError:
-            print("Error: Pointers file not found.")
+            QMessageBox.critical(self, "Critical Error", f"Fill Error: Pointers file \"{self.get_ptrs_hash()}.json\" not found. Try pressing Reset.")
         except json.JSONDecodeError:
-            print("Error: Invalid JSON format in pointers file.")
+            QMessageBox.critical(self, "Critical Error", f"Fill Error: Invalid JSON in \"{self.get_ptrs_hash()}.json\". Try pressing Reset.")
         except Exception as e:
-            print(f"Error loading data: {e}")
+            QMessageBox.critical(self, "Critical Error", f"Fill Error: {e}")
     
     def load_file(self):
         # get data from file
         try:
             self.settings = self.load_settings()
             # Load JSON data
-            with open(self.file, "r") as file:
-                st = json.load(file)
+            if (self.file):
+                with open(self.file, "r") as file:
+                    st = json.load(file)
 
-            # Edit table
-            for (key, entry) in st.items():
+                # Edit table
+                for (key, entry) in st.items():
 
-                row_index = list(self.defaults.keys()).index(key)
+                    row_index = list(self.defaults.keys()).index(key)
 
-                self.set_table_row(row_index, entry)
+                    self.set_table_row(row_index, entry)
             
         except FileNotFoundError:
-            print(f"Error: {self.file} file not found.")
+            QMessageBox.critical(self, "Critical Error", f"Load Error: Pointers file \"{self.file}\" not found.")
         except json.JSONDecodeError:
-            print(f"Error: Invalid JSON format in {self.file}.")
+            QMessageBox.critical(self, "Critical Error", f"Load Error: Invalid JSON in \"{self.file}\".")
         except Exception as e:
-            print(f"Error loading data: {e}")
+            QMessageBox.critical(self, "Critical Error", f"Load Error: {e}")
     
     def write_file(self):
         rows = self.table.rowCount()
@@ -716,6 +719,18 @@ class SoundtrackViewer(QMainWindow):
         
     def export_file(self):
         print("Export file action triggered")
+
+    def handle_apply_exception(self, e):
+        self.handle_worker_exception("Apply", e)
+
+    def handle_unapply_exception(self, e):
+        self.handle_worker_exception("Unapply", e)
+
+    def handle_load_exception(self, e):
+        self.handle_worker_exception("Load", e)
+    
+    def handle_worker_exception(self, type, e):
+        QMessageBox.critical(self, f"Critical Error", f"{type} Error: {e}")
         
     def apply_action(self):
         print("Apply action triggered")
@@ -760,6 +775,8 @@ class SoundtrackViewer(QMainWindow):
         self.thread.finished.connect(self.progress.close)
         self.thread.finished.connect(self.load_file)
         self.thread.finished.connect(self.thread.deleteLater)
+
+        self.worker.error.connect(self.handle_apply_exception)
         
         self.thread.start()
 
@@ -782,6 +799,8 @@ class SoundtrackViewer(QMainWindow):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.progress.close)
         self.thread.finished.connect(self.thread.deleteLater)
+
+        self.worker.error.connect(self.handle_unapply_exception)
 
         self.thread.start()
         
@@ -962,11 +981,11 @@ class SoundtrackViewer(QMainWindow):
                     json.dump(ptrs, file, indent=2)
 
         except FileNotFoundError:
-            print(f"Error: {self.file} file not found.")
+            QMessageBox.critical(self, "Critical Error", f"Undisambiguate Error: Pointers file \"{self.get_ptrs_hash()}.json\" not found. Try pressing Reset.")
         except json.JSONDecodeError:
-            print(f"Error: Invalid JSON format in {self.file}.")
+            QMessageBox.critical(self, "Critical Error", f"Undisambiguate Error: Invalid JSON in \"{self.get_ptrs_hash()}.json\". Try pressing Reset.")
         except Exception as e:
-            print(f"Error loading data: {e}")
+            QMessageBox.critical(self, "Critical Error", f"Undisambiguate Error: {e}")
         # revert cell to previous state
         # test for locked cell via jank method
         cell = self.table.item(selected.row(), selected.column())
