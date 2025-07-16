@@ -745,6 +745,10 @@ class SoundtrackViewer(QMainWindow):
         for r in range(rows):
             source = self.table.cellWidget(r, 5).text()
             if source:
+                if not os.path.isfile(source):
+                    QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.get_item_or_cellwidget(r, 1).text()}.")
+                    return
+                
                 if not source.lower().endswith(('.wav', '.mp3', '.aiff')):
                     QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.get_item_or_cellwidget(r, 1).text()} is not wav, mp3, or aiff.")
                     return
@@ -754,10 +758,6 @@ class SoundtrackViewer(QMainWindow):
                     if audio.__class__.__name__ == "MP4":
                         QMessageBox.warning(self, "Unsupported Codec", f"The source file for {self.get_item_or_cellwidget(r, 1).text()} uses an unsupported codec (mp4a). Please use the mpga codec or covert it to a different audio format.")
                         return
-                
-                if not os.path.isfile(source):
-                    QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.get_item_or_cellwidget(r, 1).text()}.")
-                    return
         
         self.thread = QThread()
         self.worker = WriteWorker(self.settings, self.file, str(self.get_ptrs_hash()) + ".json")
