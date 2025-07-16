@@ -31,7 +31,7 @@ def load_pointers(settings, filename, set_progress=None):
     if "game" in settings.keys() and os.path.isdir(settings["game"]):
         binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
         tempLoc = os.path.join('temp', 'globaldata')
-        subprocess.run([settings["yap"], 'e', binLoc, tempLoc])
+        subprocess.run([settings["yap"], 'e', binLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
     else:
         print("failing out")
         if set_progress: set_progress(100, "Failed to find Burnout Paradise installation!")
@@ -293,7 +293,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
         shutil.move(binLoc, backupLoc)
 
     # create at the location of the bin
-    subprocess.run([settings["yap"], 'c', tempLoc, binLoc])
+    subprocess.run([settings["yap"], 'c', tempLoc, binLoc], creationflags=subprocess.CREATE_NO_WINDOW)
 
     if set_progress: set_progress(40, "Unpacking stream headers...")
 
@@ -301,7 +301,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     # start by unpacking streamheaders
     headersLoc = os.path.join(settings["game"], "SOUND", "STREAMS", "STREAMHEADERS.BUNDLE")
     tempLoc = os.path.join("temp", "streamheaders")
-    subprocess.run([settings["yap"], 'e', headersLoc, tempLoc])
+    subprocess.run([settings["yap"], 'e', headersLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
 
     steps = len(to_convert) or 1
     step = (50 / steps)
@@ -342,7 +342,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     backupHeaders = headersLoc + ".old"
     if not os.path.exists(backupHeaders):
         shutil.move(headersLoc, backupHeaders)
-    subprocess.run([settings["yap"], 'c', tempLoc, headersLoc])
+    subprocess.run([settings["yap"], 'c', tempLoc, headersLoc], creationflags=subprocess.CREATE_NO_WINDOW)
 
     # save edits to st too
     with open(soundtrack, 'w', encoding='utf-8') as f:
@@ -413,7 +413,7 @@ def convertSong(file, stream, settings):
     print(file)
     print(stream)
     temp_path = os.path.join("temp", stream)
-    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', file, f"-=\"{temp_path}\""])
+    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', file, f"-=\"{temp_path}\""], creationflags=subprocess.CREATE_NO_WINDOW)
     
 
     
