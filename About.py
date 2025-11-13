@@ -16,7 +16,7 @@ class AboutDialog(QDialog):
         layout = QVBoxLayout()     
 
         version_layout = QHBoxLayout()
-        version_label = QLabel("Version 0.3.3")
+        version_label = QLabel("Version 0.4.0")
         hash_label = QLabel(hash)
         hash_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         version_layout.addWidget(version_label)
