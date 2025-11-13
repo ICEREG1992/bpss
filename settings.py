@@ -30,8 +30,13 @@ class SettingsDialog(QDialog):
         self.yap_path = self.create_file_selector("YAP Path", "yap", layout)
         self.warn_disambiguation_checkbox = QCheckBox("Warn when disambiguating locked cells")
         self.warn_disambiguation_checkbox.setChecked(self.settings.get("warn", True))
-        if self.first: self.warn_disambiguation_checkbox.hide()
+        self.cut_songs_checkbox = QCheckBox("Use Cut Songs in BPR Mod")
+        self.cut_songs_checkbox.setChecked(self.settings.get("mod", False))
+        if self.first:
+            self.warn_disambiguation_checkbox.hide()
+            self.cut_songs_checkbox.hide()
         layout.addWidget(self.warn_disambiguation_checkbox)
+        layout.addWidget(self.cut_songs_checkbox)
         spacer = QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addSpacerItem(spacer)
         # OK and Cancel buttons
@@ -101,7 +106,8 @@ class SettingsDialog(QDialog):
             "game": self.game_input.text(),
             "audio": self.audio_input.text(),
             "yap": self.yap_input.text(),
-            "warn": self.warn_disambiguation_checkbox.isChecked()
+            "warn": self.warn_disambiguation_checkbox.isChecked(),
+            "mod": self.cut_songs_checkbox.isChecked()
         }
 
         missing = [key for key, val in required_fields.items() if val is None]

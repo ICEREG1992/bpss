@@ -85,7 +85,7 @@ class SoundtrackViewer(QMainWindow):
                 self.actions_action.setChecked(True)
         else:
             self.settings["actions"] = False
-            self.write_settings
+            self.write_settings()
     
     def update_window_title(self):
         if self.file:
@@ -253,6 +253,16 @@ class SoundtrackViewer(QMainWindow):
             
             # Populate table
             for row_index, (key, entry) in enumerate(ptrs.items()):
+                # if this is BurnoutPR, don't show cut songs
+                if "BurnoutPR" in self.settings.get("game", "") and not self.settings.get("mod", False):
+                    self.table.setRowHidden(24, True)
+                    self.table.setRowHidden(25, True)
+                    index_flag = True
+                else:
+                    self.table.setRowHidden(24, False)
+                    self.table.setRowHidden(25, False)
+                    index_flag = False
+
                 # Get strings data (title, stream, album, artist)
                 strings = entry.get("strings", {})
                 title = strings.get("title", "")
@@ -265,7 +275,8 @@ class SoundtrackViewer(QMainWindow):
                 
                 # Create index item with proper numeric sorting
                 index_item = QTableWidgetItem()
-                index_item.setData(Qt.DisplayRole, row_index + 1)  # Store as number for sorting
+                final_index = row_index + 1 if (not (index_flag and row_index >= 26)) else row_index - 1
+                index_item.setData(Qt.DisplayRole, final_index)  # Store as number for sorting
                 index_item.setFlags(index_item.flags() & ~Qt.ItemIsEditable)
                 index_item.setTextAlignment(Qt.AlignCenter)
 
@@ -846,6 +857,7 @@ class SoundtrackViewer(QMainWindow):
     def show_settings(self):
         print("Settings action triggered")
         prev_hash = self.get_ptrs_hash()
+        prev_mod = self.settings.get("mod", False)
         dialog = SettingsDialog()
         if dialog.exec_():
             print("Settings updated")
@@ -876,6 +888,8 @@ class SoundtrackViewer(QMainWindow):
                     self.thread.start()
                 else:
                     self.fill_table()
+            if prev_mod != self.settings.get("mod", False):
+                self.reset_action()
         else:
             print("Settings canceled")
         
