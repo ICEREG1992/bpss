@@ -6,6 +6,7 @@ import subprocess
 from HexNavigator import HexNavigator
 from Helpers import resource_path
 from PyQt5.QtCore import QThread
+import soundfile as sf
 
 def get_first_file(path):
     try:
@@ -410,10 +411,10 @@ def reset_files(settings, set_progress=None):
 
 
 def convertSong(file, stream, settings):
-    print(file)
+    print(file + " $")
     print(stream)
     temp_path = os.path.join("temp", stream)
-    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', file, f"-=\"{temp_path}\""], creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', f"\"file\"", f"-=\"{temp_path}\""], creationflags=subprocess.CREATE_NO_WINDOW)
     
 
     
