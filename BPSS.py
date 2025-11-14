@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import hashlib
+import zipfile
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout, QWidget, QHBoxLayout, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
 from PyQt5.QtCore import Qt, QThread, QEvent, QItemSelectionModel
@@ -147,6 +148,11 @@ class SoundtrackViewer(QMainWindow):
         save_action.setShortcut(QKeySequence("Ctrl+S"))
         save_action.triggered.connect(self.save_file)
         toolbar.addAction(save_action)
+
+        export_action = QAction(self.style().standardIcon(QStyle.SP_DriveFDIcon), "Export", self)
+        export_action.setShortcut(QKeySequence("Ctrl+E"))
+        export_action.triggered.connect(self.export_file)
+        toolbar.addAction(export_action)
         
         # First vertical spacer
         toolbar.addSeparator()
@@ -488,10 +494,11 @@ class SoundtrackViewer(QMainWindow):
 
                 # Edit table
                 for (key, entry) in st.items():
-
                     row_index = list(self.defaults.keys()).index(key)
-
                     self.set_table_row(row_index, entry)
+                    # Hack to handle zip source paths
+                    if "zip" in entry.keys():
+                        self.table.cellWidget(row_index, 5).setText(os.path.join(os.path.dirname(self.file), entry.get("zip", "")))
             
         except FileNotFoundError:
             QMessageBox.critical(self, "Critical Error", f"Load Error: Pointers file \"{self.file}\" not found.")
@@ -500,7 +507,7 @@ class SoundtrackViewer(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Critical Error", f"Load Error: {e}")
     
-    def write_file(self):
+    def write_file(self, export = False):
         rows = self.table.rowCount()
 
         out = {}
@@ -512,6 +519,12 @@ class SoundtrackViewer(QMainWindow):
             for key, value in row_data["strings"].items():
                 if value != default["defaults"][key]:
                     save = True
+
+            if export:
+                # convert source to relative path at "zip" if exporting
+                source_path = row_data.get("source", "")
+                if source_path:
+                    row_data["zip"] = os.path.basename(source_path)
             
             if save:
                 out[list(self.defaults.keys())[r]] = row_data
@@ -698,18 +711,40 @@ class SoundtrackViewer(QMainWindow):
             self,
             "Open File",
             os.path.dirname(self.settings["prev"]) if self.settings["prev"] else "",
-            "Soundtrack Files (*.soundtrack)"
+            "Soundtrack or Zip Files (*.soundtrack *.zip)"
         )
-        if file_path:
-               
+        if not file_path:
+            return
+        if file_path.lower().endswith(".zip"):
+            temp_dir = os.path.join("temp", os.path.splitext(os.path.basename(file_path))[0])
+            os.makedirs(temp_dir, exist_ok=True)
+
+            with zipfile.ZipFile(file_path, "r") as z:
+                z.extractall(temp_dir)
+
+            candidates = [
+                os.path.join(temp_dir, f)
+                for f in os.listdir(temp_dir)
+                if f.lower().endswith(".soundtrack")
+            ]
+
+            if not candidates:
+                print("Zip contains no .soundtrack file")
+                return
+
+            soundtrack_path = candidates[0]
+            self.file = soundtrack_path
+
+        else:
             self.file = file_path
-            self.load_data()
-            self.load_file()
-            self.update_window_title()
-            self.changes = False
-            self.settings["prev"] = file_path
-            self.write_settings()
-            print(file_path)
+
+        self.load_data()
+        self.load_file()
+        self.update_window_title()
+        self.changes = False
+        self.settings["prev"] = self.file
+        self.write_settings()
+        print(self.file)
         
     def save_file(self):
         print("Save file action triggered")
@@ -730,6 +765,40 @@ class SoundtrackViewer(QMainWindow):
         
     def export_file(self):
         print("Export file action triggered")
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export File To",
+            "./" if not self.file else os.path.splitext(self.file)[0] + ".zip",
+            "Zip Files (*.zip)"
+        )
+        if not file_path:
+            print("Export canceled")
+            return
+
+        self.file = os.path.join("temp", os.path.splitext(os.path.basename(file_path))[0] + ".soundtrack")
+        print(self.file)
+        self.write_file(export = True)
+
+        print("Creating archive at", file_path)
+
+        with zipfile.ZipFile(file_path, "w", zipfile.ZIP_DEFLATED) as z:
+            z.write(self.file, os.path.basename(self.file))
+
+            rows = self.table.rowCount()
+
+            for r in range(rows):
+                source_path = self.table.cellWidget(r, 5)
+                if not source_path:
+                    print("No source path for row", r)
+                    continue
+                src = source_path.text()
+                if src:
+                    if self.validate_file(src, r):
+                        print("Adding", src, "to archive")
+                        z.write(src, os.path.basename(src))
+                    else:
+                        print("failed validation")
+                        return
 
     def handle_apply_exception(self, e):
         self.handle_worker_exception("Apply", e)
@@ -741,7 +810,7 @@ class SoundtrackViewer(QMainWindow):
         self.handle_worker_exception("Load", e)
     
     def handle_worker_exception(self, type, e):
-        QMessageBox.critical(self, f"Critical Error", f"{type} Error: {e}")
+        QMessageBox.critical(self, f"Critical Error", f"{type} Error: {e}")            
         
     def apply_action(self):
         print("Apply action triggered")
@@ -756,19 +825,8 @@ class SoundtrackViewer(QMainWindow):
         for r in range(rows):
             source = self.table.cellWidget(r, 5).text()
             if source:
-                if not os.path.isfile(source):
-                    QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.get_item_or_cellwidget(r, 1).text()}.")
+                if not self.validate_file(source, r):
                     return
-                
-                if not source.lower().endswith(('.wav', '.mp3', '.aiff')):
-                    QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.get_item_or_cellwidget(r, 1).text()} is not wav, mp3, or aiff.")
-                    return
-                elif source.lower().endswith(('.mp3')):
-                    # codec check
-                    audio = mutagen.File(source)
-                    if audio.__class__.__name__ == "MP4":
-                        QMessageBox.warning(self, "Unsupported Codec", f"The source file for {self.get_item_or_cellwidget(r, 1).text()} uses an unsupported codec (mp4a). Please use the mpga codec or covert it to a different audio format.")
-                        return
         
         self.thread = QThread()
         self.worker = WriteWorker(self.settings, self.file, str(self.get_ptrs_hash()) + ".json")
@@ -791,7 +849,24 @@ class SoundtrackViewer(QMainWindow):
         
         self.thread.start()
 
+    def validate_file(self, source, r):
+        if not os.path.isfile(source):
+            QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.get_item_or_cellwidget(r, 1).text()}.")
+            return False
         
+        if not source.lower().endswith(('.wav', '.mp3', '.aiff')):
+            QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.get_item_or_cellwidget(r, 1).text()} is not wav, mp3, or aiff.")
+            return False
+        elif source.lower().endswith(('.mp3')):
+            # codec check
+            audio = mutagen.File(source)
+            if audio.__class__.__name__ == "MP4":
+                QMessageBox.warning(self, "Unsupported Codec", f"The source file for {self.get_item_or_cellwidget(r, 1).text()} uses an unsupported codec (mp4a). Please use the mpga codec or covert it to a different audio format.")
+                return False
+            
+        return True
+
+
     def unapply_action(self):
         print("Unapply action triggered")
 
