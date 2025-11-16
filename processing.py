@@ -229,14 +229,12 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
     binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
     tempLoc = os.path.join('temp', 'globaldata')
 
+    # get fresh strings vault
+    subprocess.run([settings["yap"], 'e', binLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+
     # create navigator
     vaultLoc = os.path.join(tempLoc, 'AttribSysVault')
-    if not os.path.isdir(vaultLoc):
-        # temp directory got deleted
-        subprocess.run([settings["yap"], 'e', binLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
     navigator = HexNavigator(get_first_file(vaultLoc))
-
-    print(f"##########  {os.getcwd()}")
 
     if set_progress: set_progress(8, "Beginning data write...")
 
@@ -420,9 +418,9 @@ def reset_files(settings, set_progress=None):
 
 def convertSong(file, stream, settings):
     print(file)
-    print(stream)
     temp_path = os.path.join("temp", stream)
-    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', f"\"file\"", f"-=\"{temp_path}\""], creationflags=subprocess.CREATE_NO_WINDOW)
+    print(temp_path)
+    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', f"\"{file}\"", f"-=\"{temp_path}\""], creationflags=subprocess.CREATE_NO_WINDOW)
     
 
 def export_files(settings, filename, export_path, set_progress=None):
