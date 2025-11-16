@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QProgressBar, QLabel, QDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QProgressBar, QLabel, QDialog
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from Helpers import resource_path
@@ -30,6 +30,8 @@ class ProgressWidget(QDialog):
             self.progress.setValue(val)
         if status:
             self.status_label.setText(status)
+        self.progress.show()
+        QApplication.processEvents()
 
     def closeEvent(self, event):
         if hasattr(self, 'worker_thread') and self.worker_thread and self.worker_thread.isRunning():

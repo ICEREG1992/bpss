@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
-from processing import load_pointers, write_pointers, reset_files
+from processing import load_pointers, write_pointers, reset_files, export_files
 import time
 
 class ResetWorker(QObject):
@@ -60,6 +60,29 @@ class LoadWorker(QObject):
 
         try:
             load_pointers(self.settings, self.filename, update_progress)
+        except Exception as e:
+            self.error.emit(e)
+        time.sleep(.5)
+        self.finished.emit()
+
+class ExportWorker(QObject):
+    progress_changed = pyqtSignal(int, str)
+    finished = pyqtSignal()
+    error = pyqtSignal(Exception)
+
+    def __init__(self, settings, filename, export_path):
+        super().__init__()
+        self.settings = settings
+        self.filename = filename
+        self.export_path = export_path
+    
+    def run(self):
+        def update_progress(val, string):
+            self.progress_changed.emit(val, string)
+
+        try:
+            # export logic
+            export_files(self.settings, self.filename, self.export_path, update_progress)
         except Exception as e:
             self.error.emit(e)
         time.sleep(.5)

@@ -3,6 +3,7 @@ import os
 import shutil
 import struct
 import subprocess
+import zipfile
 from HexNavigator import HexNavigator
 from Helpers import resource_path
 from PyQt5.QtCore import QThread
@@ -204,7 +205,7 @@ def load_pointers(settings, filename, set_progress=None):
     if set_progress: set_progress(100, "Done!")
 
 
-def write_pointers(settings, soundtrack, ptrs, set_progress=None):
+def write_pointers(settings, soundtrack, pointers, set_progress=None):
     if not soundtrack:
         if set_progress: set_progress(100, "Nothing to apply.")
         return
@@ -216,7 +217,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     with open(soundtrack, 'r', encoding='utf-8') as f:
         st = json.load(f)
     
-    with open(ptrs, 'r', encoding='utf-8') as f:
+    with open(pointers, 'r', encoding='utf-8') as f:
         ptrs = json.load(f)
 
     with open(resource_path("defaults.json"), 'r', encoding='utf-8') as f:
@@ -230,7 +231,12 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
 
     # create navigator
     vaultLoc = os.path.join(tempLoc, 'AttribSysVault')
+    if not os.path.isdir(vaultLoc):
+        # temp directory got deleted
+        subprocess.run([settings["yap"], 'e', binLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
     navigator = HexNavigator(get_first_file(vaultLoc))
+
+    print(f"##########  {os.getcwd()}")
 
     if set_progress: set_progress(8, "Beginning data write...")
 
@@ -248,7 +254,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
     count = 0
     written_pointers = []
     for s in st.keys():
-        print(s)
+        print(f"writing data for {s}")
         if set_progress: set_progress(int((step * count) + 10), f"Writing strings for \"{st[s]['strings']['title']}\"...")
         # get defaults
         default = data[s]["defaults"]
@@ -257,7 +263,7 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
             if (st[s]["strings"][k] != default[k]):
                 navigator.seek_end()
                 loc = navigator.loc()
-                print("got eof " + str(loc))
+                # print("got eof " + str(loc))
                 navigator.write_cstring(st[s]["strings"][k])
                 if ptrs[s]:
                     # if overrides specified, use that
@@ -272,7 +278,9 @@ def write_pointers(settings, soundtrack, ptrs, set_progress=None):
                                 navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
                                 written_pointers.append(x)
         # add to conversion queue
-        if st[s]["source"]:
+        if st[s].get("zip", None):
+            to_convert.append([st[s]["zip"], st[s]["strings"]["stream"].upper(), s])
+        elif st[s]["source"]:
             to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
         count += 1
 
@@ -411,13 +419,32 @@ def reset_files(settings, set_progress=None):
 
 
 def convertSong(file, stream, settings):
-    print(file + " $")
+    print(file)
     print(stream)
     temp_path = os.path.join("temp", stream)
     subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', f"\"file\"", f"-=\"{temp_path}\""], creationflags=subprocess.CREATE_NO_WINDOW)
     
 
-    
+def export_files(settings, filename, export_path, set_progress=None):
+    if set_progress: set_progress(0, "Exporting soundtrack...")
+    with zipfile.ZipFile(export_path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.write(filename, os.path.basename(filename))
+
+        if set_progress: set_progress(10, "Loading paths...")
+
+        with open(filename, 'r', encoding='utf-8') as f:
+            st = json.load(f)
+
+        step = 90 / (len(st.keys()) or 1)
+        count = 0
+        for s in st.keys():
+            if set_progress: set_progress(int((step * count) + 10), f"Exporting \"{st[s]['strings']['title']}\"...")
+            if st[s]["source"]:
+                source_path = st[s]["source"]
+                z.write(source_path, os.path.basename(source_path))
+            count += 1
+
+        if set_progress: set_progress(100, "Done!")
 
 # settings = {
 #     "game": r"C:\Program Files (x86)\Steam\steamapps\common\Burnout(TM) Paradise The Ultimate Box",

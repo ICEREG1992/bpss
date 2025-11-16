@@ -14,7 +14,7 @@ from Settings import SettingsDialog
 from LockedCell import LockedCellWidget
 from FileBrowseCell import FileBrowseCellWidget
 from Progress import ProgressWidget
-from Workers import ResetWorker, WriteWorker, LoadWorker
+from Workers import ExportWorker, ResetWorker, WriteWorker, LoadWorker
 from About import AboutDialog
 from Helpers import col_to_key, resource_path
 
@@ -89,10 +89,10 @@ class SoundtrackViewer(QMainWindow):
             self.write_settings()
     
     def update_window_title(self):
-        if self.file:
-            self.setWindowTitle(f"Burnout Paradise Soundtrack Switcher [{self.file}]")
-        else:
-            self.setWindowTitle("Burnout Paradise Soundtrack Switcher")
+        base = "Burnout Paradise Soundtrack Switcher"
+        file = f"[{self.file}]" if self.file else ""
+        change = "*" if self.changes else ""
+        self.setWindowTitle(f"{base} {file} {change}")
     
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
@@ -498,7 +498,7 @@ class SoundtrackViewer(QMainWindow):
                     self.set_table_row(row_index, entry)
                     # Hack to handle zip source paths
                     if "zip" in entry.keys():
-                        self.table.cellWidget(row_index, 5).setText(os.path.join(os.path.dirname(self.file), entry.get("zip", "")))
+                        self.table.cellWidget(row_index, 5).setText(entry.get("zip", ""))
             
         except FileNotFoundError:
             QMessageBox.critical(self, "Critical Error", f"Load Error: Pointers file \"{self.file}\" not found.")
@@ -524,7 +524,7 @@ class SoundtrackViewer(QMainWindow):
                 # convert source to relative path at "zip" if exporting
                 source_path = row_data.get("source", "")
                 if source_path:
-                    row_data["zip"] = os.path.basename(source_path)
+                    row_data["zip"] = os.path.join(os.path.splitext(self.file)[0], os.path.basename(source_path))
             
             if save:
                 out[list(self.defaults.keys())[r]] = row_data
@@ -716,12 +716,17 @@ class SoundtrackViewer(QMainWindow):
         if not file_path:
             return
         if file_path.lower().endswith(".zip"):
+            self.progress = ProgressWidget("Opening...")
+            self.progress.show()
+            self.progress.set_progress(100, "Opening zip file...")
+            
             temp_dir = os.path.join("temp", os.path.splitext(os.path.basename(file_path))[0])
             os.makedirs(temp_dir, exist_ok=True)
 
             with zipfile.ZipFile(file_path, "r") as z:
                 z.extractall(temp_dir)
 
+            self.progress.close()
             candidates = [
                 os.path.join(temp_dir, f)
                 for f in os.listdir(temp_dir)
@@ -729,6 +734,7 @@ class SoundtrackViewer(QMainWindow):
             ]
 
             if not candidates:
+                QMessageBox.critical(self, f"Unable to open zip file", f"Error: \"{os.path.basename(file_path)}\" does not contain a .soundtrack file.")
                 print("Zip contains no .soundtrack file")
                 return
 
@@ -765,6 +771,15 @@ class SoundtrackViewer(QMainWindow):
         
     def export_file(self):
         print("Export file action triggered")
+
+        # validate files ahead of time
+        rows = self.table.rowCount()
+        for r in range(rows):
+            source = self.table.cellWidget(r, 5).text()
+            if source:
+                if not self.validate_file(source, r):
+                    return
+        # we're good to export, open save dialog        
         file_path, _ = QFileDialog.getSaveFileName(
             self,
             "Export File To",
@@ -774,31 +789,30 @@ class SoundtrackViewer(QMainWindow):
         if not file_path:
             print("Export canceled")
             return
-
+        # save temp soundtrack file
         self.file = os.path.join("temp", os.path.splitext(os.path.basename(file_path))[0] + ".soundtrack")
         print(self.file)
         self.write_file(export = True)
 
         print("Creating archive at", file_path)
 
-        with zipfile.ZipFile(file_path, "w", zipfile.ZIP_DEFLATED) as z:
-            z.write(self.file, os.path.basename(self.file))
+        self.thread = QThread()
+        self.worker = ExportWorker(self.settings, self.file, file_path)
+        self.worker.moveToThread(self.thread)
 
-            rows = self.table.rowCount()
+        self.progress = ProgressWidget("Exporting Soundtrack...")
+        self.progress.worker_thread = self.thread
+        self.progress.show()
 
-            for r in range(rows):
-                source_path = self.table.cellWidget(r, 5)
-                if not source_path:
-                    print("No source path for row", r)
-                    continue
-                src = source_path.text()
-                if src:
-                    if self.validate_file(src, r):
-                        print("Adding", src, "to archive")
-                        z.write(src, os.path.basename(src))
-                    else:
-                        print("failed validation")
-                        return
+        # Connect signals
+        self.thread.started.connect(self.worker.run)
+        self.worker.progress_changed.connect(self.progress.set_progress)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.progress.close)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.error.connect(self.handle_export_exception)
+        self.thread.start()
 
     def handle_apply_exception(self, e):
         self.handle_worker_exception("Apply", e)
@@ -808,6 +822,9 @@ class SoundtrackViewer(QMainWindow):
 
     def handle_load_exception(self, e):
         self.handle_worker_exception("Load", e)
+
+    def handle_export_exception(self, e):
+        self.handle_worker_exception("Export", e)
     
     def handle_worker_exception(self, type, e):
         QMessageBox.critical(self, f"Critical Error", f"{type} Error: {e}")            
@@ -842,7 +859,7 @@ class SoundtrackViewer(QMainWindow):
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.progress.close)
-        self.thread.finished.connect(self.load_file)
+        #self.thread.finished.connect(self.load_file)
         self.thread.finished.connect(self.thread.deleteLater)
 
         self.worker.error.connect(self.handle_apply_exception)
@@ -865,7 +882,6 @@ class SoundtrackViewer(QMainWindow):
                 return False
             
         return True
-
 
     def unapply_action(self):
         print("Unapply action triggered")
