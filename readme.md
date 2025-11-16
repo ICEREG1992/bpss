@@ -19,7 +19,7 @@ Cells with matching background colors are **synced**, which means they use the s
 
 ## How to build
 
-```python
+```bash
 pip install -r requirements.txt
 pyinstaller BPSS.spec
 ```
