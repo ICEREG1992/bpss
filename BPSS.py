@@ -72,6 +72,8 @@ class SoundtrackViewer(QMainWindow):
 
         # Create table widget
         self.create_table()
+        self.changes = False
+        self.update_window_title()
 
         # Add table to layout
         self.layout.addWidget(self.table, 3)
