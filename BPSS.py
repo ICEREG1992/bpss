@@ -568,6 +568,7 @@ class SoundtrackViewer(QMainWindow):
 
     def handle_item_changed(self, changed_item: QTableWidgetItem):
         self.changes = True
+        self.update_window_title()
         row = changed_item.row()
         col = changed_item.column()
         text = changed_item.text()
@@ -746,8 +747,8 @@ class SoundtrackViewer(QMainWindow):
 
         self.load_data()
         self.load_file()
-        self.update_window_title()
         self.changes = False
+        self.update_window_title()
         self.settings["prev"] = self.file
         self.write_settings()
         print(self.file)
@@ -927,6 +928,7 @@ class SoundtrackViewer(QMainWindow):
         if self.file:
             self.load_file()
         self.changes = False
+        self.update_window_title()
 
     def toggle_actions(self):
         print("Toggle actions pane")
