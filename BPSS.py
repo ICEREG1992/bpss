@@ -524,7 +524,7 @@ class SoundtrackViewer(QMainWindow):
                 # convert source to relative path at "zip" if exporting
                 source_path = row_data.get("source", "")
                 if source_path:
-                    row_data["zip"] = os.path.join(os.path.splitext(self.file)[0], os.path.basename(source_path))
+                    row_data["zip"] = os.path.join("soundtracks", os.path.splitext(os.path.basename(self.file))[0], os.path.basename(source_path))
             
             if save:
                 out[list(self.defaults.keys())[r]] = row_data
@@ -721,7 +721,7 @@ class SoundtrackViewer(QMainWindow):
             self.progress.show()
             self.progress.set_progress(100, "Opening zip file...")
             
-            temp_dir = os.path.join("temp", os.path.splitext(os.path.basename(file_path))[0])
+            temp_dir = os.path.join("soundtracks", os.path.splitext(os.path.basename(file_path))[0])
             os.makedirs(temp_dir, exist_ok=True)
 
             with zipfile.ZipFile(file_path, "r") as z:
