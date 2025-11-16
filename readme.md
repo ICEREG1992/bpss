@@ -16,3 +16,10 @@ Make your desired soundtrack changes in the table, save it to a file, then press
 BPSS supports the same formats as sx, which includes .wav, .aiff, and .mp3 (mpga), and maybe others. **.ogg, .flac, and .mp3 (mp4a) are NOT supported.**
 
 Cells with matching background colors are **synced**, which means they use the same string variable. In the future, you will be able to disambiguate these synced boxes (at the risk of crashing).
+
+## How to build
+
+```python
+pip install -r requirements.txt
+pyinstaller BPSS.spec
+```
