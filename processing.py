@@ -7,7 +7,6 @@ import zipfile
 from HexNavigator import HexNavigator
 from Helpers import resource_path
 from PyQt5.QtCore import QThread
-import soundfile as sf
 
 def get_first_file(path):
     try:
