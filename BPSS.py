@@ -3,6 +3,7 @@ import sys
 import json
 import hashlib
 import zipfile
+import re
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout, QWidget, QHBoxLayout, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
 from PyQt5.QtCore import Qt, QThread, QEvent, QItemSelectionModel
@@ -20,6 +21,19 @@ from Helpers import col_to_key, resource_path
 
 SETTINGS_FILE = "settings.json"
 BLANK_ROW = {'strings': {'title': '', 'album': '', 'artist': '', 'stream': ''}, 'source': ''}
+MAX_PATH_LENGTH = 240
+MAX_FILENAME_LENGTH = 120
+SAFE_FILENAME_RE = re.compile(r"^[A-Za-z0-9 _.\-()]+$")
+SAFE_PATH_RE = re.compile(r"^[A-Za-z0-9 _.\-()\\/:]+$")
+EXTENDED_PATH_PREFIX = "\\\\?\\"
+
+def coerce_bool(val, default=False):
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        if val.lower() in ("true", "1", "yes"): return True
+        if val.lower() in ("false", "0", "no"): return False
+    return default
 
 class SoundtrackViewer(QMainWindow):
     def __init__(self):
@@ -99,7 +113,11 @@ class SoundtrackViewer(QMainWindow):
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, "r") as f:
-                return json.load(f)
+                settings = json.load(f)
+                settings["warn"] = coerce_bool(settings.get("warn", True), default=True)
+                settings["mod"] = coerce_bool(settings.get("mod", False), default=False)
+                settings["actions"] = coerce_bool(settings.get("actions", False), default=False)
+                return settings
         return {}
     
     def write_settings(self):
@@ -121,6 +139,76 @@ class SoundtrackViewer(QMainWindow):
 
         missing = [v for v in required_keys if not v in self.settings]
         return not missing
+
+    def validate_path(self, path, label, extensions=None):
+        cleaned = (path or "").strip()
+        if not cleaned:
+            QMessageBox.warning(self, "Invalid Path", f"{label} path is empty.")
+            return None
+
+        normalized = os.path.normpath(cleaned)
+        filename = os.path.basename(normalized)
+
+        if normalized.startswith(EXTENDED_PATH_PREFIX):
+            QMessageBox.warning(
+                self,
+                "Unsupported Path Syntax",
+                f"{label} uses extended Windows path syntax (\\\\?\\), which is not supported by sx.\n\n"
+                f"Path:\n{normalized}",
+            )
+            return None
+
+        if not SAFE_PATH_RE.fullmatch(normalized):
+            QMessageBox.warning(
+                self,
+                "Unsupported Characters",
+                f"{label} path contains unsupported characters.\n"
+                "Use only letters, numbers, spaces, dashes, underscores, periods, slashes, and parentheses.\n\n"
+                f"Path:\n{normalized}",
+            )
+            return None
+
+        if len(normalized) > MAX_PATH_LENGTH:
+            QMessageBox.warning(
+                self,
+                "Path Too Long",
+                f"{label} path is too long ({len(normalized)} characters).\n"
+                f"Maximum supported length is {MAX_PATH_LENGTH} characters.\n\n"
+                f"Path:\n{normalized}",
+            )
+            return None
+
+        if len(filename) > MAX_FILENAME_LENGTH:
+            QMessageBox.warning(
+                self,
+                "File Name Too Long",
+                f"{label} file name is too long ({len(filename)} characters).\n"
+                f"Maximum supported length is {MAX_FILENAME_LENGTH} characters.\n\n"
+                f"File name:\n{filename}",
+            )
+            return None
+
+        if not SAFE_FILENAME_RE.fullmatch(filename):
+            QMessageBox.warning(
+                self,
+                "Unsupported Characters",
+                f"{label} file name contains unsupported characters.\n"
+                "Use only letters, numbers, spaces, dashes, underscores, periods, and parentheses.\n\n"
+                f"File name:\n{filename}",
+            )
+            return None
+
+        if extensions:
+            expected = tuple(ext.lower() for ext in extensions)
+            if not normalized.lower().endswith(expected):
+                QMessageBox.warning(
+                    self,
+                    "Incorrect Format",
+                    f"{label} must use one of these extensions: {', '.join(extensions)}.",
+                )
+                return None
+
+        return normalized
     
     def get_ptrs_hash(self):
         if "game" in self.settings.keys():
@@ -393,6 +481,7 @@ class SoundtrackViewer(QMainWindow):
                             self.table.setItem(row_index, 3, self.make_unique_cell(artist, artist_color))
                             if overrides.get("artist"):
                                 self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, album_color, overrides.get("artist")))
+                                self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, artist_color, overrides.get("artist")))
                                 
                         elif len(artist_ptrs) == 0:
                             backfill.append([row_index, 3, key, 1])
@@ -429,6 +518,7 @@ class SoundtrackViewer(QMainWindow):
                             self.table.setItem(row_index, 3, self.make_unique_cell(artist, artist_color))
                             if overrides.get("artist"):
                                 self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, album_color, overrides.get("artist")))
+                                self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, artist_color, overrides.get("artist")))
                                 
                         elif len(artist_ptrs) == 0:
                             backfill.append([row_index, 3, key, 3])
@@ -509,7 +599,12 @@ class SoundtrackViewer(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Critical Error", f"Load Error: {e}")
     
-    def write_file(self, export = False):
+    def write_file(self, export=False, target_file=None):
+        output_path = target_file if target_file else self.file
+        output_path = self.validate_path(output_path, "Soundtrack file", extensions=(".soundtrack",))
+        if not output_path:
+            return False
+
         rows = self.table.rowCount()
 
         out = {}
@@ -517,23 +612,43 @@ class SoundtrackViewer(QMainWindow):
             save = False
             default = self.defaults[list(self.defaults.keys())[r]]
             row_data = self.get_table_row(r)
+            source_path = (row_data.get("source", "") or "").strip()
+            row_data["source"] = source_path
             
             for key, value in row_data["strings"].items():
                 if value != default["defaults"][key]:
                     save = True
 
+            # Keep rows with custom source files even when metadata still matches defaults.
+            if source_path:
+                save = True
+
             if export:
                 # convert source to relative path at "zip" if exporting
-                source_path = row_data.get("source", "")
                 if source_path:
-                    row_data["zip"] = os.path.join("soundtracks", os.path.splitext(os.path.basename(self.file))[0], os.path.basename(source_path))
+                    row_data["zip"] = os.path.join("soundtracks", os.path.splitext(os.path.basename(output_path))[0], os.path.basename(source_path))
             
             if save:
                 out[list(self.defaults.keys())[r]] = row_data
         
-        with open(self.file, "w", encoding="utf-8") as file:
-            json.dump(out, file, indent=2)
-        
+        try:
+            with open(output_path, "w", encoding="utf-8") as file:
+                json.dump(out, file, indent=2)
+            return True
+        except OSError as e:
+            reason = e.strerror if e.strerror else str(e)
+            QMessageBox.critical(
+                self,
+                "Save Failed",
+                f"Could not save soundtrack changes.\n\nPath:\n{output_path}\n\nReason: {reason}",
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Save Failed",
+                f"Could not save soundtrack changes.\n\nPath:\n{output_path}\n\nReason: {e}",
+            )
+        return False
     
     def make_unique_cell(self, text, color) -> QTableWidgetItem:
         colors = [
@@ -718,6 +833,10 @@ class SoundtrackViewer(QMainWindow):
         )
         if not file_path:
             return
+        file_path = self.validate_path(file_path, "Selected file", extensions=(".soundtrack", ".zip"))
+        if not file_path:
+            return
+
         if file_path.lower().endswith(".zip"):
             self.progress = ProgressWidget("Opening...")
             self.progress.show()
@@ -726,8 +845,17 @@ class SoundtrackViewer(QMainWindow):
             temp_dir = os.path.join("soundtracks", os.path.splitext(os.path.basename(file_path))[0])
             os.makedirs(temp_dir, exist_ok=True)
 
-            with zipfile.ZipFile(file_path, "r") as z:
-                z.extractall(temp_dir)
+            try:
+                with zipfile.ZipFile(file_path, "r") as z:
+                    z.extractall(temp_dir)
+            except zipfile.BadZipFile:
+                self.progress.close()
+                QMessageBox.critical(self, "Unable to open zip file", f"Error: \"{os.path.basename(file_path)}\" is not a valid zip archive.")
+                return
+            except Exception as e:
+                self.progress.close()
+                QMessageBox.critical(self, "Unable to open zip file", f"Error while reading \"{os.path.basename(file_path)}\": {e}")
+                return
 
             self.progress.close()
             candidates = [
@@ -763,14 +891,25 @@ class SoundtrackViewer(QMainWindow):
             "./" if not self.file else self.file,
             "Soundtrack Files (*.soundtrack)"
         )
-        if file_path:
-            self.file = file_path
-            print(file_path)
-            self.write_file()
-            self.changes = False
-            self.update_window_title()
-        else:
+        if not file_path:
             print("Save As... canceled")
+            return False
+
+        if not file_path.lower().endswith(".soundtrack"):
+            file_path += ".soundtrack"
+
+        file_path = self.validate_path(file_path, "Soundtrack file", extensions=(".soundtrack",))
+        if not file_path:
+            return False
+
+        self.file = file_path
+        print(file_path)
+        if not self.write_file(target_file=self.file):
+            return False
+
+        self.changes = False
+        self.update_window_title()
+        return True
         
     def export_file(self):
         print("Export file action triggered")
@@ -791,16 +930,26 @@ class SoundtrackViewer(QMainWindow):
         )
         if not file_path:
             print("Export canceled")
-            return
+            return False
+
+        if not file_path.lower().endswith(".zip"):
+            file_path += ".zip"
+
+        file_path = self.validate_path(file_path, "Export file", extensions=(".zip",))
+        if not file_path:
+            return False
+
         # save temp soundtrack file
-        self.file = os.path.join("temp", os.path.splitext(os.path.basename(file_path))[0] + ".soundtrack")
-        print(self.file)
-        self.write_file(export = True)
+        os.makedirs("temp", exist_ok=True)
+        temp_soundtrack = os.path.join("temp", os.path.splitext(os.path.basename(file_path))[0] + ".soundtrack")
+        print(temp_soundtrack)
+        if not self.write_file(export=True, target_file=temp_soundtrack):
+            return False
 
         print("Creating archive at", file_path)
 
         self.thread = QThread()
-        self.worker = ExportWorker(self.settings, self.file, file_path)
+        self.worker = ExportWorker(self.settings, temp_soundtrack, file_path)
         self.worker.moveToThread(self.thread)
 
         self.progress = ProgressWidget("Exporting Soundtrack...")
@@ -830,15 +979,30 @@ class SoundtrackViewer(QMainWindow):
         self.handle_worker_exception("Export", e)
     
     def handle_worker_exception(self, type, e):
-        QMessageBox.critical(self, f"Critical Error", f"{type} Error: {e}")            
+        if isinstance(e, OSError):
+            path_hint = f"\nPath: {e.filename}" if e.filename else ""
+            msg = f"{type} Error: {e.strerror or str(e)}{path_hint}"
+        else:
+            msg = f"{type} Error: {e}"
+        QMessageBox.critical(
+            self,
+            "Critical Error",
+            msg + "\n\nTip: keep file names short, and only use letters, numbers, spaces, dashes, underscores, periods, and parentheses.",
+        )
         
     def apply_action(self):
         print("Apply action triggered")
         # todo: change this to a yes/no dialogue that asks if you'd like to save before applying, if there are changes
         if self.changes and self.file:
-            self.write_file()
+            if not self.write_file():
+                return
         elif self.changes:
-            self.save_file()
+            if not self.save_file():
+                return
+
+        if not self.file:
+            QMessageBox.warning(self, "Missing File", "Save your soundtrack file before applying changes.")
+            return
 
         # make sure all of the files are legit
         rows = self.table.rowCount()
@@ -870,20 +1034,33 @@ class SoundtrackViewer(QMainWindow):
         self.thread.start()
 
     def validate_file(self, source, r):
+        title = self.get_item_or_cellwidget(r, 1).text()
+        source = self.validate_path(source, f"Source file for {title}", extensions=(".wav", ".mp3", ".aiff"))
+        if not source:
+            return False
+
         if not os.path.isfile(source):
-            QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.get_item_or_cellwidget(r, 1).text()}.")
+            QMessageBox.warning(
+                self,
+                "Missing File",
+                f"Could not find source file for {title}.\n\nPath:\n{source}",
+            )
             return False
-        
-        if not source.lower().endswith(('.wav', '.mp3', '.aiff')):
-            QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.get_item_or_cellwidget(r, 1).text()} is not wav, mp3, or aiff.")
-            return False
-        elif source.lower().endswith(('.mp3')):
+
+        if source.lower().endswith('.mp3'):
             # codec check
-            audio = mutagen.File(source)
-            if audio.__class__.__name__ == "MP4":
-                QMessageBox.warning(self, "Unsupported Codec", f"The source file for {self.get_item_or_cellwidget(r, 1).text()} uses an unsupported codec (mp4a). Please use the mpga codec or covert it to a different audio format.")
+            try:
+                audio = mutagen.File(source)
+            except Exception as e:
+                QMessageBox.warning(self, "Codec Check Failed", f"Could not read the MP3 codec for {title}.\n\nReason: {e}")
                 return False
-            
+            if audio is None:
+                QMessageBox.warning(self, "Codec Check Failed", f"Could not read audio metadata for {title}.")
+                return False
+            if audio.__class__.__name__ == "MP4":
+                QMessageBox.warning(self, "Unsupported Codec", f"The source file for {title} uses an unsupported codec (mp4a). Please use mpga or convert it to WAV/AIFF.")
+                return False
+             
         return True
 
     def unapply_action(self):

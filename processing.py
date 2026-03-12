@@ -4,9 +4,32 @@ import shutil
 import struct
 import subprocess
 import zipfile
+import re
 from HexNavigator import HexNavigator
 from Helpers import resource_path
 from PyQt5.QtCore import QThread
+
+LEGACY_MAX_PATH_LENGTH = 240
+LEGACY_SAFE_PATH_RE = re.compile(r"^[A-Za-z0-9 _.\-()\\/:]+$")
+EXTENDED_PATH_PREFIX = "\\\\?\\"
+
+def _validate_legacy_path(path, label):
+    if path.startswith(EXTENDED_PATH_PREFIX):
+        raise ValueError(
+            f"{label} uses extended Windows path syntax (\\\\?\\), which is unsupported by sx.\n"
+            f"Path: {path}"
+        )
+    if len(path) > LEGACY_MAX_PATH_LENGTH:
+        raise ValueError(
+            f"{label} path is too long for legacy tools ({len(path)} characters, max {LEGACY_MAX_PATH_LENGTH}).\n"
+            f"Path: {path}"
+        )
+    if not LEGACY_SAFE_PATH_RE.fullmatch(path):
+        raise ValueError(
+            f"{label} path contains unsupported characters for sx.\n"
+            "Use only letters, numbers, spaces, dashes, underscores, periods, slashes, and parentheses.\n"
+            f"Path: {path}"
+        )
 
 def get_first_file(path):
     try:
@@ -416,10 +439,28 @@ def reset_files(settings, set_progress=None):
 
 
 def convertSong(file, stream, settings):
-    print(file)
-    temp_path = os.path.join("temp", stream)
-    print(temp_path)
-    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', f"\"{file}\"", f"-=\"{temp_path}\""], creationflags=subprocess.CREATE_NO_WINDOW)
+    source_path = os.path.abspath(file)
+    temp_path = os.path.abspath(os.path.join("temp", stream))
+    sx_path = os.path.abspath(settings["audio"])
+
+    _validate_legacy_path(source_path, "Source file")
+
+    os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+
+    result = subprocess.run(
+        [sx_path, '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', source_path, f"-={temp_path}"],
+        creationflags=subprocess.CREATE_NO_WINDOW
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"sx failed with exit code {result.returncode} while converting \"{os.path.basename(source_path)}\"."
+        )
+
+    if not os.path.exists(temp_path + ".SNR") or not os.path.exists(temp_path + ".sns"):
+        raise RuntimeError(
+            f"sx did not produce expected output for \"{os.path.basename(source_path)}\". "
+            "Try a shorter path or placing the file in a directory without any special characters."
+        )
     
 
 def export_files(settings, filename, export_path, set_progress=None):
