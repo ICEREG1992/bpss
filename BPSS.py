@@ -4,6 +4,8 @@ import json
 import hashlib
 import zipfile
 import re
+import shutil
+import tempfile
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout, QWidget, QHBoxLayout, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
 from PyQt5.QtCore import Qt, QThread, QEvent, QItemSelectionModel
@@ -841,36 +843,53 @@ class SoundtrackViewer(QMainWindow):
             self.progress = ProgressWidget("Opening...")
             self.progress.show()
             self.progress.set_progress(100, "Opening zip file...")
-            
-            temp_dir = os.path.join("soundtracks", os.path.splitext(os.path.basename(file_path))[0])
-            os.makedirs(temp_dir, exist_ok=True)
+            soundtracks_dir = "soundtracks"
+            zip_name = os.path.splitext(os.path.basename(file_path))[0]
+            final_dir = os.path.join(soundtracks_dir, zip_name)
+            temp_dir = None
+            soundtrack_member = None
 
             try:
                 with zipfile.ZipFile(file_path, "r") as z:
+                    zip_entries = [
+                        name.replace("\\", "/").lstrip("./")
+                        for name in z.namelist()
+                        if not name.endswith("/")
+                    ]
+                    candidates = [
+                        name for name in zip_entries
+                        if "/" not in name and name.lower().endswith(".soundtrack")
+                    ]
+
+                    if not candidates:
+                        QMessageBox.critical(self, "Unable to open zip file", f"Error: \"{os.path.basename(file_path)}\" does not contain a valid .soundtrack file.")
+                        print("Zip doesn't contain a .soundtrack file in root directory")
+                        return
+
+                    soundtrack_member = candidates[0]
+
+                    os.makedirs(soundtracks_dir, exist_ok=True)
+                    temp_dir = tempfile.mkdtemp(prefix=f".import_{zip_name}_", dir=soundtracks_dir)
                     z.extractall(temp_dir)
+
+                if os.path.isdir(final_dir):
+                    shutil.rmtree(final_dir, ignore_errors=True)
+
+                os.replace(temp_dir, final_dir)
+                self.file = os.path.join(final_dir, soundtrack_member)
+
             except zipfile.BadZipFile:
-                self.progress.close()
+                if temp_dir and os.path.isdir(temp_dir):
+                    shutil.rmtree(temp_dir, ignore_errors=True)
                 QMessageBox.critical(self, "Unable to open zip file", f"Error: \"{os.path.basename(file_path)}\" is not a valid zip archive.")
                 return
             except Exception as e:
-                self.progress.close()
+                if temp_dir and os.path.isdir(temp_dir):
+                    shutil.rmtree(temp_dir, ignore_errors=True)
                 QMessageBox.critical(self, "Unable to open zip file", f"Error while reading \"{os.path.basename(file_path)}\": {e}")
                 return
-
-            self.progress.close()
-            candidates = [
-                os.path.join(temp_dir, f)
-                for f in os.listdir(temp_dir)
-                if f.lower().endswith(".soundtrack")
-            ]
-
-            if not candidates:
-                QMessageBox.critical(self, f"Unable to open zip file", f"Error: \"{os.path.basename(file_path)}\" does not contain a .soundtrack file.")
-                print("Zip contains no .soundtrack file")
-                return
-
-            soundtrack_path = candidates[0]
-            self.file = soundtrack_path
+            finally:
+                self.progress.close()
 
         else:
             self.file = file_path
