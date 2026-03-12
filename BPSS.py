@@ -234,12 +234,12 @@ class SoundtrackViewer(QMainWindow):
         open_action.triggered.connect(self.open_file)
         toolbar.addAction(open_action)
         
-        save_action = QAction(self.style().standardIcon(QStyle.SP_DialogSaveButton), "Save", self)
+        save_action = QAction(self.style().standardIcon(QStyle.SP_DialogSaveButton), "Save configuration", self)
         save_action.setShortcut(QKeySequence("Ctrl+S"))
         save_action.triggered.connect(self.save_file)
         toolbar.addAction(save_action)
 
-        export_action = QAction(self.style().standardIcon(QStyle.SP_DriveFDIcon), "Export", self)
+        export_action = QAction(self.style().standardIcon(QStyle.SP_DriveFDIcon), "Export soundtrack to zip", self)
         export_action.setShortcut(QKeySequence("Ctrl+E"))
         export_action.triggered.connect(self.export_file)
         toolbar.addAction(export_action)
@@ -248,17 +248,17 @@ class SoundtrackViewer(QMainWindow):
         toolbar.addSeparator()
         
         # Filter/Apply operations
-        apply_action = QAction(self.style().standardIcon(QStyle.SP_DialogApplyButton), "Apply", self)
+        apply_action = QAction(self.style().standardIcon(QStyle.SP_DialogApplyButton), "Apply to game", self)
         apply_action.setShortcut(QKeySequence("Ctrl+Return"))
         apply_action.triggered.connect(self.apply_action)
         toolbar.addAction(apply_action)
         
-        unapply_action = QAction(self.style().standardIcon(QStyle.SP_DialogCancelButton), "Unapply", self)
+        unapply_action = QAction(self.style().standardIcon(QStyle.SP_DialogCancelButton), "Restore default soundtrack to game", self)
         unapply_action.setShortcut(QKeySequence("Ctrl+Shift+Return"))
         unapply_action.triggered.connect(self.unapply_action)
         toolbar.addAction(unapply_action)
         
-        reset_action = QAction(self.style().standardIcon(QStyle.SP_BrowserReload), "Reset", self)
+        reset_action = QAction(self.style().standardIcon(QStyle.SP_BrowserReload), "Reset configuration to default", self)
         reset_action.setShortcut(QKeySequence("Ctrl+R"))
         reset_action.triggered.connect(self.reset_action)
         toolbar.addAction(reset_action)
