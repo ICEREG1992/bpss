@@ -4,33 +4,10 @@ import shutil
 import struct
 import subprocess
 import zipfile
-import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from HexNavigator import HexNavigator
-from Helpers import resource_path
+from Helpers import resource_path, require_path_rules
 from PyQt5.QtCore import QThread
-
-LEGACY_MAX_PATH_LENGTH = 240
-LEGACY_SAFE_PATH_RE = re.compile(r"^[A-Za-z0-9 _.\-()\\/:]+$")
-EXTENDED_PATH_PREFIX = "\\\\?\\"
-
-def _validate_legacy_path(path, label):
-    if path.startswith(EXTENDED_PATH_PREFIX):
-        raise ValueError(
-            f"{label} uses extended Windows path syntax (\\\\?\\), which is unsupported by sx.\n"
-            f"Path: {path}"
-        )
-    if len(path) > LEGACY_MAX_PATH_LENGTH:
-        raise ValueError(
-            f"{label} path is too long for legacy tools ({len(path)} characters, max {LEGACY_MAX_PATH_LENGTH}).\n"
-            f"Path: {path}"
-        )
-    if not LEGACY_SAFE_PATH_RE.fullmatch(path):
-        raise ValueError(
-            f"{label} path contains unsupported characters for sx.\n"
-            "Use only letters, numbers, spaces, dashes, underscores, periods, slashes, and parentheses.\n"
-            f"Path: {path}"
-        )
 
 def get_first_file(path):
     try:
@@ -460,11 +437,9 @@ def reset_files(settings, set_progress=None):
 
 
 def convertSong(file, stream, settings):
-    source_path = os.path.abspath(file)
+    source_path = require_path_rules(os.path.abspath(file), "Source file")
     temp_path = os.path.abspath(os.path.join("temp", stream))
     sx_path = os.path.abspath(settings["audio"])
-
-    _validate_legacy_path(source_path, "Source file")
 
     os.makedirs(os.path.dirname(temp_path), exist_ok=True)
 
