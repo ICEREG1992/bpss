@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
-from processing import load_pointers, write_pointers, reset_files, export_files
+from Processing import load_pointers, write_pointers, reset_files, export_files
 import time
 
 class ResetWorker(QObject):
