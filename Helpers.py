@@ -86,6 +86,19 @@ def hash_file(path):
             digest.update(chunk)
     return digest.hexdigest()
 
+def coerce_bool(val, default=False):
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        normalized = val.strip().lower()
+        if normalized in ("true", "1", "yes", "on"):
+            return True
+        if normalized in ("false", "0", "no", "off", ""):
+            return False
+    if isinstance(val, (int, float)):
+        return bool(val)
+    return default
+
 def col_to_key(col):
     match col:
         case 0:

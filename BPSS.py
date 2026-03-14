@@ -11,25 +11,19 @@ from PyQt5.QtCore import Qt, QThread, QEvent, QItemSelectionModel
 from PyQt5.QtGui import QBrush, QColor, QIcon, QPixmap, QKeySequence
 import mutagen
 
-from Disambiguate import DisambiguateDialog
-from Settings import SettingsDialog
-from LockedCell import LockedCellWidget
-from FileBrowseCell import FileBrowseCellWidget
-from Progress import ProgressWidget
+from dialogs.Disambiguate import DisambiguateDialog
+from dialogs.Settings import SettingsDialog
+from dialogs.About import AboutDialog
+
+from widgets.LockedCell import LockedCellWidget
+from widgets.FileBrowseCell import FileBrowseCellWidget
+from widgets.Progress import ProgressWidget
+
 from Workers import ExportWorker, ResetWorker, WriteWorker, LoadWorker
-from About import AboutDialog
-from Helpers import col_to_key, resource_path, validate_path_rules
+from Helpers import col_to_key, resource_path, validate_path_rules, coerce_bool
 
 SETTINGS_FILE = "settings.json"
 BLANK_ROW = {'strings': {'title': '', 'album': '', 'artist': '', 'stream': ''}, 'source': ''}
-
-def coerce_bool(val, default=False):
-    if isinstance(val, bool):
-        return val
-    if isinstance(val, str):
-        if val.lower() in ("true", "1", "yes"): return True
-        if val.lower() in ("false", "0", "no"): return False
-    return default
 
 class SoundtrackViewer(QMainWindow):
     def __init__(self):
