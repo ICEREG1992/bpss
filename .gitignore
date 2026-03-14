@@ -3,3 +3,6 @@ bpss_venv
 temp
 build
 dist
+/*.json
+.vscode
+.vs
