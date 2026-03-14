@@ -412,10 +412,10 @@ class SoundtrackViewer(QMainWindow):
                             stock[artist] = artist_ptrs[1:]
                             sync[self.defaults[key]["defaults"]["artist"]] = [(row_index, 3)]
                             artist_color = list(sync).index(self.defaults[key]["defaults"]["artist"])
-                            self.table.setItem(row_index, 3, self.make_unique_cell(artist, artist_color))
+                            artist_item = self.make_unique_cell(artist, artist_color)
                             if overrides.get("artist"):
-                                self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, album_color, overrides.get("artist")))
-                                self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, artist_color, overrides.get("artist")))
+                                artist_item = self.make_disambiguated_cell(artist, artist_color, overrides.get("artist"))
+                            self.table.setItem(row_index, 3, artist_item)
                                 
                         elif len(artist_ptrs) == 0:
                             backfill.append([row_index, 3, key, 1])
@@ -449,10 +449,10 @@ class SoundtrackViewer(QMainWindow):
                             stock[artist] = artist_ptrs[1:]
                             sync[self.defaults[key]["defaults"]["artist"]] = [(row_index, 3)]
                             artist_color = list(sync).index(self.defaults[key]["defaults"]["artist"])
-                            self.table.setItem(row_index, 3, self.make_unique_cell(artist, artist_color))
+                            artist_item = self.make_unique_cell(artist, artist_color)
                             if overrides.get("artist"):
-                                self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, album_color, overrides.get("artist")))
-                                self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, artist_color, overrides.get("artist")))
+                                artist_item = self.make_disambiguated_cell(artist, artist_color, overrides.get("artist"))
+                            self.table.setItem(row_index, 3, artist_item)
                                 
                         elif len(artist_ptrs) == 0:
                             backfill.append([row_index, 3, key, 3])
