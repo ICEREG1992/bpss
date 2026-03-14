@@ -939,10 +939,24 @@ class SoundtrackViewer(QMainWindow):
             msg = f"{type} Error: {e.strerror or str(e)}{path_hint}"
         else:
             msg = f"{type} Error: {e}"
+
+        show_path_tip = True
+        if isinstance(e, OSError):
+            error_text = (e.strerror or str(e) or "").lower()
+            winerror = getattr(e, "winerror", None)
+            if winerror in (32, 33) or "being used by another process" in error_text:
+                show_path_tip = False
+
+        if show_path_tip:
+            msg += (
+                "\n\nTip: keep file names short, and only use letters, numbers, spaces, "
+                "dashes, underscores, periods, and parentheses."
+            )
+
         QMessageBox.critical(
             self,
             "Critical Error",
-            msg + "\n\nTip: keep file names short, and only use letters, numbers, spaces, dashes, underscores, periods, and parentheses.",
+            msg,
         )
         
     def apply_action(self):
