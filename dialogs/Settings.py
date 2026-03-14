@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QFileDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QSpacerItem, QSizePolicy, QMessageBox
 )
 from PyQt5.QtGui import QIcon
-from Helpers import resource_path
+from Helpers import resource_path, coerce_bool
 
 SETTINGS_FILE = "settings.json"
 
@@ -104,7 +104,11 @@ class SettingsDialog(QDialog):
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, "r") as f:
-                return json.load(f)
+                settings = json.load(f)
+                settings["warn"] = coerce_bool(settings.get("warn", True), default=True)
+                settings["mod"] = coerce_bool(settings.get("mod", False), default=False)
+                settings["actions"] = coerce_bool(settings.get("actions", False), default=False)
+                return settings
         return {}
 
     def clear_sx_cache(self):
