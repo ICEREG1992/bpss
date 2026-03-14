@@ -3,20 +3,25 @@ import sys
 import json
 import hashlib
 import zipfile
+import shutil
+import tempfile
+import mutagen
+
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout, QWidget, QHBoxLayout, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
 from PyQt5.QtCore import Qt, QThread, QEvent, QItemSelectionModel
 from PyQt5.QtGui import QBrush, QColor, QIcon, QPixmap, QKeySequence
-import mutagen
 
-from Disambiguate import DisambiguateDialog
-from Settings import SettingsDialog
-from LockedCell import LockedCellWidget
-from FileBrowseCell import FileBrowseCellWidget
-from Progress import ProgressWidget
+from dialogs.Disambiguate import DisambiguateDialog
+from dialogs.Settings import SettingsDialog
+from dialogs.About import AboutDialog
+
+from widgets.LockedCell import LockedCellWidget
+from widgets.FileBrowseCell import FileBrowseCellWidget
+from widgets.Progress import ProgressWidget
+
 from Workers import ExportWorker, ResetWorker, WriteWorker, LoadWorker
-from About import AboutDialog
-from Helpers import col_to_key, resource_path
+from Helpers import col_to_key, resource_path, validate_path_rules, coerce_bool
 
 SETTINGS_FILE = "settings.json"
 BLANK_ROW = {'strings': {'title': '', 'album': '', 'artist': '', 'stream': ''}, 'source': ''}
@@ -99,7 +104,11 @@ class SoundtrackViewer(QMainWindow):
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, "r") as f:
-                return json.load(f)
+                settings = json.load(f)
+                settings["warn"] = coerce_bool(settings.get("warn", True), default=True)
+                settings["mod"] = coerce_bool(settings.get("mod", False), default=False)
+                settings["actions"] = coerce_bool(settings.get("actions", False), default=False)
+                return settings
         return {}
     
     def write_settings(self):
@@ -121,6 +130,18 @@ class SoundtrackViewer(QMainWindow):
 
         missing = [v for v in required_keys if not v in self.settings]
         return not missing
+
+    def validate_path(self, path, label, extensions=None):
+        normalized, error_title, error_message = validate_path_rules(
+            path,
+            label,
+            extensions=extensions,
+            enforce_filename_rules=True,
+        )
+        if error_message:
+            QMessageBox.warning(self, error_title, error_message)
+            return None
+        return normalized
     
     def get_ptrs_hash(self):
         if "game" in self.settings.keys():
@@ -146,12 +167,12 @@ class SoundtrackViewer(QMainWindow):
         open_action.triggered.connect(self.open_file)
         toolbar.addAction(open_action)
         
-        save_action = QAction(self.style().standardIcon(QStyle.SP_DialogSaveButton), "Save", self)
+        save_action = QAction(self.style().standardIcon(QStyle.SP_DialogSaveButton), "Save configuration", self)
         save_action.setShortcut(QKeySequence("Ctrl+S"))
         save_action.triggered.connect(self.save_file)
         toolbar.addAction(save_action)
 
-        export_action = QAction(self.style().standardIcon(QStyle.SP_DriveFDIcon), "Export", self)
+        export_action = QAction(self.style().standardIcon(QStyle.SP_DriveFDIcon), "Export soundtrack to zip", self)
         export_action.setShortcut(QKeySequence("Ctrl+E"))
         export_action.triggered.connect(self.export_file)
         toolbar.addAction(export_action)
@@ -160,17 +181,17 @@ class SoundtrackViewer(QMainWindow):
         toolbar.addSeparator()
         
         # Filter/Apply operations
-        apply_action = QAction(self.style().standardIcon(QStyle.SP_DialogApplyButton), "Apply", self)
+        apply_action = QAction(self.style().standardIcon(QStyle.SP_DialogApplyButton), "Apply to game", self)
         apply_action.setShortcut(QKeySequence("Ctrl+Return"))
         apply_action.triggered.connect(self.apply_action)
         toolbar.addAction(apply_action)
         
-        unapply_action = QAction(self.style().standardIcon(QStyle.SP_DialogCancelButton), "Unapply", self)
+        unapply_action = QAction(self.style().standardIcon(QStyle.SP_DialogCancelButton), "Restore default soundtrack to game", self)
         unapply_action.setShortcut(QKeySequence("Ctrl+Shift+Return"))
         unapply_action.triggered.connect(self.unapply_action)
         toolbar.addAction(unapply_action)
         
-        reset_action = QAction(self.style().standardIcon(QStyle.SP_BrowserReload), "Reset", self)
+        reset_action = QAction(self.style().standardIcon(QStyle.SP_BrowserReload), "Reset configuration to default", self)
         reset_action.setShortcut(QKeySequence("Ctrl+R"))
         reset_action.triggered.connect(self.reset_action)
         toolbar.addAction(reset_action)
@@ -290,6 +311,7 @@ class SoundtrackViewer(QMainWindow):
 
                 # Create file browse widget with update hook
                 file_browse_widget = FileBrowseCellWidget("")
+                file_browse_widget.textChanged.connect(self.handle_source_changed)
                 
                 match self.defaults[key]["type"]:
                     case 0: # regular soundtrack
@@ -390,9 +412,10 @@ class SoundtrackViewer(QMainWindow):
                             stock[artist] = artist_ptrs[1:]
                             sync[self.defaults[key]["defaults"]["artist"]] = [(row_index, 3)]
                             artist_color = list(sync).index(self.defaults[key]["defaults"]["artist"])
-                            self.table.setItem(row_index, 3, self.make_unique_cell(artist, artist_color))
+                            artist_item = self.make_unique_cell(artist, artist_color)
                             if overrides.get("artist"):
-                                self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, album_color, overrides.get("artist")))
+                                artist_item = self.make_disambiguated_cell(artist, artist_color, overrides.get("artist"))
+                            self.table.setItem(row_index, 3, artist_item)
                                 
                         elif len(artist_ptrs) == 0:
                             backfill.append([row_index, 3, key, 1])
@@ -426,9 +449,10 @@ class SoundtrackViewer(QMainWindow):
                             stock[artist] = artist_ptrs[1:]
                             sync[self.defaults[key]["defaults"]["artist"]] = [(row_index, 3)]
                             artist_color = list(sync).index(self.defaults[key]["defaults"]["artist"])
-                            self.table.setItem(row_index, 3, self.make_unique_cell(artist, artist_color))
+                            artist_item = self.make_unique_cell(artist, artist_color)
                             if overrides.get("artist"):
-                                self.table.setItem(row_index, 3, self.make_disambiguated_cell(artist, album_color, overrides.get("artist")))
+                                artist_item = self.make_disambiguated_cell(artist, artist_color, overrides.get("artist"))
+                            self.table.setItem(row_index, 3, artist_item)
                                 
                         elif len(artist_ptrs) == 0:
                             backfill.append([row_index, 3, key, 3])
@@ -509,7 +533,12 @@ class SoundtrackViewer(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Critical Error", f"Load Error: {e}")
     
-    def write_file(self, export = False):
+    def write_file(self, export=False, target_file=None):
+        output_path = target_file if target_file else self.file
+        output_path = self.validate_path(output_path, "Soundtrack file", extensions=(".soundtrack",))
+        if not output_path:
+            return False
+
         rows = self.table.rowCount()
 
         out = {}
@@ -517,23 +546,43 @@ class SoundtrackViewer(QMainWindow):
             save = False
             default = self.defaults[list(self.defaults.keys())[r]]
             row_data = self.get_table_row(r)
+            source_path = (row_data.get("source", "") or "").strip()
+            row_data["source"] = source_path
             
             for key, value in row_data["strings"].items():
                 if value != default["defaults"][key]:
                     save = True
 
+            # Keep rows with custom source files even when metadata still matches defaults.
+            if source_path:
+                save = True
+
             if export:
                 # convert source to relative path at "zip" if exporting
-                source_path = row_data.get("source", "")
                 if source_path:
-                    row_data["zip"] = os.path.join("soundtracks", os.path.splitext(os.path.basename(self.file))[0], os.path.basename(source_path))
+                    row_data["zip"] = os.path.join("soundtracks", os.path.splitext(os.path.basename(output_path))[0], os.path.basename(source_path))
             
             if save:
                 out[list(self.defaults.keys())[r]] = row_data
         
-        with open(self.file, "w", encoding="utf-8") as file:
-            json.dump(out, file, indent=2)
-        
+        try:
+            with open(output_path, "w", encoding="utf-8") as file:
+                json.dump(out, file, indent=2)
+            return True
+        except OSError as e:
+            reason = e.strerror if e.strerror else str(e)
+            QMessageBox.critical(
+                self,
+                "Save Failed",
+                f"Could not save soundtrack changes.\n\nPath:\n{output_path}\n\nReason: {reason}",
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Save Failed",
+                f"Could not save soundtrack changes.\n\nPath:\n{output_path}\n\nReason: {e}",
+            )
+        return False
     
     def make_unique_cell(self, text, color) -> QTableWidgetItem:
         colors = [
@@ -582,6 +631,10 @@ class SoundtrackViewer(QMainWindow):
                     if (r, c) != (row, col) and not hasattr(self.get_item_or_cellwidget(r, c), "disambiguated"):
                         self.get_item_or_cellwidget(r, c).setText(text)
                 break  # Only one group per cell
+
+    def handle_source_changed(self, _text):
+        self.changes = True
+        self.update_window_title()
 
     def handle_selection_changed(self):
         selected = self.table.selectedIndexes()
@@ -718,31 +771,61 @@ class SoundtrackViewer(QMainWindow):
         )
         if not file_path:
             return
+        file_path = self.validate_path(file_path, "Selected file", extensions=(".soundtrack", ".zip"))
+        if not file_path:
+            return
+
         if file_path.lower().endswith(".zip"):
             self.progress = ProgressWidget("Opening...")
             self.progress.show()
             self.progress.set_progress(100, "Opening zip file...")
-            
-            temp_dir = os.path.join("soundtracks", os.path.splitext(os.path.basename(file_path))[0])
-            os.makedirs(temp_dir, exist_ok=True)
+            soundtracks_dir = "soundtracks"
+            zip_name = os.path.splitext(os.path.basename(file_path))[0]
+            final_dir = os.path.join(soundtracks_dir, zip_name)
+            temp_dir = None
+            soundtrack_member = None
 
-            with zipfile.ZipFile(file_path, "r") as z:
-                z.extractall(temp_dir)
+            try:
+                with zipfile.ZipFile(file_path, "r") as z:
+                    zip_entries = [
+                        name.replace("\\", "/").lstrip("./")
+                        for name in z.namelist()
+                        if not name.endswith("/")
+                    ]
+                    candidates = [
+                        name for name in zip_entries
+                        if "/" not in name and name.lower().endswith(".soundtrack")
+                    ]
 
-            self.progress.close()
-            candidates = [
-                os.path.join(temp_dir, f)
-                for f in os.listdir(temp_dir)
-                if f.lower().endswith(".soundtrack")
-            ]
+                    if not candidates:
+                        QMessageBox.critical(self, "Unable to open zip file", f"Error: \"{os.path.basename(file_path)}\" does not contain a valid .soundtrack file.")
+                        print("Zip doesn't contain a .soundtrack file in root directory")
+                        return
 
-            if not candidates:
-                QMessageBox.critical(self, f"Unable to open zip file", f"Error: \"{os.path.basename(file_path)}\" does not contain a .soundtrack file.")
-                print("Zip contains no .soundtrack file")
+                    soundtrack_member = candidates[0]
+
+                    os.makedirs(soundtracks_dir, exist_ok=True)
+                    temp_dir = tempfile.mkdtemp(prefix=f".import_{zip_name}_", dir=soundtracks_dir)
+                    z.extractall(temp_dir)
+
+                if os.path.isdir(final_dir):
+                    shutil.rmtree(final_dir, ignore_errors=True)
+
+                os.replace(temp_dir, final_dir)
+                self.file = os.path.join(final_dir, soundtrack_member)
+
+            except zipfile.BadZipFile:
+                if temp_dir and os.path.isdir(temp_dir):
+                    shutil.rmtree(temp_dir, ignore_errors=True)
+                QMessageBox.critical(self, "Unable to open zip file", f"Error: \"{os.path.basename(file_path)}\" is not a valid zip archive.")
                 return
-
-            soundtrack_path = candidates[0]
-            self.file = soundtrack_path
+            except Exception as e:
+                if temp_dir and os.path.isdir(temp_dir):
+                    shutil.rmtree(temp_dir, ignore_errors=True)
+                QMessageBox.critical(self, "Unable to open zip file", f"Error while reading \"{os.path.basename(file_path)}\": {e}")
+                return
+            finally:
+                self.progress.close()
 
         else:
             self.file = file_path
@@ -763,14 +846,25 @@ class SoundtrackViewer(QMainWindow):
             "./" if not self.file else self.file,
             "Soundtrack Files (*.soundtrack)"
         )
-        if file_path:
-            self.file = file_path
-            print(file_path)
-            self.write_file()
-            self.changes = False
-            self.update_window_title()
-        else:
+        if not file_path:
             print("Save As... canceled")
+            return False
+
+        if not file_path.lower().endswith(".soundtrack"):
+            file_path += ".soundtrack"
+
+        file_path = self.validate_path(file_path, "Soundtrack file", extensions=(".soundtrack",))
+        if not file_path:
+            return False
+
+        self.file = file_path
+        print(file_path)
+        if not self.write_file(target_file=self.file):
+            return False
+
+        self.changes = False
+        self.update_window_title()
+        return True
         
     def export_file(self):
         print("Export file action triggered")
@@ -791,16 +885,26 @@ class SoundtrackViewer(QMainWindow):
         )
         if not file_path:
             print("Export canceled")
-            return
+            return False
+
+        if not file_path.lower().endswith(".zip"):
+            file_path += ".zip"
+
+        file_path = self.validate_path(file_path, "Export file", extensions=(".zip",))
+        if not file_path:
+            return False
+
         # save temp soundtrack file
-        self.file = os.path.join("temp", os.path.splitext(os.path.basename(file_path))[0] + ".soundtrack")
-        print(self.file)
-        self.write_file(export = True)
+        os.makedirs("temp", exist_ok=True)
+        temp_soundtrack = os.path.join("temp", os.path.splitext(os.path.basename(file_path))[0] + ".soundtrack")
+        print(temp_soundtrack)
+        if not self.write_file(export=True, target_file=temp_soundtrack):
+            return False
 
         print("Creating archive at", file_path)
 
         self.thread = QThread()
-        self.worker = ExportWorker(self.settings, self.file, file_path)
+        self.worker = ExportWorker(self.settings, temp_soundtrack, file_path)
         self.worker.moveToThread(self.thread)
 
         self.progress = ProgressWidget("Exporting Soundtrack...")
@@ -830,20 +934,62 @@ class SoundtrackViewer(QMainWindow):
         self.handle_worker_exception("Export", e)
     
     def handle_worker_exception(self, type, e):
-        QMessageBox.critical(self, f"Critical Error", f"{type} Error: {e}")            
+        if isinstance(e, OSError):
+            path_hint = f"\nPath: {e.filename}" if e.filename else ""
+            msg = f"{type} Error: {e.strerror or str(e)}{path_hint}"
+        else:
+            msg = f"{type} Error: {e}"
+
+        show_path_tip = True
+        if isinstance(e, OSError):
+            error_text = (e.strerror or str(e) or "").lower()
+            winerror = getattr(e, "winerror", None)
+            if winerror in (32, 33) or "being used by another process" in error_text:
+                show_path_tip = False
+
+        if show_path_tip:
+            msg += (
+                "\n\nTip: keep file names short, and only use letters, numbers, spaces, "
+                "dashes, underscores, periods, and parentheses."
+            )
+
+        QMessageBox.critical(
+            self,
+            "Critical Error",
+            msg,
+        )
         
     def apply_action(self):
         print("Apply action triggered")
-        # todo: change this to a yes/no dialogue that asks if you'd like to save before applying, if there are changes
-        if self.changes and self.file:
-            self.write_file()
-        elif self.changes:
-            self.save_file()
+        if self.changes:
+            msg = QMessageBox()
+            msg.setWindowTitle("Unsaved Changes")
+            msg.setText("Save changes before applying soundtrack?")
+            msg.setInformativeText("Apply will be canceled if you do not save.")
+            msg.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
+            msg.setDefaultButton(QMessageBox.Save)
+            msg.setIcon(QMessageBox.Question)
+            msg.setWindowIcon(QIcon(resource_path("media/bpss.png")))
+
+            if msg.exec_() != QMessageBox.Save:
+                return
+
+            if self.file:
+                if not self.write_file():
+                    return
+            else:
+                if not self.save_file():
+                    return
+
+        if not self.file:
+            QMessageBox.warning(self, "Missing File", "Save your soundtrack file before applying changes.")
+            return
 
         # make sure all of the files are legit
         rows = self.table.rowCount()
         for r in range(rows):
-            source = self.table.cellWidget(r, 5).text()
+            source_widget = self.table.cellWidget(r, 5)
+            source = source_widget.text() if source_widget else ""
             if source:
                 if not self.validate_file(source, r):
                     return
@@ -870,20 +1016,33 @@ class SoundtrackViewer(QMainWindow):
         self.thread.start()
 
     def validate_file(self, source, r):
+        title = self.get_item_or_cellwidget(r, 1).text()
+        source = self.validate_path(source, f"Source file for {title}", extensions=(".wav", ".mp3", ".aiff"))
+        if not source:
+            return False
+
         if not os.path.isfile(source):
-            QMessageBox.warning(self, "Missing File", f"Could not find source file for {self.get_item_or_cellwidget(r, 1).text()}.")
+            QMessageBox.warning(
+                self,
+                "Missing File",
+                f"Could not find source file for {title}.\n\nPath:\n{source}",
+            )
             return False
-        
-        if not source.lower().endswith(('.wav', '.mp3', '.aiff')):
-            QMessageBox.warning(self, "Incorrect Format", f"Source file for {self.get_item_or_cellwidget(r, 1).text()} is not wav, mp3, or aiff.")
-            return False
-        elif source.lower().endswith(('.mp3')):
+
+        if source.lower().endswith('.mp3'):
             # codec check
-            audio = mutagen.File(source)
-            if audio.__class__.__name__ == "MP4":
-                QMessageBox.warning(self, "Unsupported Codec", f"The source file for {self.get_item_or_cellwidget(r, 1).text()} uses an unsupported codec (mp4a). Please use the mpga codec or covert it to a different audio format.")
+            try:
+                audio = mutagen.File(source)
+            except Exception as e:
+                QMessageBox.warning(self, "Codec Check Failed", f"Could not read the MP3 codec for {title}.\n\nReason: {e}")
                 return False
-            
+            if audio is None:
+                QMessageBox.warning(self, "Codec Check Failed", f"Could not read audio metadata for {title}.")
+                return False
+            if audio.__class__.__name__ == "MP4":
+                QMessageBox.warning(self, "Unsupported Codec", f"The source file for {title} uses an unsupported codec (mp4a). Please use mpga or convert it to WAV/AIFF.")
+                return False
+             
         return True
 
     def unapply_action(self):
@@ -1106,96 +1265,62 @@ class SoundtrackViewer(QMainWindow):
         self.undisambiguate_btn.show()
     
     def get_item_or_cellwidget(self, row, col):
-        if self.table.item(row, col):
-            return self.table.item(row, col)
-        else:
-            return self.table.cellWidget(row, col)
+        item = self.table.item(row, col)
+        if item is not None:
+            return item
+        return self.table.cellWidget(row, col)
+
+    def get_cell_text(self, row, col):
+        cell = self.get_item_or_cellwidget(row, col)
+        if cell is None:
+            return ""
+        if hasattr(cell, "text"):
+            return cell.text()
+        return ""
     
     def get_table_row(self, ind, inner=False):
         print("Getting table row " + str(ind))
         row_data = {}
         default = self.defaults[list(self.defaults.keys())[ind]]
+        row_data["strings"] = {
+            "title": self.get_cell_text(ind, 1),
+            "album": self.get_cell_text(ind, 2),
+            "artist": self.get_cell_text(ind, 3),
+            "stream": self.get_cell_text(ind, 4)
+        }
+        row_data["source"] = self.get_cell_text(ind, 5)
+
         match default["type"]:
             case 0: # regular soundtrack
                 match default["lock"]:
-                    case 0: # no lock
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
                     case 1: # no album (FRICTION)
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        cell = self.get_item_or_cellwidget(ind, 2)
+                        if inner and cell is not None and hasattr(cell, "innerText"):
+                            row_data["strings"]["album"] = cell.innerText
                     case 3: # artist/album sync
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        cell = self.get_item_or_cellwidget(ind, 2)
+                        if inner and cell is not None and hasattr(cell, "innerText"):
+                            row_data["strings"]["album"] = cell.innerText
                     case 6: # stream/artist sync
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 3), "innerText"):
-                            row_data["strings"]["artist"] = self.get_item_or_cellwidget(ind, 3).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        cell = self.get_item_or_cellwidget(ind, 3)
+                        if inner and cell is not None and hasattr(cell, "innerText"):
+                            row_data["strings"]["artist"] = cell.innerText
                     case 7: # stream/artist/album sync
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 3), "innerText"):
-                            row_data["strings"]["artist"] = self.get_item_or_cellwidget(ind, 3).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        album_cell = self.get_item_or_cellwidget(ind, 2)
+                        artist_cell = self.get_item_or_cellwidget(ind, 3)
+                        if inner and album_cell is not None and hasattr(album_cell, "innerText"):
+                            row_data["strings"]["album"] = album_cell.innerText
+                        if inner and artist_cell is not None and hasattr(artist_cell, "innerText"):
+                            row_data["strings"]["artist"] = artist_cell.innerText
                     case 9: # song/album sync
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 1), "innerText"):
-                            row_data["strings"]["title"] = self.get_item_or_cellwidget(ind, 1).innerText
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
-            case 1: # burnout soundtrack
-                row_data["strings"] = {
-                    "title": self.get_item_or_cellwidget(ind, 1).text(),
-                    "album": self.get_item_or_cellwidget(ind, 2).text(),
-                    "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                    "stream": self.get_item_or_cellwidget(ind, 4).text()
-                }
-                row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
-            case 2: # classical soundtrack
-                row_data["strings"] = {
-                    "title": self.get_item_or_cellwidget(ind, 1).text(),
-                    "album": self.get_item_or_cellwidget(ind, 2).text(),
-                    "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                    "stream": self.get_item_or_cellwidget(ind, 4).text()
-                }
-                row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        title_cell = self.get_item_or_cellwidget(ind, 1)
+                        album_cell = self.get_item_or_cellwidget(ind, 2)
+                        if inner and title_cell is not None and hasattr(title_cell, "innerText"):
+                            row_data["strings"]["title"] = title_cell.innerText
+                        if inner and album_cell is not None and hasattr(album_cell, "innerText"):
+                            row_data["strings"]["album"] = album_cell.innerText
+            case 1 | 2:
+                pass
         
         return row_data
 

@@ -1,12 +1,13 @@
 import sys
 import json
 import os
+import shutil
 from PyQt5.QtWidgets import (
     QApplication, QDialog, QLabel, QLineEdit, QPushButton, QCheckBox,
     QFileDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QSpacerItem, QSizePolicy, QMessageBox
 )
 from PyQt5.QtGui import QIcon
-from Helpers import resource_path
+from Helpers import resource_path, coerce_bool
 
 SETTINGS_FILE = "settings.json"
 
@@ -35,8 +36,13 @@ class SettingsDialog(QDialog):
         if self.first:
             self.warn_disambiguation_checkbox.hide()
             self.cut_songs_checkbox.hide()
+        else:
+            self.clear_cache_button = QPushButton("Clear SX Cache")
+            self.clear_cache_button.clicked.connect(self.clear_sx_cache)
         layout.addWidget(self.warn_disambiguation_checkbox)
         layout.addWidget(self.cut_songs_checkbox)
+        if not self.first:
+            layout.addWidget(self.clear_cache_button)
         spacer = QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addSpacerItem(spacer)
         # OK and Cancel buttons
@@ -98,8 +104,33 @@ class SettingsDialog(QDialog):
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, "r") as f:
-                return json.load(f)
+                settings = json.load(f)
+                settings["warn"] = coerce_bool(settings.get("warn", True), default=True)
+                settings["mod"] = coerce_bool(settings.get("mod", False), default=False)
+                settings["actions"] = coerce_bool(settings.get("actions", False), default=False)
+                return settings
         return {}
+
+    def clear_sx_cache(self):
+        cache_dir = os.path.join("temp", "sx_cache")
+        result = QMessageBox.question(
+            self,
+            "Clear SX Cache",
+            "Are you sure you want to clear the SX conversion cache?\n\nThis will free disk space, but will cause subsequent apply operations to take longer (until the cache is rebuilt).\n\nThis action can not be undone!",
+            QMessageBox.Yes | QMessageBox.Cancel,
+            QMessageBox.Cancel
+        )
+        if result != QMessageBox.Yes:
+            return
+
+        try:
+            if os.path.isdir(cache_dir):
+                shutil.rmtree(cache_dir)
+                QMessageBox.information(self, "SX Cache Cleared", "SX conversion cache was cleared.")
+            else:
+                QMessageBox.information(self, "SX Cache", "No SX cache folder was found.")
+        except Exception as e:
+            QMessageBox.critical(self, "Clear Cache Failed", f"Could not clear SX cache.\n\nReason: {e}")
 
     def save_and_accept(self):
         required_fields = {

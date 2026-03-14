@@ -4,9 +4,45 @@ import shutil
 import struct
 import subprocess
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from HexNavigator import HexNavigator
-from Helpers import resource_path
+from Helpers import resource_path, require_path_rules, hash_file
 from PyQt5.QtCore import QThread
+
+SX_CACHE_DIR = os.path.join("temp", "sx_cache")
+
+def run_external(command, action):
+    result = subprocess.run(command, creationflags=subprocess.CREATE_NO_WINDOW)
+    if result.returncode != 0:
+        raise RuntimeError(f"{action} failed with exit code {result.returncode}.")
+    return result
+
+def resolve_pointer_targets(ptrs, song, field):
+    song_ptrs = ptrs.get(song, {})
+    if not song_ptrs:
+        return []
+
+    overrides = song_ptrs.get("overrides", {})
+    if field in overrides:
+        return [overrides[field]]
+
+    direct_targets = song_ptrs.get("ptrs", {}).get(field, [])
+    if direct_targets:
+        return direct_targets
+
+    # Some rows do not expose their own pointer list; borrow from another row
+    # with the same original string value for this field.
+    field_value = song_ptrs.get("strings", {}).get(field)
+    for _, other in ptrs.items():
+        if other is song_ptrs:
+            continue
+        if other.get("strings", {}).get(field) != field_value:
+            continue
+        candidate = other.get("ptrs", {}).get(field, [])
+        if candidate:
+            return candidate
+
+    return []
 
 def get_first_file(path):
     try:
@@ -32,7 +68,8 @@ def load_pointers(settings, filename, set_progress=None):
     if "game" in settings.keys() and os.path.isdir(settings["game"]):
         binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
         tempLoc = os.path.join('temp', 'globaldata')
-        subprocess.run([settings["yap"], 'e', binLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+        shutil.rmtree(tempLoc, ignore_errors=True)
+        run_external([settings["yap"], 'e', binLoc, tempLoc], "YAP extract (global data)")
     else:
         print("failing out")
         if set_progress: set_progress(100, "Failed to find Burnout Paradise installation!")
@@ -42,8 +79,10 @@ def load_pointers(settings, filename, set_progress=None):
 
     # Create a navigator
     vaultLoc = os.path.join(tempLoc, 'AttribSysVault')
-
-    navigator = HexNavigator(get_first_file(vaultLoc))
+    vault_file = get_first_file(vaultLoc)
+    if not vault_file:
+        raise RuntimeError("YAP extract completed, but no AttribSysVault file was found.")
+    navigator = HexNavigator(vault_file)
 
     # Find the pointer to strings
     navigator.seek(0x08)
@@ -229,11 +268,15 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
     tempLoc = os.path.join('temp', 'globaldata')
 
     # get fresh strings vault
-    subprocess.run([settings["yap"], 'e', binLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+    shutil.rmtree(tempLoc, ignore_errors=True)
+    run_external([settings["yap"], 'e', binLoc, tempLoc], "YAP extract (global data)")
 
     # create navigator
     vaultLoc = os.path.join(tempLoc, 'AttribSysVault')
-    navigator = HexNavigator(get_first_file(vaultLoc))
+    vault_file = get_first_file(vaultLoc)
+    if not vault_file:
+        raise RuntimeError("YAP extract completed, but no AttribSysVault file was found.")
+    navigator = HexNavigator(vault_file)
 
     if set_progress: set_progress(8, "Beginning data write...")
 
@@ -250,6 +293,7 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
     step = 20 / steps
     count = 0
     written_pointers = []
+    unresolved_pointer_fields = []
     for s in st.keys():
         print(f"writing data for {s}")
         if set_progress: set_progress(int((step * count) + 10), f"Writing strings for \"{st[s]['strings']['title']}\"...")
@@ -262,24 +306,30 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
                 loc = navigator.loc()
                 # print("got eof " + str(loc))
                 navigator.write_cstring(st[s]["strings"][k])
-                if ptrs[s]:
-                    # if overrides specified, use that
-                    if ptrs[s].get("overrides") and ptrs[s]["overrides"].get(k):
-                        navigator.seek(ptrs[s]["overrides"][k])
+                pointer_targets = resolve_pointer_targets(ptrs, s, k)
+                if not pointer_targets:
+                    unresolved_pointer_fields.append((s, k))
+                    continue
+
+                for x in pointer_targets:
+                    if x not in written_pointers:
+                        navigator.seek(x)
                         navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
                         written_pointers.append(x)
-                    else:
-                        for x in ptrs[s]["ptrs"][k]:
-                            if x not in written_pointers:
-                                navigator.seek(x)
-                                navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
-                                written_pointers.append(x)
         # add to conversion queue
         if st[s].get("zip", None):
             to_convert.append([st[s]["zip"], st[s]["strings"]["stream"].upper(), s])
         elif st[s]["source"]:
             to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
         count += 1
+
+    if unresolved_pointer_fields:
+        examples = ", ".join([f"{song}:{field}" for song, field in unresolved_pointer_fields[:4]])
+        raise RuntimeError(
+            "Could not apply some edited strings because pointer data is missing. "
+            f"Missing fields: {examples}. "
+            f"Delete \"{pointers}\" and reopen BPSS to regenerate pointers, then apply again."
+        )
 
     if set_progress: set_progress(30, "Adjusting bin size...")
 
@@ -299,7 +349,7 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
         shutil.move(binLoc, backupLoc)
 
     # create at the location of the bin
-    subprocess.run([settings["yap"], 'c', tempLoc, binLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+    run_external([settings["yap"], 'c', tempLoc, binLoc], "YAP pack (global data)")
 
     if set_progress: set_progress(40, "Unpacking stream headers...")
 
@@ -307,18 +357,39 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
     # start by unpacking streamheaders
     headersLoc = os.path.join(settings["game"], "SOUND", "STREAMS", "STREAMHEADERS.BUNDLE")
     tempLoc = os.path.join("temp", "streamheaders")
-    subprocess.run([settings["yap"], 'e', headersLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+    shutil.rmtree(tempLoc, ignore_errors=True)
+    run_external([settings["yap"], 'e', headersLoc, tempLoc], "YAP extract (stream headers)")
 
     steps = len(to_convert) or 1
     step = (50 / steps)
+    if to_convert:
+        workers = max(1, (os.cpu_count() or 1) - 2)
+        workers = min(workers, len(to_convert))
+
+        if set_progress: set_progress(45, f"Converting audio with {workers} threads...")
+
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_to_song = {
+                executor.submit(convertSong, s[0], s[1], settings): s
+                for s in to_convert
+            }
+            converted = 0
+            for future in as_completed(future_to_song):
+                if thread.isInterruptionRequested():
+                    if set_progress: set_progress(100, "Apply action canceled. Changes may be partially applied.")
+                    return
+                s = future_to_song[future]
+                future.result()
+                converted += 1
+                if set_progress:
+                    set_progress(min(94, int((step * converted) + 45)), f"Converted \"{st[s[2]]['strings']['title']}\"...")
+
     count = 0
     for s in to_convert:
         if thread.isInterruptionRequested():
             if set_progress: set_progress(100, "Apply action canceled. Changes may be partially applied.")
             return
-        if set_progress: set_progress(int((step * count) + 45), f"Converting \"{st[s[2]]['strings']['title']}\"...")
-        # start by converting the song
-        convertSong(s[0], s[1], settings)
+        if set_progress: set_progress(int((step * count) + 45), f"Updating \"{st[s[2]]['strings']['title']}\"...")
         # get the .snr file, then write those contents at 0x10 of the corresponding data file
         snr_path = os.path.join("temp", s[1] + ".SNR")
         dat_path = os.path.join(tempLoc, "GenericRwacWaveContent", data[s[2]]["id"].upper() + ".dat")
@@ -348,7 +419,7 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
     backupHeaders = headersLoc + ".old"
     if not os.path.exists(backupHeaders):
         shutil.move(headersLoc, backupHeaders)
-    subprocess.run([settings["yap"], 'c', tempLoc, headersLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+    run_external([settings["yap"], 'c', tempLoc, headersLoc], "YAP pack (stream headers)")
 
     # save edits to st too
     with open(soundtrack, 'w', encoding='utf-8') as f:
@@ -416,10 +487,49 @@ def reset_files(settings, set_progress=None):
 
 
 def convertSong(file, stream, settings):
-    print(file)
-    temp_path = os.path.join("temp", stream)
-    print(temp_path)
-    subprocess.run([settings["audio"], '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', f"\"{file}\"", f"-=\"{temp_path}\""], creationflags=subprocess.CREATE_NO_WINDOW)
+    source_path = require_path_rules(os.path.abspath(file), "Source file")
+    temp_path = os.path.abspath(os.path.join("temp", stream))
+    sx_path = os.path.abspath(settings["audio"])
+    temp_snr = temp_path + ".snr"
+    temp_sns = temp_path + ".sns"
+
+    os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+    os.makedirs(SX_CACHE_DIR, exist_ok=True)
+
+    source_hash = hash_file(source_path)
+    cached_snr = os.path.join(SX_CACHE_DIR, source_hash + ".snr")
+    cached_sns = os.path.join(SX_CACHE_DIR, source_hash + ".sns")
+
+    if os.path.exists(cached_snr) and os.path.exists(cached_sns):
+        shutil.copy2(cached_snr, temp_snr)
+        shutil.copy2(cached_sns, temp_sns)
+        return
+
+    result = subprocess.run(
+        [sx_path, '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', source_path, f"-={temp_path}"],
+        creationflags=subprocess.CREATE_NO_WINDOW
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"sx failed with exit code {result.returncode} while converting \"{os.path.basename(source_path)}\"."
+        )
+
+    if not os.path.exists(temp_snr) or not os.path.exists(temp_sns):
+        raise RuntimeError(
+            f"sx did not produce expected output for \"{os.path.basename(source_path)}\". "
+            "Try a shorter path or placing the file in a directory without any special characters."
+        )
+
+    if not os.path.exists(cached_snr):
+        try:
+            shutil.copy2(temp_snr, cached_snr)
+        except OSError:
+            pass
+    if not os.path.exists(cached_sns):
+        try:
+            shutil.copy2(temp_sns, cached_sns)
+        except OSError:
+            pass
     
 
 def export_files(settings, filename, export_path, set_progress=None):
