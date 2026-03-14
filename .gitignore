@@ -6,3 +6,5 @@ dist
 /*.json
 .vscode
 .vs
+*.soundtrack
+*.zip
