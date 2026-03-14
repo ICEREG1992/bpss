@@ -5,11 +5,12 @@ import hashlib
 import zipfile
 import shutil
 import tempfile
+import mutagen
+
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidget, QHeaderView, QFrame, QVBoxLayout, QWidget, QHBoxLayout, QVBoxLayout,
                             QTableWidgetItem, QHBoxLayout, QWidget, QToolBar, QAction, QStyle, QPushButton, QMessageBox, QFileDialog)
 from PyQt5.QtCore import Qt, QThread, QEvent, QItemSelectionModel
 from PyQt5.QtGui import QBrush, QColor, QIcon, QPixmap, QKeySequence
-import mutagen
 
 from dialogs.Disambiguate import DisambiguateDialog
 from dialogs.Settings import SettingsDialog
