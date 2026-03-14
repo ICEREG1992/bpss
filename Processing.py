@@ -11,6 +11,39 @@ from PyQt5.QtCore import QThread
 
 SX_CACHE_DIR = os.path.join("temp", "sx_cache")
 
+def run_external(command, action):
+    result = subprocess.run(command, creationflags=subprocess.CREATE_NO_WINDOW)
+    if result.returncode != 0:
+        raise RuntimeError(f"{action} failed with exit code {result.returncode}.")
+    return result
+
+def resolve_pointer_targets(ptrs, song, field):
+    song_ptrs = ptrs.get(song, {})
+    if not song_ptrs:
+        return []
+
+    overrides = song_ptrs.get("overrides", {})
+    if field in overrides:
+        return [overrides[field]]
+
+    direct_targets = song_ptrs.get("ptrs", {}).get(field, [])
+    if direct_targets:
+        return direct_targets
+
+    # Some rows do not expose their own pointer list; borrow from another row
+    # with the same original string value for this field.
+    field_value = song_ptrs.get("strings", {}).get(field)
+    for _, other in ptrs.items():
+        if other is song_ptrs:
+            continue
+        if other.get("strings", {}).get(field) != field_value:
+            continue
+        candidate = other.get("ptrs", {}).get(field, [])
+        if candidate:
+            return candidate
+
+    return []
+
 def get_first_file(path):
     try:
         for entry in os.listdir(path):
@@ -35,7 +68,8 @@ def load_pointers(settings, filename, set_progress=None):
     if "game" in settings.keys() and os.path.isdir(settings["game"]):
         binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
         tempLoc = os.path.join('temp', 'globaldata')
-        subprocess.run([settings["yap"], 'e', binLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+        shutil.rmtree(tempLoc, ignore_errors=True)
+        run_external([settings["yap"], 'e', binLoc, tempLoc], "YAP extract (global data)")
     else:
         print("failing out")
         if set_progress: set_progress(100, "Failed to find Burnout Paradise installation!")
@@ -45,8 +79,10 @@ def load_pointers(settings, filename, set_progress=None):
 
     # Create a navigator
     vaultLoc = os.path.join(tempLoc, 'AttribSysVault')
-
-    navigator = HexNavigator(get_first_file(vaultLoc))
+    vault_file = get_first_file(vaultLoc)
+    if not vault_file:
+        raise RuntimeError("YAP extract completed, but no AttribSysVault file was found.")
+    navigator = HexNavigator(vault_file)
 
     # Find the pointer to strings
     navigator.seek(0x08)
@@ -232,11 +268,15 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
     tempLoc = os.path.join('temp', 'globaldata')
 
     # get fresh strings vault
-    subprocess.run([settings["yap"], 'e', binLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+    shutil.rmtree(tempLoc, ignore_errors=True)
+    run_external([settings["yap"], 'e', binLoc, tempLoc], "YAP extract (global data)")
 
     # create navigator
     vaultLoc = os.path.join(tempLoc, 'AttribSysVault')
-    navigator = HexNavigator(get_first_file(vaultLoc))
+    vault_file = get_first_file(vaultLoc)
+    if not vault_file:
+        raise RuntimeError("YAP extract completed, but no AttribSysVault file was found.")
+    navigator = HexNavigator(vault_file)
 
     if set_progress: set_progress(8, "Beginning data write...")
 
@@ -253,6 +293,7 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
     step = 20 / steps
     count = 0
     written_pointers = []
+    unresolved_pointer_fields = []
     for s in st.keys():
         print(f"writing data for {s}")
         if set_progress: set_progress(int((step * count) + 10), f"Writing strings for \"{st[s]['strings']['title']}\"...")
@@ -265,24 +306,30 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
                 loc = navigator.loc()
                 # print("got eof " + str(loc))
                 navigator.write_cstring(st[s]["strings"][k])
-                if ptrs[s]:
-                    # if overrides specified, use that
-                    if ptrs[s].get("overrides") and ptrs[s]["overrides"].get(k):
-                        navigator.seek(ptrs[s]["overrides"][k])
+                pointer_targets = resolve_pointer_targets(ptrs, s, k)
+                if not pointer_targets:
+                    unresolved_pointer_fields.append((s, k))
+                    continue
+
+                for x in pointer_targets:
+                    if x not in written_pointers:
+                        navigator.seek(x)
                         navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
                         written_pointers.append(x)
-                    else:
-                        for x in ptrs[s]["ptrs"][k]:
-                            if x not in written_pointers:
-                                navigator.seek(x)
-                                navigator.write_bytes((loc - offset).to_bytes(4, 'little'))
-                                written_pointers.append(x)
         # add to conversion queue
         if st[s].get("zip", None):
             to_convert.append([st[s]["zip"], st[s]["strings"]["stream"].upper(), s])
         elif st[s]["source"]:
             to_convert.append([st[s]["source"], st[s]["strings"]["stream"].upper(), s])
         count += 1
+
+    if unresolved_pointer_fields:
+        examples = ", ".join([f"{song}:{field}" for song, field in unresolved_pointer_fields[:4]])
+        raise RuntimeError(
+            "Could not apply some edited strings because pointer data is missing. "
+            f"Missing fields: {examples}. "
+            f"Delete \"{pointers}\" and reopen BPSS to regenerate pointers, then apply again."
+        )
 
     if set_progress: set_progress(30, "Adjusting bin size...")
 
@@ -302,7 +349,7 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
         shutil.move(binLoc, backupLoc)
 
     # create at the location of the bin
-    subprocess.run([settings["yap"], 'c', tempLoc, binLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+    run_external([settings["yap"], 'c', tempLoc, binLoc], "YAP pack (global data)")
 
     if set_progress: set_progress(40, "Unpacking stream headers...")
 
@@ -310,7 +357,8 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
     # start by unpacking streamheaders
     headersLoc = os.path.join(settings["game"], "SOUND", "STREAMS", "STREAMHEADERS.BUNDLE")
     tempLoc = os.path.join("temp", "streamheaders")
-    subprocess.run([settings["yap"], 'e', headersLoc, tempLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+    shutil.rmtree(tempLoc, ignore_errors=True)
+    run_external([settings["yap"], 'e', headersLoc, tempLoc], "YAP extract (stream headers)")
 
     steps = len(to_convert) or 1
     step = (50 / steps)
@@ -371,7 +419,7 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
     backupHeaders = headersLoc + ".old"
     if not os.path.exists(backupHeaders):
         shutil.move(headersLoc, backupHeaders)
-    subprocess.run([settings["yap"], 'c', tempLoc, headersLoc], creationflags=subprocess.CREATE_NO_WINDOW)
+    run_external([settings["yap"], 'c', tempLoc, headersLoc], "YAP pack (stream headers)")
 
     # save edits to st too
     with open(soundtrack, 'w', encoding='utf-8') as f:
