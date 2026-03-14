@@ -68,7 +68,12 @@ class FileBrowseCellWidget(QWidget):
         self.textChanged.emit(self.line_edit.text())
 
     def open_file_dialog(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select File")
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select File",
+            "",
+            "Audio Files (*.wav *.mp3 *.aiff)"
+        )
         if file_path:
             self.label.setText(file_path)
             self.textChanged.emit(self.label.text())
