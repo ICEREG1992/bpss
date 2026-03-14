@@ -51,7 +51,7 @@ def validate_path_rules(path, label, extensions=None, enforce_filename_rules=Fal
         if not SAFE_FILENAME_RE.fullmatch(filename):
             return None, "Unsupported Characters", (
                 f"{label} file name contains unsupported characters.\n"
-                "Use only letters, numbers, spaces, dashes, underscores, periods, and parentheses.\n\n"
+                "Use only letters, numbers, spaces, dashes, underscores, and periods.\n\n"
                 f"File name:\n{filename}"
             )
 
