@@ -5,6 +5,7 @@ import struct
 import subprocess
 import zipfile
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from HexNavigator import HexNavigator
 from Helpers import resource_path
 from PyQt5.QtCore import QThread
@@ -334,14 +335,34 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
 
     steps = len(to_convert) or 1
     step = (50 / steps)
+    if to_convert:
+        workers = max(1, (os.cpu_count() or 1) - 2)
+        workers = min(workers, len(to_convert))
+
+        if set_progress: set_progress(45, f"Converting audio with {workers} threads...")
+
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_to_song = {
+                executor.submit(convertSong, s[0], s[1], settings): s
+                for s in to_convert
+            }
+            converted = 0
+            for future in as_completed(future_to_song):
+                if thread.isInterruptionRequested():
+                    if set_progress: set_progress(100, "Apply action canceled. Changes may be partially applied.")
+                    return
+                s = future_to_song[future]
+                future.result()
+                converted += 1
+                if set_progress:
+                    set_progress(min(94, int((step * converted) + 45)), f"Converted \"{st[s[2]]['strings']['title']}\"...")
+
     count = 0
     for s in to_convert:
         if thread.isInterruptionRequested():
             if set_progress: set_progress(100, "Apply action canceled. Changes may be partially applied.")
             return
-        if set_progress: set_progress(int((step * count) + 45), f"Converting \"{st[s[2]]['strings']['title']}\"...")
-        # start by converting the song
-        convertSong(s[0], s[1], settings)
+        if set_progress: set_progress(int((step * count) + 45), f"Updating \"{st[s[2]]['strings']['title']}\"...")
         # get the .snr file, then write those contents at 0x10 of the corresponding data file
         snr_path = os.path.join("temp", s[1] + ".SNR")
         dat_path = os.path.join(tempLoc, "GenericRwacWaveContent", data[s[2]]["id"].upper() + ".dat")
