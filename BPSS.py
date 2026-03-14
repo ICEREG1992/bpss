@@ -1302,96 +1302,62 @@ class SoundtrackViewer(QMainWindow):
         self.undisambiguate_btn.show()
     
     def get_item_or_cellwidget(self, row, col):
-        if self.table.item(row, col):
-            return self.table.item(row, col)
-        else:
-            return self.table.cellWidget(row, col)
+        item = self.table.item(row, col)
+        if item is not None:
+            return item
+        return self.table.cellWidget(row, col)
+
+    def get_cell_text(self, row, col):
+        cell = self.get_item_or_cellwidget(row, col)
+        if cell is None:
+            return ""
+        if hasattr(cell, "text"):
+            return cell.text()
+        return ""
     
     def get_table_row(self, ind, inner=False):
         print("Getting table row " + str(ind))
         row_data = {}
         default = self.defaults[list(self.defaults.keys())[ind]]
+        row_data["strings"] = {
+            "title": self.get_cell_text(ind, 1),
+            "album": self.get_cell_text(ind, 2),
+            "artist": self.get_cell_text(ind, 3),
+            "stream": self.get_cell_text(ind, 4)
+        }
+        row_data["source"] = self.get_cell_text(ind, 5)
+
         match default["type"]:
             case 0: # regular soundtrack
                 match default["lock"]:
-                    case 0: # no lock
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
                     case 1: # no album (FRICTION)
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        cell = self.get_item_or_cellwidget(ind, 2)
+                        if inner and cell is not None and hasattr(cell, "innerText"):
+                            row_data["strings"]["album"] = cell.innerText
                     case 3: # artist/album sync
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        cell = self.get_item_or_cellwidget(ind, 2)
+                        if inner and cell is not None and hasattr(cell, "innerText"):
+                            row_data["strings"]["album"] = cell.innerText
                     case 6: # stream/artist sync
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 3), "innerText"):
-                            row_data["strings"]["artist"] = self.get_item_or_cellwidget(ind, 3).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        cell = self.get_item_or_cellwidget(ind, 3)
+                        if inner and cell is not None and hasattr(cell, "innerText"):
+                            row_data["strings"]["artist"] = cell.innerText
                     case 7: # stream/artist/album sync
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 3), "innerText"):
-                            row_data["strings"]["artist"] = self.get_item_or_cellwidget(ind, 3).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        album_cell = self.get_item_or_cellwidget(ind, 2)
+                        artist_cell = self.get_item_or_cellwidget(ind, 3)
+                        if inner and album_cell is not None and hasattr(album_cell, "innerText"):
+                            row_data["strings"]["album"] = album_cell.innerText
+                        if inner and artist_cell is not None and hasattr(artist_cell, "innerText"):
+                            row_data["strings"]["artist"] = artist_cell.innerText
                     case 9: # song/album sync
-                        row_data["strings"] = {
-                            "title": self.get_item_or_cellwidget(ind, 1).text(),
-                            "album": self.get_item_or_cellwidget(ind, 2).text(),
-                            "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                            "stream": self.get_item_or_cellwidget(ind, 4).text()
-                        }
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 1), "innerText"):
-                            row_data["strings"]["title"] = self.get_item_or_cellwidget(ind, 1).innerText
-                        if inner and hasattr(self.get_item_or_cellwidget(ind, 2), "innerText"):
-                            row_data["strings"]["album"] = self.get_item_or_cellwidget(ind, 2).innerText
-                        row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
-            case 1: # burnout soundtrack
-                row_data["strings"] = {
-                    "title": self.get_item_or_cellwidget(ind, 1).text(),
-                    "album": self.get_item_or_cellwidget(ind, 2).text(),
-                    "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                    "stream": self.get_item_or_cellwidget(ind, 4).text()
-                }
-                row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
-            case 2: # classical soundtrack
-                row_data["strings"] = {
-                    "title": self.get_item_or_cellwidget(ind, 1).text(),
-                    "album": self.get_item_or_cellwidget(ind, 2).text(),
-                    "artist": self.get_item_or_cellwidget(ind, 3).text(),
-                    "stream": self.get_item_or_cellwidget(ind, 4).text()
-                }
-                row_data["source"] = self.get_item_or_cellwidget(ind, 5).text()
+                        title_cell = self.get_item_or_cellwidget(ind, 1)
+                        album_cell = self.get_item_or_cellwidget(ind, 2)
+                        if inner and title_cell is not None and hasattr(title_cell, "innerText"):
+                            row_data["strings"]["title"] = title_cell.innerText
+                        if inner and album_cell is not None and hasattr(album_cell, "innerText"):
+                            row_data["strings"]["album"] = album_cell.innerText
+            case 1 | 2:
+                pass
         
         return row_data
 
