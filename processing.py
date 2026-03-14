@@ -6,8 +6,10 @@ import subprocess
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from HexNavigator import HexNavigator
-from Helpers import resource_path, require_path_rules
+from Helpers import resource_path, require_path_rules, hash_file
 from PyQt5.QtCore import QThread
+
+SX_CACHE_DIR = os.path.join("temp", "sx_cache")
 
 def get_first_file(path):
     try:
@@ -440,8 +442,20 @@ def convertSong(file, stream, settings):
     source_path = require_path_rules(os.path.abspath(file), "Source file")
     temp_path = os.path.abspath(os.path.join("temp", stream))
     sx_path = os.path.abspath(settings["audio"])
+    temp_snr = temp_path + ".snr"
+    temp_sns = temp_path + ".sns"
 
     os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+    os.makedirs(SX_CACHE_DIR, exist_ok=True)
+
+    source_hash = hash_file(source_path)
+    cached_snr = os.path.join(SX_CACHE_DIR, source_hash + ".snr")
+    cached_sns = os.path.join(SX_CACHE_DIR, source_hash + ".sns")
+
+    if os.path.exists(cached_snr) and os.path.exists(cached_sns):
+        shutil.copy2(cached_snr, temp_snr)
+        shutil.copy2(cached_sns, temp_sns)
+        return
 
     result = subprocess.run(
         [sx_path, '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', source_path, f"-={temp_path}"],
@@ -452,11 +466,22 @@ def convertSong(file, stream, settings):
             f"sx failed with exit code {result.returncode} while converting \"{os.path.basename(source_path)}\"."
         )
 
-    if not os.path.exists(temp_path + ".SNR") or not os.path.exists(temp_path + ".sns"):
+    if not os.path.exists(temp_snr) or not os.path.exists(temp_sns):
         raise RuntimeError(
             f"sx did not produce expected output for \"{os.path.basename(source_path)}\". "
             "Try a shorter path or placing the file in a directory without any special characters."
         )
+
+    if not os.path.exists(cached_snr):
+        try:
+            shutil.copy2(temp_snr, cached_snr)
+        except OSError:
+            pass
+    if not os.path.exists(cached_sns):
+        try:
+            shutil.copy2(temp_sns, cached_sns)
+        except OSError:
+            pass
     
 
 def export_files(settings, filename, export_path, set_progress=None):
