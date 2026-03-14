@@ -52,6 +52,7 @@ class FileBrowseCellWidget(QWidget):
         if urls:
             file_path = urls[0].toLocalFile()
             self.setText(file_path)
+            self.textChanged.emit(self.label.text())
 
     def enable_edit_mode(self, event):
         self.label.hide()

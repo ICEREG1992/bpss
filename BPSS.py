@@ -380,6 +380,7 @@ class SoundtrackViewer(QMainWindow):
 
                 # Create file browse widget with update hook
                 file_browse_widget = FileBrowseCellWidget("")
+                file_browse_widget.textChanged.connect(self.handle_source_changed)
                 
                 match self.defaults[key]["type"]:
                     case 0: # regular soundtrack
@@ -700,6 +701,10 @@ class SoundtrackViewer(QMainWindow):
                         self.get_item_or_cellwidget(r, c).setText(text)
                 break  # Only one group per cell
 
+    def handle_source_changed(self, _text):
+        self.changes = True
+        self.update_window_title()
+
     def handle_selection_changed(self):
         selected = self.table.selectedIndexes()
         # handle selection and de-selection of cellwidgets with a full table sweep
@@ -1011,13 +1016,25 @@ class SoundtrackViewer(QMainWindow):
         
     def apply_action(self):
         print("Apply action triggered")
-        # todo: change this to a yes/no dialogue that asks if you'd like to save before applying, if there are changes
-        if self.changes and self.file:
-            if not self.write_file():
+        if self.changes:
+            msg = QMessageBox()
+            msg.setWindowTitle("Unsaved Changes")
+            msg.setText("Save changes before applying soundtrack?")
+            msg.setInformativeText("Apply will be canceled if you do not save.")
+            msg.setStandardButtons(QMessageBox.Save | QMessageBox.Cancel)
+            msg.setDefaultButton(QMessageBox.Save)
+            msg.setIcon(QMessageBox.Question)
+            msg.setWindowIcon(QIcon(resource_path("media/bpss.png")))
+
+            if msg.exec_() != QMessageBox.Save:
                 return
-        elif self.changes:
-            if not self.save_file():
-                return
+
+            if self.file:
+                if not self.write_file():
+                    return
+            else:
+                if not self.save_file():
+                    return
 
         if not self.file:
             QMessageBox.warning(self, "Missing File", "Save your soundtrack file before applying changes.")
@@ -1026,7 +1043,8 @@ class SoundtrackViewer(QMainWindow):
         # make sure all of the files are legit
         rows = self.table.rowCount()
         for r in range(rows):
-            source = self.table.cellWidget(r, 5).text()
+            source_widget = self.table.cellWidget(r, 5)
+            source = source_widget.text() if source_widget else ""
             if source:
                 if not self.validate_file(source, r):
                     return
