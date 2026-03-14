@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import hashlib
 
 MAX_PATH_LENGTH = 240
 MAX_FILENAME_LENGTH = 120
@@ -74,6 +75,16 @@ def require_path_rules(path, label, extensions=None, enforce_filename_rules=Fals
     if error_message:
         raise ValueError(error_message)
     return normalized
+
+def hash_file(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as f:
+        while True:
+            chunk = f.read(1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()
 
 def col_to_key(col):
     match col:
