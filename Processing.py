@@ -18,8 +18,10 @@ def run_external(command, action):
     return result
 
 def resolve_pointer_targets(ptrs, song, field):
-    song_ptrs = ptrs.get(song, {})
-    if not song_ptrs:
+    song_ptrs = ptrs.get(song, None)
+    if song_ptrs is None:
+        return None
+    if song_ptrs == {}:
         return []
 
     overrides = song_ptrs.get("overrides", {})
@@ -42,7 +44,7 @@ def resolve_pointer_targets(ptrs, song, field):
         if candidate:
             return candidate
 
-    return []
+    return None
 
 def get_first_file(path):
     try:
@@ -307,7 +309,7 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
                 # print("got eof " + str(loc))
                 navigator.write_cstring(st[s]["strings"][k])
                 pointer_targets = resolve_pointer_targets(ptrs, s, k)
-                if not pointer_targets:
+                if pointer_targets is None:
                     unresolved_pointer_fields.append((s, k))
                     continue
 
