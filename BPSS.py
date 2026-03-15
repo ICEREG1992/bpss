@@ -501,6 +501,9 @@ class SoundtrackViewer(QMainWindow):
 
             for col in range(1, self.table.columnCount()):
                 self.table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
+
+            self.changes = False
+            self.update_window_title()
         
         except FileNotFoundError:
             QMessageBox.critical(self, "Critical Error", f"Fill Error: Pointers file \"{self.get_ptrs_hash()}.json\" not found. Try pressing Reset.")
