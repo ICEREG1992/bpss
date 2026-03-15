@@ -60,7 +60,9 @@ class DisambiguateDialog(QDialog):
             # look elsewhere
             print("your pointers are in another castle...")
             s = self.ptrs[self.key]["strings"][col]
-            candidates = [a["ptrs"][col] for a in self.ptrs.values() if a["strings"][col] == s]
+            candidates = [a["ptrs"][col] for a in self.ptrs.values() 
+              if "strings" in a and col in a["strings"] 
+              and a["strings"][col] == s]
             options = [o for o in candidates if len(o) > 1][0]
             print(str(options))
         

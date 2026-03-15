@@ -793,7 +793,7 @@
     },
     "$WORK_MOZART_EINEKLEINENACHTMUSIC": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_MOZART_EINEKLEINENACHTMUSIC",
             "stream": "PicParadise08",
@@ -826,7 +826,7 @@
     },
     "$WORK_TCHAIKOVSKY_NUTCRACKER": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_TCHAIKOVSKY_NUTCRACKER",
             "stream": "PicParadise21",
@@ -837,7 +837,7 @@
     },
     "$WORK_SAINTSAENS_AQUARIUM": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_SAINTSAENS_AQUARIUM",
             "stream": "PicParadise03",
@@ -848,7 +848,7 @@
     },
     "$WORK_MOZART_HORNCONCERTO4": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_MOZART_HORNCONCERTO4",
             "stream": "PicParadise12",
@@ -859,7 +859,7 @@
     },
     "$WORK_TCHAIKOVSKY_SLEEPINGBEAUTY": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_TCHAIKOVSKY_SLEEPINGBEAUTY",
             "stream": "PicParadise18",
@@ -870,7 +870,7 @@
     },
     "$WORK_VERDI_HEBREW": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_VERDI_HEBREW",
             "stream": "PicParadise11",
@@ -914,7 +914,7 @@
     },
     "$WORK_MOZART_PIANOCONCERTO": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_MOZART_PIANOCONCERTO",
             "stream": "PicParadise17",
@@ -925,7 +925,7 @@
     },
     "$WORK_HANDEL_WATERMUSIC1": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_HANDEL_WATERMUSIC1",
             "stream": "PicParadise24",
@@ -936,7 +936,7 @@
     },
     "$WORK_SAINTSAENS_SWAN": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_SAINTSAENS_SWAN",
             "stream": "PicParadise04",
@@ -958,7 +958,7 @@
     },
     "$WORK_MOZART_HORNCONCERTO3": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_MOZART_HORNCONCERTO3",
             "stream": "PicParadise13",
@@ -969,7 +969,7 @@
     },
     "$WORK_VERDI_AIDA": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_VERDI_AIDA",
             "stream": "PicParadise23",
@@ -980,7 +980,7 @@
     },
     "$WORK_HANDEL_WATERMUSIC2": {
         "type": 2,
-        "lock": 0,
+        "lock": 1,
         "defaults": {
             "title": "$WORK_HANDEL_WATERMUSIC2",
             "stream": "PicParadise25",
