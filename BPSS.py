@@ -687,8 +687,11 @@ class SoundtrackViewer(QMainWindow):
                 if col == 2 or col == 3:
                     return True
             case 2: # classical soundtrack
-                if col == 2 or col == 3:
+                if col == 2:
                     return True
+                elif col == 3:
+                    if self.defaults[key]["lock"] == 1:
+                        return True
 
 
     def create_actions(self):
