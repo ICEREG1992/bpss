@@ -38,11 +38,15 @@ class SettingsDialog(QDialog):
             self.cut_songs_checkbox.hide()
         else:
             self.clear_cache_button = QPushButton("Clear SX Cache")
+            self.clear_cache_button.setFixedWidth(120)
             self.clear_cache_button.clicked.connect(self.clear_sx_cache)
         layout.addWidget(self.warn_disambiguation_checkbox)
         layout.addWidget(self.cut_songs_checkbox)
         if not self.first:
-            layout.addWidget(self.clear_cache_button)
+            button_layout = QHBoxLayout()
+            button_layout.addStretch()
+            button_layout.addWidget(self.clear_cache_button)
+            layout.addLayout(button_layout)
         spacer = QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addSpacerItem(spacer)
         # OK and Cancel buttons
