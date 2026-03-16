@@ -1226,7 +1226,10 @@ class SoundtrackViewer(QMainWindow):
         if dialog.exec_():
             print("Disambiguation submitted")
             # remove cell color, add disambiguated tag, replace cell widget
-            if isinstance(cell, LockedCellWidget):
+            if hasattr(cell, "disambiguated") and cell.disambiguated:
+                # already disambiguated, just update override tooltip
+                cell.setToolTip(str(dialog.selected_option()))
+            elif isinstance(cell, LockedCellWidget):
                 cell = self.table.cellWidget(row, col)
                 self.table.setItem(row, col, self.make_disambiguated_cell(cell.text(), cell.text(), dialog.selected_option()))
                 self.table.setCellWidget(row, col, None)
@@ -1268,7 +1271,7 @@ class SoundtrackViewer(QMainWindow):
         else:
             self.table.setItem(selected.row(), selected.column(), None)
             self.table.setCellWidget(selected.row(), selected.column(), LockedCellWidget(cell.prev_color))
-        self.undisambiguate_btn.show()
+        self.undisambiguate_btn.hide()
     
     def get_item_or_cellwidget(self, row, col):
         item = self.table.item(row, col)
