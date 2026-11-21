@@ -313,28 +313,38 @@ class SoundtrackViewer(QMainWindow):
         if os.path.isfile(filename):
             self.fill_table()
         else:
-            print(f"Generating new ptrs for {filename}")
-            
-            self.progress = ProgressWidget("Finding pointers...")
-            self.progress.show()
-            
-            self.thread = QThread()
-            self.progress.worker_thread = self.thread
-            self.worker = LoadWorker(self.settings, filename)
-            self.worker.moveToThread(self.thread)
+            self.start_pointer_scan(filename, self.fill_table)
 
-            # Connect signals
-            self.thread.started.connect(self.worker.run)
-            self.worker.progress_changed.connect(self.progress.set_progress)
-            self.thread.finished.connect(self.progress.close)
-            self.worker.finished.connect(self.thread.quit)
-            self.worker.finished.connect(self.worker.deleteLater)
-            self.worker.finished.connect(self.fill_table)
-            self.thread.finished.connect(self.thread.deleteLater)
+    def start_pointer_scan(self, filename, on_finished):
+        print(f"Generating new ptrs for {filename}")
 
-            self.worker.error.connect(self.handle_load_exception)
-            
-            self.thread.start()
+        self.progress = ProgressWidget("Finding pointers...")
+        self.progress.show()
+
+        self.thread = QThread()
+        self.progress.worker_thread = self.thread
+        self.worker = LoadWorker(self.settings, filename)
+        self.worker.moveToThread(self.thread)
+
+        # Connect signals
+        self.thread.started.connect(self.worker.run)
+        self.worker.progress_changed.connect(self.progress.set_progress)
+        self.thread.finished.connect(self.progress.close)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.finished.connect(on_finished)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.worker.error.connect(self.handle_load_exception)
+
+        self.thread.start()
+
+    def refill_and_reload(self):
+        self.fill_table()
+        if self.file:
+            self.load_file()
+        self.changes = False
+        self.update_window_title()
 
     def fill_table(self):
         try:
@@ -351,7 +361,8 @@ class SoundtrackViewer(QMainWindow):
             stock = {}
             backfill = []
             sync = {}
-            
+            self.synced_cells = []  # rebuilt below; don't keep groups from a previous fill
+
             # Populate table
             for row_index, (key, entry) in enumerate(ptrs.items()):
                 # if this is BurnoutPR, don't show cut songs
@@ -836,6 +847,8 @@ class SoundtrackViewer(QMainWindow):
         
     def open_file(self):
         print("Load file action triggered")
+        if not self.confirm_discard_changes("opening another file"):
+            return
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Open File",
@@ -849,9 +862,6 @@ class SoundtrackViewer(QMainWindow):
             return
 
         self.save_last_dir(file_path)
-
-        if not self.confirm_discard_changes("opening another file"):
-            return
 
         if file_path.lower().endswith(".zip"):
             self.progress = ProgressWidget("Opening...")
@@ -1197,40 +1207,24 @@ class SoundtrackViewer(QMainWindow):
 
     def show_settings(self):
         print("Settings action triggered")
+        prev_settings = dict(self.settings)
         prev_hash = self.get_ptrs_hash()
         prev_mod = self.settings.get("mod", False)
         dialog = SettingsDialog()
         if dialog.exec_():
             print("Settings updated")
             self.settings = self.load_settings()
-            if self.get_ptrs_hash() != prev_hash:
-                # create a new pts json
+            if self.get_ptrs_hash() != prev_hash or prev_mod != self.settings.get("mod", False):
+                if not self.confirm_discard_changes("applying the new settings"):
+                    print("Unsaved changes dialog canceled, restoring previous settings")
+                    self.settings = prev_settings
+                    self.write_settings()
+                    return
                 filename = self.get_ptrs_hash() + ".json"
-                if not os.path.isfile(filename):
-                    print(f"Generating new ptrs for {filename}")
-                    
-                    self.progress = ProgressWidget("Finding pointers...")
-                    self.progress.show()
-                    
-                    self.thread = QThread()
-                    self.progress.thread = self.thread
-                    self.worker = LoadWorker(self.settings, filename)
-                    self.worker.moveToThread(self.thread)
-
-                    # Connect signals
-                    self.thread.started.connect(self.worker.run)
-                    self.worker.progress_changed.connect(self.progress.set_progress)
-                    self.worker.finished.connect(self.progress.close)
-                    self.worker.finished.connect(self.thread.quit)
-                    self.worker.finished.connect(self.worker.deleteLater)
-                    self.worker.finished.connect(self.fill_table)
-                    self.thread.finished.connect(self.thread.deleteLater)
-                    
-                    self.thread.start()
+                if os.path.isfile(filename):
+                    self.refill_and_reload()
                 else:
-                    self.fill_table()
-            if prev_mod != self.settings.get("mod", False):
-                self.reset_action()
+                    self.start_pointer_scan(filename, self.refill_and_reload)
         else:
             print("Settings canceled")
         
@@ -1275,6 +1269,8 @@ class SoundtrackViewer(QMainWindow):
     def clear_song(self):
         print("Delete song action triggered")
         row = self.table.currentRow()
+        if row < 0:
+            return  # nothing selected
         self.set_table_row(row, BLANK_ROW, inner=True)
 
     def play_song(self):

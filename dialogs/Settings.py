@@ -4,7 +4,7 @@ import os
 import shutil
 from PyQt5.QtWidgets import (
     QApplication, QDialog, QLabel, QLineEdit, QPushButton, QCheckBox,
-    QFileDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QSpacerItem, QSizePolicy, QMessageBox
+    QFileDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QMessageBox
 )
 from PyQt5.QtGui import QIcon
 from Helpers import resource_path, coerce_bool
@@ -18,12 +18,13 @@ class SettingsDialog(QDialog):
         window_title = "First Time Setup" if first else "Settings"
         self.setWindowTitle(window_title)
         self.setWindowIcon(QIcon(resource_path("media/bpss.png")))
-        self.setFixedSize(450, 250)
         self.settings = self.load_settings()
         self.init_ui()
 
     def init_ui(self):
         layout = QVBoxLayout()
+
+        self.control_height = QPushButton("Close").sizeHint().height()
 
         # Create each path entry row
         self.burnout_path = self.create_dir_selector("Burnout Paradise Installation Path", "game", layout)
@@ -39,6 +40,7 @@ class SettingsDialog(QDialog):
         else:
             self.clear_cache_button = QPushButton("Clear SX Cache")
             self.clear_cache_button.setFixedWidth(120)
+            self.clear_cache_button.setMinimumHeight(self.control_height)
             self.clear_cache_button.clicked.connect(self.clear_sx_cache)
         layout.addWidget(self.warn_disambiguation_checkbox)
         layout.addWidget(self.cut_songs_checkbox)
@@ -47,20 +49,26 @@ class SettingsDialog(QDialog):
             button_layout.addStretch()
             button_layout.addWidget(self.clear_cache_button)
             layout.addLayout(button_layout)
-        spacer = QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addSpacerItem(spacer)
+        layout.addStretch()
         # OK and Cancel buttons
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.save_and_accept)
         buttons.rejected.connect(self.reject)
+        for button in buttons.buttons():
+            button.setMinimumHeight(self.control_height)
         layout.addWidget(buttons)
 
         self.setLayout(layout)
 
+        # Let the layout decide the height so no widget gets squeezed below its natural size
+        self.setFixedSize(450, self.sizeHint().height())
+
     def create_dir_selector(self, label_text, key, parent_layout):
         label = QLabel(label_text)
         line_edit = QLineEdit(self.settings.get(key, ""))
+        line_edit.setMinimumHeight(self.control_height)
         browse_button = QPushButton("Browse")
+        browse_button.setMinimumHeight(self.control_height)
 
         def browse():
             start_path = line_edit.text() or "."
@@ -80,11 +88,13 @@ class SettingsDialog(QDialog):
         # Store reference for saving later
         setattr(self, f"{key}_input", line_edit)
         return line_edit
-    
+
     def create_file_selector(self, label_text, key, parent_layout):
         label = QLabel(label_text)
         line_edit = QLineEdit(self.settings.get(key, ""))
+        line_edit.setMinimumHeight(self.control_height)
         browse_button = QPushButton("Browse")
+        browse_button.setMinimumHeight(self.control_height)
 
         def browse():
             start_path = line_edit.text() or "."
@@ -137,24 +147,37 @@ class SettingsDialog(QDialog):
             QMessageBox.critical(self, "Clear Cache Failed", f"Could not clear SX cache.\n\nReason: {e}")
 
     def save_and_accept(self):
-        required_fields = {
-            "game": self.game_input.text(),
-            "audio": self.audio_input.text(),
-            "yap": self.yap_input.text(),
-            "warn": self.warn_disambiguation_checkbox.isChecked(),
-            "mod": self.cut_songs_checkbox.isChecked()
-        }
+        # (key, label shown to the user, value, check that the path really exists)
+        paths = [
+            ("game", "Burnout Paradise Installation Path", self.game_input.text().strip(), os.path.isdir),
+            ("audio", "EA SoundXchange Path", self.audio_input.text().strip(), os.path.isfile),
+            ("yap", "YAP Path", self.yap_input.text().strip(), os.path.isfile),
+        ]
 
-        missing = [key for key, val in required_fields.items() if val is None]
-
+        missing = [label for _, label, value, _ in paths if not value]
         if missing:
-            QMessageBox.warning(self, "Missing Input", "Please fill in all required paths.")
+            QMessageBox.warning(
+                self,
+                "Missing Input",
+                "Please fill in all required paths:\n\n" + "\n".join(missing),
+            )
             return
 
-        for f in required_fields.keys():
-            self.settings[f] = required_fields[f]
+        not_found = [label for _, label, value, exists in paths if not exists(value)]
+        if not_found:
+            QMessageBox.warning(
+                self,
+                "Path Not Found",
+                "These paths could not be found:\n\n" + "\n".join(not_found),
+            )
+            return
+
+        for key, _, value, _ in paths:
+            self.settings[key] = value
+        self.settings["warn"] = self.warn_disambiguation_checkbox.isChecked()
+        self.settings["mod"] = self.cut_songs_checkbox.isChecked()
         # Retain existing optional fields if they exist
-        self.settings.setdefault("last_dir", "")
+        self.settings.setdefault("prev", "")
         self.settings.setdefault("actions", False)
 
         with open(SETTINGS_FILE, "w") as f:
