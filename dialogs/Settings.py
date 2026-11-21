@@ -154,7 +154,7 @@ class SettingsDialog(QDialog):
         for f in required_fields.keys():
             self.settings[f] = required_fields[f]
         # Retain existing optional fields if they exist
-        self.settings.setdefault("prev", "")
+        self.settings.setdefault("last_dir", "")
         self.settings.setdefault("actions", False)
 
         with open(SETTINGS_FILE, "w") as f:
