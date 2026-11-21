@@ -52,6 +52,9 @@ class SoundtrackViewer(QMainWindow):
         self.synced_cells = []  # List of lists of (row, column) tuples
         self.defaults_file = resource_path("defaults.json")
 
+        # establish ctrl+up and ctrl+down shortcuts
+        self.create_song_actions()
+
         # Create toolbar
         self.create_toolbar()
         
@@ -114,6 +117,23 @@ class SoundtrackViewer(QMainWindow):
     def write_settings(self):
         with open(SETTINGS_FILE, "w") as f:
             json.dump(self.settings, f, indent=4)
+
+    def get_last_dir(self):
+        last_dir = self.settings.get("last_dir")
+        if last_dir and os.path.isdir(last_dir):
+            return last_dir
+        return ""
+
+    def save_last_dir(self, path):
+        if not path:
+            return
+        folder = os.path.dirname(os.path.abspath(path))
+        if folder and self.settings.get("last_dir") != folder:
+            self.settings["last_dir"] = folder
+            try:
+                self.write_settings()
+            except OSError as e:
+                print("Could not remember last folder:", e)
     
     def load_defaults(self):
         if os.path.exists(self.defaults_file):
@@ -148,6 +168,58 @@ class SoundtrackViewer(QMainWindow):
             return hashlib.sha256(self.settings["game"].encode()).hexdigest()[:8]
         else:
             return None
+
+    def save_current(self):
+        if self.file:
+            if not self.write_file():
+                return False
+            self.changes = False
+            self.update_window_title()
+            return True
+        return self.save_file()
+
+    def confirm_discard_changes(self, action_text):
+        if not self.changes:
+            return True
+
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Unsaved Changes")
+        msg.setText(f"You have unsaved changes. Save before {action_text}?")
+        msg.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+        msg.setDefaultButton(QMessageBox.Save)
+        msg.setIcon(QMessageBox.Question)
+        msg.setWindowIcon(QIcon(resource_path("media/bpss.png")))
+
+        result = msg.exec_()
+        if result == QMessageBox.Save:
+            return self.save_current()
+        if result == QMessageBox.Discard:
+            return True
+        return False
+
+    def confirm_action(self, title, text, icon=QMessageBox.Question):
+        msg = QMessageBox(self)
+        msg.setWindowTitle(title)
+        msg.setText(text)
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.setDefaultButton(QMessageBox.Cancel)
+        msg.setIcon(icon)
+        msg.setWindowIcon(QIcon(resource_path("media/bpss.png")))
+        return msg.exec_() == QMessageBox.Ok
+
+    def create_song_actions(self):
+        # Song manipulation actions + shortcuts, created once for the whole window
+        self.action_move_up = QAction("Move Song Up", self)
+        self.action_move_up.setShortcut(QKeySequence("Ctrl+Up"))
+        self.action_move_up.setIcon(self.style().standardIcon(QStyle.SP_ArrowUp))
+        self.action_move_up.triggered.connect(self.move_song_up)
+        self.addAction(self.action_move_up)  # Needed so shortcut works
+
+        self.action_move_down = QAction("Move Song Down", self)
+        self.action_move_down.setShortcut(QKeySequence("Ctrl+Down"))
+        self.action_move_down.setIcon(self.style().standardIcon(QStyle.SP_ArrowDown))
+        self.action_move_down.triggered.connect(self.move_song_down)
+        self.addAction(self.action_move_down)
 
     def create_toolbar(self):
         toolbar = QToolBar("Main Toolbar")
@@ -700,19 +772,6 @@ class SoundtrackViewer(QMainWindow):
         actions_frame.setFrameStyle(QFrame.StyledPanel)
         actions_layout = QVBoxLayout(actions_frame)
 
-        # Song manipulation shortcuts
-        self.action_move_up = QAction("Move Song Up", self)
-        self.action_move_up.setShortcut(QKeySequence("Ctrl+Up"))
-        self.action_move_up.setIcon(self.style().standardIcon(QStyle.SP_ArrowUp))
-        self.action_move_up.triggered.connect(self.move_song_up)
-        self.addAction(self.action_move_up)  # Needed so shortcut works
-
-        self.action_move_down = QAction("Move Song Down", self)
-        self.action_move_down.setShortcut(QKeySequence("Ctrl+Down"))
-        self.action_move_down.setIcon(self.style().standardIcon(QStyle.SP_ArrowDown))
-        self.action_move_down.triggered.connect(self.move_song_down)
-        self.addAction(self.action_move_down)
-
         # Song manipulation actions
         move_up_btn = QPushButton(self.action_move_up.text())
         move_up_btn.setStyleSheet("text-align: left;")
@@ -735,6 +794,11 @@ class SoundtrackViewer(QMainWindow):
         # insert_btn.setIcon(QIcon(QPixmap(resource_path("media/plus.png")).scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation)))
         # insert_btn.clicked.connect(self.insert_song)
 
+        # Horizontal rule separator
+        separator = QFrame()
+        separator.setFrameShape(QFrame.HLine)
+        separator.setFrameShadow(QFrame.Sunken)
+
         # Disambiguation
         self.disambiguate_btn = QPushButton("Disambiguate Cell")
         self.disambiguate_btn.setStyleSheet("text-align: left;")
@@ -753,6 +817,7 @@ class SoundtrackViewer(QMainWindow):
         actions_layout.addWidget(move_down_btn)
         # actions_layout.addWidget(insert_btn)
         actions_layout.addWidget(clear_btn)
+        actions_layout.addWidget(separator)
         actions_layout.addWidget(self.disambiguate_btn)
         actions_layout.addWidget(self.undisambiguate_btn)
         actions_layout.addStretch()  # Push buttons to top
@@ -762,6 +827,8 @@ class SoundtrackViewer(QMainWindow):
     # Toolbar action methods (placeholder implementations)
     def new_file(self):
         print("New file action triggered")
+        if not self.confirm_discard_changes("creating a new soundtrack"):
+            return
         self.file = None
         self.load_data()
         self.changes = False
@@ -772,13 +839,18 @@ class SoundtrackViewer(QMainWindow):
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Open File",
-            os.path.dirname(self.settings["prev"]) if self.settings["prev"] else "",
+            self.get_last_dir(),
             "Soundtrack or Zip Files (*.soundtrack *.zip)"
         )
         if not file_path:
             return
         file_path = self.validate_path(file_path, "Selected file", extensions=(".soundtrack", ".zip"))
         if not file_path:
+            return
+
+        self.save_last_dir(file_path)
+
+        if not self.confirm_discard_changes("opening another file"):
             return
 
         if file_path.lower().endswith(".zip"):
@@ -840,7 +912,6 @@ class SoundtrackViewer(QMainWindow):
         self.load_file()
         self.changes = False
         self.update_window_title()
-        self.settings["prev"] = self.file
         self.write_settings()
         print(self.file)
         
@@ -849,7 +920,7 @@ class SoundtrackViewer(QMainWindow):
         file_path, _ = QFileDialog.getSaveFileName(
             self,
             "Save File As",
-            "./" if not self.file else self.file,
+            self.file if self.file else (self.get_last_dir() or "./"),
             "Soundtrack Files (*.soundtrack)"
         )
         if not file_path:
@@ -868,6 +939,7 @@ class SoundtrackViewer(QMainWindow):
         if not self.write_file(target_file=self.file):
             return False
 
+        self.save_last_dir(file_path)
         self.changes = False
         self.update_window_title()
         return True
@@ -882,11 +954,15 @@ class SoundtrackViewer(QMainWindow):
             if source:
                 if not self.validate_file(source, r):
                     return
-        # we're good to export, open save dialog        
+        # we're good to export, open save dialog
+        if self.file:
+            default_export = os.path.splitext(self.file)[0] + ".zip"
+        else:
+            default_export = self.get_last_dir() or "./"
         file_path, _ = QFileDialog.getSaveFileName(
             self,
             "Export File To",
-            "./" if not self.file else os.path.splitext(self.file)[0] + ".zip",
+            default_export,
             "Zip Files (*.zip)"
         )
         if not file_path:
@@ -899,6 +975,8 @@ class SoundtrackViewer(QMainWindow):
         file_path = self.validate_path(file_path, "Export file", extensions=(".zip",))
         if not file_path:
             return False
+
+        self.save_last_dir(file_path)
 
         # save temp soundtrack file
         os.makedirs("temp", exist_ok=True)
@@ -980,12 +1058,9 @@ class SoundtrackViewer(QMainWindow):
             if msg.exec_() != QMessageBox.Save:
                 return
 
-            if self.file:
-                if not self.write_file():
-                    return
-            else:
-                if not self.save_file():
-                    return
+            # saves, clears the unsaved flag, and refreshes the window title
+            if not self.save_current():
+                return
 
         if not self.file:
             QMessageBox.warning(self, "Missing File", "Save your soundtrack file before applying changes.")
@@ -1053,6 +1128,12 @@ class SoundtrackViewer(QMainWindow):
 
     def unapply_action(self):
         print("Unapply action triggered")
+
+        if not self.confirm_action(
+            "Restore Default Soundtrack",
+            "This will restore the game's original soundtrack, replacing any soundtrack you've applied. Continue?",
+        ):
+            return
 
         self.thread = QThread()
         self.worker = ResetWorker(self.settings)
@@ -1169,6 +1250,8 @@ class SoundtrackViewer(QMainWindow):
         print("Move song down action triggered")
         row = self.table.currentRow()
         col = self.table.currentColumn()
+        if row < 0 or col < 0 or self.table.rowCount() == 0:
+            return  # nothing selected
         next_row = (row+1) % self.table.rowCount() if down else (row-1) % self.table.rowCount()
 
         row_data = self.get_table_row(row, inner=True)
