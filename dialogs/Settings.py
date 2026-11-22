@@ -30,6 +30,7 @@ class SettingsDialog(QDialog):
         self.burnout_path = self.create_dir_selector("Burnout Paradise Installation Path", "game", layout)
         self.soundx_path = self.create_file_selector("EA SoundXchange Path", "audio", layout)
         self.yap_path = self.create_file_selector("YAP Path", "yap", layout)
+
         self.warn_disambiguation_checkbox = QCheckBox("Warn when disambiguating locked cells")
         self.warn_disambiguation_checkbox.setChecked(self.settings.get("warn", True))
         self.cut_songs_checkbox = QCheckBox("Use Cut Songs in BPR Mod")
@@ -44,6 +45,18 @@ class SettingsDialog(QDialog):
             self.clear_cache_button.clicked.connect(self.clear_sx_cache)
         layout.addWidget(self.warn_disambiguation_checkbox)
         layout.addWidget(self.cut_songs_checkbox)
+
+        # Audio matching options, side by side on one row
+        self.match_checkbox = QCheckBox("Match sample rate")
+        self.match_checkbox.setChecked(self.settings.get("match", True))
+        self.normalize_checkbox = QCheckBox("Normalize loudness")
+        self.normalize_checkbox.setChecked(self.settings.get("normalize", True))
+        audio_row = QHBoxLayout()
+        audio_row.addWidget(self.match_checkbox)
+        audio_row.addWidget(self.normalize_checkbox)
+        audio_row.addStretch()
+        layout.addLayout(audio_row)
+
         if not self.first:
             button_layout = QHBoxLayout()
             button_layout.addStretch()
@@ -122,6 +135,8 @@ class SettingsDialog(QDialog):
                 settings["warn"] = coerce_bool(settings.get("warn", True), default=True)
                 settings["mod"] = coerce_bool(settings.get("mod", False), default=False)
                 settings["actions"] = coerce_bool(settings.get("actions", False), default=False)
+                settings["match"] = coerce_bool(settings.get("match", True), default=True)
+                settings["normalize"] = coerce_bool(settings.get("normalize", True), default=True)
                 return settings
         return {}
 
@@ -176,6 +191,8 @@ class SettingsDialog(QDialog):
             self.settings[key] = value
         self.settings["warn"] = self.warn_disambiguation_checkbox.isChecked()
         self.settings["mod"] = self.cut_songs_checkbox.isChecked()
+        self.settings["match"] = self.match_checkbox.isChecked()
+        self.settings["normalize"] = self.normalize_checkbox.isChecked()
         # Retain existing optional fields if they exist
         self.settings.setdefault("prev", "")
         self.settings.setdefault("actions", False)

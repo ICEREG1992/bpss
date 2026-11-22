@@ -111,6 +111,8 @@ class SoundtrackViewer(QMainWindow):
                 settings["warn"] = coerce_bool(settings.get("warn", True), default=True)
                 settings["mod"] = coerce_bool(settings.get("mod", False), default=False)
                 settings["actions"] = coerce_bool(settings.get("actions", False), default=False)
+                settings["match"] = coerce_bool(settings.get("match", True), default=True)
+                settings["normalize"] = coerce_bool(settings.get("normalize", True), default=True)
                 return settings
         return {}
     

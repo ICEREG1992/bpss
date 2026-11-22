@@ -1,21 +1,89 @@
 import json
+import math
 import os
+import re
 import shutil
 import struct
 import subprocess
 import zipfile
+import hashlib
+import mutagen
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from HexNavigator import HexNavigator
 from Helpers import resource_path, require_path_rules, hash_file
 from PyQt5.QtCore import QThread
 
 SX_CACHE_DIR = os.path.join("temp", "sx_cache")
+FFMPEG_EXE = resource_path("ffmpeg.exe")
 
 def run_external(command, action):
     result = subprocess.run(command, creationflags=subprocess.CREATE_NO_WINDOW)
     if result.returncode != 0:
         raise RuntimeError(f"{action} failed with exit code {result.returncode}.")
     return result
+
+def run_ffmpeg(args):
+    return subprocess.run(
+        [FFMPEG_EXE, "-hide_banner", "-nostdin", *args],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        creationflags=subprocess.CREATE_NO_WINDOW,
+    )
+
+def get_samplerate(path):
+    try:
+        audio = mutagen.File(path)
+        rate = getattr(getattr(audio, "info", None), "sample_rate", None)
+        return int(rate) if rate else None
+    except Exception:
+        return None
+
+def measure_loudness(path):
+    result = run_ffmpeg([
+        "-i", path, "-vn",
+        "-af", "loudnorm=I=-14:TP=-1:LRA=11:print_format=json",
+        "-f", "null", "-",
+    ])
+    match = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", result.stderr, re.S)
+    if not match:
+        return None
+    try:
+        raw = json.loads(match.group(0))
+        integrated = float(raw["input_i"])
+        if not math.isfinite(integrated):  # silent file -> "-inf"
+            return None
+        return {
+            "integrated": round(integrated, 2),
+            "true_peak": round(float(raw["input_tp"]), 2),
+            "lra": round(float(raw["input_lra"]), 2),
+        }
+    except (KeyError, ValueError):
+        return None
+
+def mix_audio(src, dst, target_samplerate=None, target_lufs=None, max_gain_db=24.0):
+    filters = []
+    if target_samplerate:
+        filters.append(f"aresample={int(target_samplerate)}")
+    if target_lufs is not None:
+        loud = measure_loudness(src)
+        if loud is not None:
+            gain = max(-max_gain_db, min(max_gain_db, target_lufs - loud["integrated"]))
+            filters.append(f"volume={gain:.2f}dB")
+            filters.append("alimiter=limit=0.97")
+
+    args = ["-y", "-i", src, "-vn"]
+    if filters:
+        args += ["-af", ",".join(filters)]
+    if target_samplerate:
+        args += ["-ar", str(int(target_samplerate))]
+    args += ["-c:a", "pcm_s16le", dst]
+
+    result = run_ffmpeg(args)
+    if result.returncode != 0:
+        tail = "\n".join(result.stderr.strip().splitlines()[-4:])
+        raise RuntimeError(f"ffmpeg failed while preparing \"{src}\":\n{tail}")
 
 def resolve_pointer_targets(ptrs, song, field):
     song_ptrs = ptrs.get(song, None)
@@ -372,7 +440,7 @@ def write_pointers(settings, soundtrack, pointers, set_progress=None):
 
         with ThreadPoolExecutor(max_workers=workers) as executor:
             future_to_song = {
-                executor.submit(convertSong, s[0], s[1], settings): s
+                executor.submit(convertSong, s[0], s[1], settings, data[s[2]]): s
                 for s in to_convert
             }
             converted = 0
@@ -488,17 +556,27 @@ def reset_files(settings, set_progress=None):
     if set_progress: set_progress(100, end_message)
 
 
-def convertSong(file, stream, settings):
+def convertSong(file, stream, settings, default=None):
     source_path = require_path_rules(os.path.abspath(file), "Source file")
     temp_path = os.path.abspath(os.path.join("temp", stream))
     sx_path = os.path.abspath(settings["audio"])
     temp_snr = temp_path + ".snr"
     temp_sns = temp_path + ".sns"
+    temp_pre = temp_path + "_pre.wav"
 
     os.makedirs(os.path.dirname(temp_path), exist_ok=True)
     os.makedirs(SX_CACHE_DIR, exist_ok=True)
 
+    # figure out whether we should match this slot's stock sample rate / loudness
+    default = default or {}
+    target_samplerate = default.get("samplerate") if settings.get("match", True) else None
+    target_lufs = default.get("loudness") if settings.get("normalize", True) else None
+    needs_prep = bool(target_samplerate) or target_lufs is not None
+
+    # account for sx cache
     source_hash = hash_file(source_path)
+    if needs_prep:
+        source_hash = hashlib.sha256(f"{source_hash}|{target_samplerate}|{target_lufs}".encode()).hexdigest()
     cached_snr = os.path.join(SX_CACHE_DIR, source_hash + ".snr")
     cached_sns = os.path.join(SX_CACHE_DIR, source_hash + ".sns")
 
@@ -507,14 +585,26 @@ def convertSong(file, stream, settings):
         shutil.copy2(cached_sns, temp_sns)
         return
 
-    result = subprocess.run(
-        [sx_path, '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', source_path, f"-={temp_path}"],
-        creationflags=subprocess.CREATE_NO_WINDOW
-    )
-    if result.returncode != 0:
-        raise RuntimeError(
-            f"sx failed with exit code {result.returncode} while converting \"{os.path.basename(source_path)}\"."
+    sx_input = source_path
+    try:
+        if needs_prep:
+            mix_audio(source_path, temp_pre, target_samplerate, target_lufs)
+            sx_input = temp_pre
+
+        result = subprocess.run(
+            [sx_path, '-sndplayer', '-ealayer3_int', '-vbr100', '-playlocstream', sx_input, f"-={temp_path}"],
+            creationflags=subprocess.CREATE_NO_WINDOW
         )
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"sx failed with exit code {result.returncode} while converting \"{os.path.basename(source_path)}\"."
+            )
+    finally:
+        if os.path.exists(temp_pre):
+            try:
+                os.remove(temp_pre)
+            except OSError:
+                pass
 
     if not os.path.exists(temp_snr) or not os.path.exists(temp_sns):
         raise RuntimeError(
@@ -554,11 +644,3 @@ def export_files(settings, filename, export_path, set_progress=None):
             count += 1
 
         if set_progress: set_progress(100, "Done!")
-
-# settings = {
-#     "game": r"C:\Program Files (x86)\Steam\steamapps\common\Burnout(TM) Paradise The Ultimate Box",
-#     "yap": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\YAP\YAP.exe",
-#     "audio": r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\sx.exe"
-#     }
-# loadPtrs(settings, "ptrs.json")
-# writePtrs(r"C:\Users\willw\OneDrive\Documents\GitHub\bpss\valid.soundtrack", settings)
