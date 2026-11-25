@@ -42,13 +42,13 @@ class SoundtrackViewer(QMainWindow):
         center_x = screen_rect.center().x() - window_width // 2
         center_y = screen_rect.center().y() - window_height // 2
 
-        # Set the geometry: x, y, width, height
         self.setGeometry(center_x, center_y, window_width, window_height)
         self.setFixedSize(window_width, window_height)
 
         # establish important variables
         self.changes = False
         self.file = None
+        self.actions = None
         self.synced_cells = []  # List of lists of (row, column) tuples
         self.defaults_file = resource_path("defaults.json")
 
@@ -210,7 +210,6 @@ class SoundtrackViewer(QMainWindow):
         return msg.exec_() == QMessageBox.Ok
 
     def create_song_actions(self):
-        # Song manipulation actions + shortcuts, created once for the whole window
         self.action_move_up = QAction("Move Song Up", self)
         self.action_move_up.setShortcut(QKeySequence("Ctrl+Up"))
         self.action_move_up.setIcon(self.style().standardIcon(QStyle.SP_ArrowUp))
@@ -357,13 +356,16 @@ class SoundtrackViewer(QMainWindow):
             with open(filename, "r") as file:
                 ptrs = json.load(file)
 
-            # Set row count based on number of entries
+            # nuke the current table
+            self.table.clearSelection()
+            self.table.clearContents()
+            self.table.setRowCount(0)
             self.table.setRowCount(len(ptrs))
             
             stock = {}
             backfill = []
             sync = {}
-            self.synced_cells = []  # rebuilt below; don't keep groups from a previous fill
+            self.synced_cells = []
 
             # Populate table
             for row_index, (key, entry) in enumerate(ptrs.items()):
@@ -589,6 +591,10 @@ class SoundtrackViewer(QMainWindow):
 
             self.changes = False
             self.update_window_title()
+
+            # this is null on first run
+            if isinstance(self.actions, QFrame):
+                self.handle_selection_changed()
         
         except FileNotFoundError:
             QMessageBox.critical(self, "Critical Error", f"Fill Error: Pointers file \"{self.get_ptrs_hash()}.json\" not found. Try pressing Reset.")
@@ -696,29 +702,39 @@ class SoundtrackViewer(QMainWindow):
             widget.setBackground(QBrush(QColor(colors[color])))
         else:
             widget.setBackground(color)
+        widget.last_text = text
         return widget
     
     def make_disambiguated_cell(self, text, prev_color, override) -> QTableWidgetItem:
         widget = QTableWidgetItem(QIcon(resource_path("media/star.png")), text)
         widget.disambiguated = True
+        widget.last_text = text
         widget.prev_color = prev_color
         widget.setToolTip(str(override))
         return widget
 
     def handle_item_changed(self, changed_item: QTableWidgetItem):
-        self.changes = True
-        self.update_window_title()
         row = changed_item.row()
         col = changed_item.column()
         text = changed_item.text()
+        
+        text_changed = text != getattr(changed_item, "last_text", None)
+        changed_item.last_text = text
 
         # handle synced cells
         for group in self.synced_cells:
             if (row, col) in group and not hasattr(self.get_item_or_cellwidget(row, col), "disambiguated"):
                 for (r, c) in group:
                     if (r, c) != (row, col) and not hasattr(self.get_item_or_cellwidget(r, c), "disambiguated"):
-                        self.get_item_or_cellwidget(r, c).setText(text)
+                        other = self.get_item_or_cellwidget(r, c)
+                        if other.text() != text:
+                            text_changed = True  # syncing rewrote another cell's text
+                            other.setText(text)
                 break  # Only one group per cell
+
+        if text_changed:
+            self.changes = True
+            self.update_window_title()
 
     def handle_source_changed(self, _text):
         self.changes = True
@@ -780,7 +796,6 @@ class SoundtrackViewer(QMainWindow):
 
 
     def create_actions(self):
-        # Right side - actions panel (takes 1/3 of space)
         actions_frame = QFrame()
         actions_frame.setFrameStyle(QFrame.StyledPanel)
         actions_layout = QVBoxLayout(actions_frame)
@@ -837,7 +852,7 @@ class SoundtrackViewer(QMainWindow):
         
         self.actions = actions_frame
     
-    # Toolbar action methods (placeholder implementations)
+    # Toolbar action methods
     def new_file(self):
         print("New file action triggered")
         if not self.confirm_discard_changes("creating a new soundtrack"):
@@ -1288,7 +1303,6 @@ class SoundtrackViewer(QMainWindow):
 
         cell = self.get_item_or_cellwidget(row, col)
 
-        # TODO if cell is locked, show warning here
         if isinstance(cell, LockedCellWidget) and self.settings["warn"]:
             msg = QMessageBox()
             msg.setWindowTitle("Warning")
