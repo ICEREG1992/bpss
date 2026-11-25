@@ -16,7 +16,7 @@ from PyQt5.QtCore import QThread
 SX_CACHE_DIR = os.path.join("temp", "sx_cache")
 FFMPEG_EXE = resource_path("ffmpeg.exe")
 
-TARGET_LUFS = -6.5 
+TARGET_LUFS = -6
 
 def run_external(command, action):
     result = subprocess.run(command, creationflags=subprocess.CREATE_NO_WINDOW)
