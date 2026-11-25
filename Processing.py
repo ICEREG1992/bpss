@@ -16,6 +16,8 @@ from PyQt5.QtCore import QThread
 SX_CACHE_DIR = os.path.join("temp", "sx_cache")
 FFMPEG_EXE = resource_path("ffmpeg.exe")
 
+TARGET_LUFS = -6.5 
+
 def run_external(command, action):
     result = subprocess.run(command, creationflags=subprocess.CREATE_NO_WINDOW)
     if result.returncode != 0:
@@ -570,7 +572,7 @@ def convertSong(file, stream, settings, default=None):
     # figure out whether we should match this slot's stock sample rate / loudness
     default = default or {}
     target_samplerate = default.get("samplerate") if settings.get("match", True) else None
-    target_lufs = default.get("loudness") if settings.get("normalize", True) else None
+    target_lufs = TARGET_LUFS if settings.get("normalize", True) else None
     needs_prep = bool(target_samplerate) or target_lufs is not None
 
     # account for sx cache
