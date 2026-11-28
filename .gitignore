@@ -9,3 +9,5 @@ dist
 *.soundtrack
 *.zip
 ffmpeg.exe
+sx.exe
+YAP.exe
