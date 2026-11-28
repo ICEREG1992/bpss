@@ -103,6 +103,12 @@ class SoundtrackViewer(QMainWindow):
         file = f"[{self.file}]" if self.file else ""
         change = "*" if self.changes else ""
         self.setWindowTitle(f"{base} {file} {change}")
+
+    def update_toolbar(self):
+        if self.file:
+            self.reset_action.setToolTip("Reset current soundtrack to file")
+        else:
+            self.reset_action.setToolTip("Reset current soundtrack to default")
     
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
@@ -230,17 +236,17 @@ class SoundtrackViewer(QMainWindow):
         self.addToolBar(toolbar)
         
         # File operations
-        new_action = QAction(self.style().standardIcon(QStyle.SP_FileIcon), "New", self)
+        new_action = QAction(self.style().standardIcon(QStyle.SP_FileIcon), "New soundtrack", self)
         new_action.setShortcut(QKeySequence("Ctrl+N"))
         new_action.triggered.connect(self.new_file)
         toolbar.addAction(new_action)
         
-        open_action = QAction(self.style().standardIcon(QStyle.SP_DialogOpenButton), "Open", self)
+        open_action = QAction(self.style().standardIcon(QStyle.SP_DialogOpenButton), "Open soundtrack", self)
         open_action.setShortcut(QKeySequence("Ctrl+O"))
         open_action.triggered.connect(self.open_file)
         toolbar.addAction(open_action)
         
-        save_action = QAction(self.style().standardIcon(QStyle.SP_DialogSaveButton), "Save configuration", self)
+        save_action = QAction(self.style().standardIcon(QStyle.SP_DialogSaveButton), "Save soundtrack", self)
         save_action.setShortcut(QKeySequence("Ctrl+S"))
         save_action.triggered.connect(self.save_file)
         toolbar.addAction(save_action)
@@ -264,10 +270,10 @@ class SoundtrackViewer(QMainWindow):
         unapply_action.triggered.connect(self.unapply_action)
         toolbar.addAction(unapply_action)
         
-        reset_action = QAction(self.style().standardIcon(QStyle.SP_BrowserReload), "Reset configuration to default", self)
-        reset_action.setShortcut(QKeySequence("Ctrl+R"))
-        reset_action.triggered.connect(self.reset_action)
-        toolbar.addAction(reset_action)
+        self.reset_action = QAction(self.style().standardIcon(QStyle.SP_BrowserReload), "Reset current soundtrack to default", self)
+        self.reset_action.setShortcut(QKeySequence("Ctrl+R"))
+        self.reset_action.triggered.connect(self.reset_action)
+        toolbar.addAction(self.reset_action)
         
         # Second vertical spacer
         toolbar.addSeparator()
@@ -861,6 +867,7 @@ class SoundtrackViewer(QMainWindow):
         self.load_data()
         self.changes = False
         self.update_window_title()
+        self.update_toolbar()
         
     def open_file(self):
         print("Load file action triggered")
@@ -939,6 +946,7 @@ class SoundtrackViewer(QMainWindow):
         self.load_file()
         self.changes = False
         self.update_window_title()
+        self.update_toolbar()
         self.write_settings()
         print(self.file)
         
@@ -1188,7 +1196,8 @@ class SoundtrackViewer(QMainWindow):
             # Create the message box
             msg = QMessageBox()
             msg.setWindowTitle("Reset Soundtrack")
-            msg.setText("Are you sure you want to reset to defaults?")
+            text = "Are you sure you want to reset to file?" if self.file else "Are you sure you want to reset to defaults?"
+            msg.setText(text)
             msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
             msg.setIcon(QMessageBox.Question)
             msg.setWindowIcon(QIcon(resource_path("media/bpss.png")))
