@@ -26,31 +26,37 @@ class SettingsDialog(QDialog):
 
         self.control_height = QPushButton("Close").sizeHint().height()
 
-        # Create each path entry row
-        self.burnout_path = self.create_dir_selector("Burnout Paradise Installation Path", "game", layout)
-        self.soundx_path = self.create_file_selector("EA SoundXchange Path", "audio", layout)
-        self.yap_path = self.create_file_selector("YAP Path", "yap", layout)
-
         self.warn_disambiguation_checkbox = QCheckBox("Warn when disambiguating locked cells")
         self.warn_disambiguation_checkbox.setChecked(self.settings.get("warn", True))
         self.cut_songs_checkbox = QCheckBox("Use Cut Songs in BPR Mod")
         self.cut_songs_checkbox.setChecked(self.settings.get("mod", False))
+        self.match_checkbox = QCheckBox("Match sample rate")
+        self.match_checkbox.setChecked(self.settings.get("match", True))
+        self.normalize_checkbox = QCheckBox("Normalize loudness")
+        self.normalize_checkbox.setChecked(self.settings.get("normalize", True))
+
         if self.first:
             self.warn_disambiguation_checkbox.hide()
             self.cut_songs_checkbox.hide()
+            self.match_checkbox.hide()
+            self.normalize_checkbox.hide()
         else:
             self.clear_cache_button = QPushButton("Clear SX Cache")
             self.clear_cache_button.setFixedWidth(120)
             self.clear_cache_button.setMinimumHeight(self.control_height)
             self.clear_cache_button.clicked.connect(self.clear_sx_cache)
+        
+        # Build layout
+
+        self.burnout_path = self.create_dir_selector("Burnout Paradise Installation Path", "game", layout)
+        self.soundx_path = self.create_file_selector("EA SoundXchange Path", "audio", layout)
+        self.yap_path = self.create_file_selector("YAP Path", "yap", layout)
+
+        layout.addSpacing(10)
+        
         layout.addWidget(self.warn_disambiguation_checkbox)
         layout.addWidget(self.cut_songs_checkbox)
 
-        # Audio matching options, side by side on one row
-        self.match_checkbox = QCheckBox("Match sample rate")
-        self.match_checkbox.setChecked(self.settings.get("match", True))
-        self.normalize_checkbox = QCheckBox("Normalize loudness")
-        self.normalize_checkbox.setChecked(self.settings.get("normalize", True))
         audio_row = QHBoxLayout()
         audio_row.addWidget(self.match_checkbox)
         audio_row.addWidget(self.normalize_checkbox)
@@ -71,9 +77,14 @@ class SettingsDialog(QDialog):
             button.setMinimumHeight(self.control_height)
         layout.addWidget(buttons)
 
+        # Right before we set the layout, see if sx or YAP are in place
+        if (os.path.isfile("./sx.exe")):
+            self.soundx_path = os.path.join("sx.exe")
+        if (os.path.isfile("./YAP.exe")):
+            self.yap_path = os.path.join("YAP.exe")
         self.setLayout(layout)
 
-        # Let the layout decide the height so no widget gets squeezed below its natural size
+        # Let the layout decide the height
         self.setFixedSize(450, self.sizeHint().height())
 
     def create_dir_selector(self, label_text, key, parent_layout):
