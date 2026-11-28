@@ -106,9 +106,9 @@ class SoundtrackViewer(QMainWindow):
 
     def update_toolbar(self):
         if self.file:
-            self.reset_action.setToolTip("Reset current soundtrack to file")
+            self.reset_button.setToolTip("Reset current soundtrack to file")
         else:
-            self.reset_action.setToolTip("Reset current soundtrack to default")
+            self.reset_button.setToolTip("Reset current soundtrack to default")
     
     def load_settings(self):
         if os.path.exists(SETTINGS_FILE):
@@ -270,10 +270,10 @@ class SoundtrackViewer(QMainWindow):
         unapply_action.triggered.connect(self.unapply_action)
         toolbar.addAction(unapply_action)
         
-        self.reset_action = QAction(self.style().standardIcon(QStyle.SP_BrowserReload), "Reset current soundtrack to default", self)
-        self.reset_action.setShortcut(QKeySequence("Ctrl+R"))
-        self.reset_action.triggered.connect(self.reset_action)
-        toolbar.addAction(self.reset_action)
+        self.reset_button = QAction(self.style().standardIcon(QStyle.SP_BrowserReload), "Reset current soundtrack to default", self)
+        self.reset_button.setShortcut(QKeySequence("Ctrl+R"))
+        self.reset_button.triggered.connect(self.reset_action)
+        toolbar.addAction(self.reset_button)
         
         # Second vertical spacer
         toolbar.addSeparator()
