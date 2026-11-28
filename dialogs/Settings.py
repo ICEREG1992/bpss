@@ -2,6 +2,7 @@ import sys
 import json
 import os
 import shutil
+from PyQt5.QtCore import QDir
 from PyQt5.QtWidgets import (
     QApplication, QDialog, QLabel, QLineEdit, QPushButton, QCheckBox,
     QFileDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QMessageBox
@@ -77,11 +78,14 @@ class SettingsDialog(QDialog):
             button.setMinimumHeight(self.control_height)
         layout.addWidget(buttons)
 
-        # Right before we set the layout, see if sx or YAP are in place
-        if os.path.isfile("./sx.exe") and not self.soundx_path.text():
-            self.soundx_path.setText(os.path.abspath("sx.exe"))
-        if os.path.isfile("./YAP.exe") and not self.yap_path.text():
-            self.yap_path.setText(os.path.abspath("YAP.exe"))
+        # For first time run, right before we set the layout, see if sx or YAP are in place
+        if self.first:
+            if os.path.isfile("./sx.exe"):
+                self.soundx_path.setText(QDir.fromNativeSeparators(os.path.abspath("sx.exe")))
+            if (os.path.isfile("./YAP.exe") and os.path.isfile("./Qt6Core.dll")):
+                self.yap_path.setText(QDir.fromNativeSeparators(os.path.abspath("YAP.exe")))
+            elif (os.path.isdir("./YAP") and os.path.isfile("./YAP/YAP.exe") and os.path.isfile("./YAP/Qt6Core.dll")):
+                self.yap_path.setText(QDir.fromNativeSeparators(os.path.abspath("YAP/YAP.exe")))
         self.setLayout(layout)
 
         # Let the layout decide the height
