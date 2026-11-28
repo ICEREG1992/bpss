@@ -11,3 +11,5 @@ dist
 ffmpeg.exe
 sx.exe
 YAP.exe
+Qt6Core.dll
+YAP
