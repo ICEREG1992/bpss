@@ -845,6 +845,11 @@ class SoundtrackViewer(QMainWindow):
         self.undisambiguate_btn.setIcon(self.style().standardIcon(QStyle.SP_LineEditClearButton))
         self.undisambiguate_btn.clicked.connect(self.undisambiguate_cell)
         self.undisambiguate_btn.hide()
+
+        disambiguate_all_btn = QPushButton("Disambiguate All")
+        disambiguate_all_btn.setStyleSheet("text-align: left;")
+        disambiguate_all_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
+        disambiguate_all_btn.clicked.connect(self.disambiguate_all)
         
         # Add to layout
         actions_layout.addWidget(move_up_btn)
@@ -852,6 +857,7 @@ class SoundtrackViewer(QMainWindow):
         # actions_layout.addWidget(insert_btn)
         actions_layout.addWidget(clear_btn)
         actions_layout.addWidget(separator)
+        actions_layout.addWidget(disambiguate_all_btn)
         actions_layout.addWidget(self.disambiguate_btn)
         actions_layout.addWidget(self.undisambiguate_btn)
         actions_layout.addStretch()  # Push buttons to top
@@ -1376,6 +1382,9 @@ class SoundtrackViewer(QMainWindow):
             self.table.setItem(selected.row(), selected.column(), None)
             self.table.setCellWidget(selected.row(), selected.column(), LockedCellWidget(cell.prev_color))
         self.undisambiguate_btn.hide()
+    
+    def disambiguate_all(self):
+        print("Disambiguating all")
     
     def get_item_or_cellwidget(self, row, col):
         item = self.table.item(row, col)
