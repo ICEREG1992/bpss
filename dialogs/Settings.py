@@ -78,10 +78,10 @@ class SettingsDialog(QDialog):
         layout.addWidget(buttons)
 
         # Right before we set the layout, see if sx or YAP are in place
-        if (os.path.isfile("./sx.exe")):
-            self.soundx_path = os.path.join("sx.exe")
-        if (os.path.isfile("./YAP.exe")):
-            self.yap_path = os.path.join("YAP.exe")
+        if os.path.isfile("./sx.exe") and not self.soundx_path.text():
+            self.soundx_path.setText(os.path.abspath("sx.exe"))
+        if os.path.isfile("./YAP.exe") and not self.yap_path.text():
+            self.yap_path.setText(os.path.abspath("YAP.exe"))
         self.setLayout(layout)
 
         # Let the layout decide the height
