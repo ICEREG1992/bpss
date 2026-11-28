@@ -19,6 +19,8 @@ Cells with matching background colors are **synced**, which means they use the s
 
 ## How to build
 
+Download a Win64 FFMPEG binary from [FFmpeg-Builds](https://github.com/FFmpeg-Builds/FFmpeg-Builds) and put it next to BPSS.py. Then, install module requirements with Pip and build the executable with pyinstaller:
+
 ```bash
 pip install -r requirements.txt
 pyinstaller BPSS.spec
