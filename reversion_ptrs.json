@@ -1,0 +1,2598 @@
+{
+    "Us V. Them": {
+        "strings": {
+            "title": "Us V. Them",
+            "stream": "LCD_Soundsystem",
+            "artist": "LCD Soundsystem",
+            "album": "Sound Of Silver"
+        },
+        "locs": {
+            "title": 116269,
+            "stream": 116280,
+            "artist": 116296,
+            "album": 116312
+        },
+        "ptrs": {
+            "title": [
+                84912
+            ],
+            "stream": [
+                84848
+            ],
+            "artist": [
+                84864
+            ],
+            "album": [
+                84880
+            ]
+        }
+    },
+    "Stop!": {
+        "strings": {
+            "title": "Stop!",
+            "stream": "Janes_Addiction",
+            "artist": "Jane's Addiction",
+            "album": "The Best Of Jane's Addiction"
+        },
+        "locs": {
+            "title": 114655,
+            "stream": 114661,
+            "artist": 114677,
+            "album": 114694
+        },
+        "ptrs": {
+            "title": [
+                94080
+            ],
+            "stream": [
+                94064
+            ],
+            "artist": [
+                94032
+            ],
+            "album": [
+                94048
+            ]
+        }
+    },
+    "My Curse": {
+        "strings": {
+            "title": "My Curse",
+            "stream": "Killswitch_Engage",
+            "artist": "Killswitch Engage",
+            "album": "As Daylight Dies"
+        },
+        "locs": {
+            "title": 114593,
+            "stream": 114602,
+            "artist": 114620,
+            "album": 114638
+        },
+        "ptrs": {
+            "title": [
+                94256
+            ],
+            "stream": [
+                94288
+            ],
+            "artist": [
+                94304
+            ],
+            "album": [
+                94272
+            ]
+        }
+    },
+    "Stand And Deliver": {
+        "strings": {
+            "title": "Stand And Deliver",
+            "stream": "Adam_Ant",
+            "artist": "Adam And The Ants",
+            "album": "The Essential Adam Ant"
+        },
+        "locs": {
+            "title": 110605,
+            "stream": 110623,
+            "artist": 110632,
+            "album": 110650
+        },
+        "ptrs": {
+            "title": [
+                93104
+            ],
+            "stream": [
+                93120
+            ],
+            "artist": [
+                93072
+            ],
+            "album": [
+                93088
+            ]
+        }
+    },
+    "Would?": {
+        "strings": {
+            "title": "Would?",
+            "stream": "Alice_in_Chains",
+            "artist": "Alice In Chains",
+            "album": "The Essential Alice In Chains"
+        },
+        "locs": {
+            "title": 111900,
+            "stream": 111907,
+            "artist": 111923,
+            "album": 111939
+        },
+        "ptrs": {
+            "title": [
+                89648
+            ],
+            "stream": [
+                89616
+            ],
+            "artist": [
+                89632
+            ],
+            "album": [
+                89824
+            ]
+        }
+    },
+    "Girlfriend": {
+        "strings": {
+            "title": "Girlfriend",
+            "stream": "Avril_Lavigne",
+            "artist": "Avril Lavigne",
+            "album": "Best D*** Thing"
+        },
+        "locs": {
+            "title": 112209,
+            "stream": 112220,
+            "artist": 112234,
+            "album": 112248
+        },
+        "ptrs": {
+            "title": [
+                90752
+            ],
+            "stream": [
+                90768
+            ],
+            "artist": [
+                90800
+            ],
+            "album": [
+                90848
+            ]
+        }
+    },
+    "The Archers Bows Have Broken": {
+        "strings": {
+            "title": "The Archers Bows Have Broken",
+            "stream": "Brand_New",
+            "artist": "Brand New",
+            "album": "The Devil And God..."
+        },
+        "locs": {
+            "title": 112264,
+            "stream": 112293,
+            "artist": 112303,
+            "album": 112313
+        },
+        "ptrs": {
+            "title": [
+                90816
+            ],
+            "stream": [
+                90832
+            ],
+            "artist": [
+                90992
+            ],
+            "album": [
+                91104
+            ]
+        }
+    },
+    "Fight Music For The Fight": {
+        "strings": {
+            "title": "Fight Music For The Fight",
+            "stream": "Bromheads_Jacket",
+            "artist": "Bromheads Jacket",
+            "album": "Dits From The Commuter Belt"
+        },
+        "locs": {
+            "title": 111766,
+            "stream": 111792,
+            "artist": 111809,
+            "album": 111826
+        },
+        "ptrs": {
+            "title": [
+                89808
+            ],
+            "stream": [
+                89760
+            ],
+            "artist": [
+                89776
+            ],
+            "album": [
+                89664
+            ]
+        }
+    },
+    "Route 66 (Beatmasters Mix)": {
+        "strings": {
+            "title": "Route 66 (Beatmasters Mix)",
+            "stream": "Depeche_Mode",
+            "artist": "Depeche Mode",
+            "album": "Remixes 81-04"
+        },
+        "locs": {
+            "title": 116417,
+            "stream": 116444,
+            "artist": 116457,
+            "album": 116470
+        },
+        "ptrs": {
+            "title": [
+                87568
+            ],
+            "stream": [
+                87584
+            ],
+            "artist": [
+                87504
+            ],
+            "album": [
+                87520
+            ]
+        }
+    },
+    "Going Through Changes": {
+        "strings": {
+            "title": "Going Through Changes",
+            "stream": "Army_Of_Me",
+            "artist": "Army Of Me",
+            "album": "Citizen"
+        },
+        "locs": {
+            "title": 116484,
+            "stream": 116506,
+            "artist": 116517,
+            "album": 116528
+        },
+        "ptrs": {
+            "title": [
+                87536
+            ],
+            "stream": [
+                87600
+            ],
+            "artist": [
+                87664
+            ],
+            "album": [
+                87680
+            ]
+        }
+    },
+    "Epic": {
+        "strings": {
+            "title": "Epic",
+            "stream": "Faith_No_More",
+            "artist": "Faith No More",
+            "album": "The Real Thing"
+        },
+        "locs": {
+            "title": 110439,
+            "stream": 110444,
+            "artist": 110458,
+            "album": 110472
+        },
+        "ptrs": {
+            "title": [
+                91776
+            ],
+            "stream": [
+                91728
+            ],
+            "artist": [
+                91744
+            ],
+            "album": [
+                91632
+            ]
+        }
+    },
+    "Beautiful Ruin": {
+        "strings": {
+            "title": "Beautiful Ruin",
+            "stream": "Make_Good_Your_Escape",
+            "artist": "Make Good Your Escape",
+            "album": "Beautiful Ruin"
+        },
+        "locs": {
+            "title": 116807,
+            "stream": 116822,
+            "artist": 116844,
+            "album": 116807
+        },
+        "ptrs": {
+            "title": [
+                88032,
+                88080
+            ],
+            "stream": [
+                88000
+            ],
+            "artist": [
+                88016
+            ],
+            "album": [
+                88032,
+                88080
+            ]
+        }
+    },
+    "Block Out The World": {
+        "strings": {
+            "title": "Block Out The World",
+            "stream": "Maxeen",
+            "artist": "Maxeen",
+            "album": "Hello Echo"
+        },
+        "locs": {
+            "title": 110356,
+            "stream": 110376,
+            "artist": 110376,
+            "album": 110383
+        },
+        "ptrs": {
+            "title": [
+                91280
+            ],
+            "stream": [
+                91488,
+                91680
+            ],
+            "artist": [
+                91488,
+                91680
+            ],
+            "album": [
+                91696
+            ]
+        }
+    },
+    "Rockstar (Jason Nevins Remix)": {
+        "strings": {
+            "title": "Rockstar (Jason Nevins Remix)",
+            "stream": "Nerd",
+            "artist": "N.E.R.D.",
+            "album": "In Search Of..."
+        },
+        "locs": {
+            "title": 112149,
+            "stream": 112179,
+            "artist": 112184,
+            "album": 112193
+        },
+        "ptrs": {
+            "title": [
+                90944
+            ],
+            "stream": [
+                90960
+            ],
+            "artist": [
+                90864
+            ],
+            "album": [
+                90784
+            ]
+        }
+    },
+    "FRICTION": {
+        "strings": {
+            "title": "FRICTION",
+            "stream": "Bz",
+            "artist": "B'z",
+            "album": ""
+        },
+        "locs": {
+            "title": 114936,
+            "stream": 114945,
+            "artist": 114948,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93584
+            ],
+            "stream": [
+                93600
+            ],
+            "artist": [
+                93920
+            ],
+            "album": []
+        }
+    },
+    "Collapse": {
+        "strings": {
+            "title": "Collapse",
+            "stream": "Saosin",
+            "artist": "Saosin",
+            "album": "Saosin"
+        },
+        "locs": {
+            "title": 110234,
+            "stream": 110243,
+            "artist": 110243,
+            "album": 110243
+        },
+        "ptrs": {
+            "title": [
+                91472
+            ],
+            "stream": [
+                91328,
+                91424,
+                91440
+            ],
+            "artist": [
+                91328,
+                91424,
+                91440
+            ],
+            "album": [
+                91328,
+                91424,
+                91440
+            ]
+        }
+    },
+    "Calling All Cars": {
+        "strings": {
+            "title": "Calling All Cars",
+            "stream": "Senses_Fail",
+            "artist": "Senses Fail",
+            "album": "Still Searching"
+        },
+        "locs": {
+            "title": 110299,
+            "stream": 110316,
+            "artist": 110328,
+            "album": 110340
+        },
+        "ptrs": {
+            "title": [
+                91248
+            ],
+            "stream": [
+                91296
+            ],
+            "artist": [
+                91312
+            ],
+            "album": [
+                91264
+            ]
+        }
+    },
+    "It Goes Off": {
+        "strings": {
+            "title": "It Goes Off",
+            "stream": "Skybombers",
+            "artist": "Skybombers",
+            "album": "Sirens"
+        },
+        "locs": {
+            "title": 114998,
+            "stream": 115010,
+            "artist": 115010,
+            "album": 115021
+        },
+        "ptrs": {
+            "title": [
+                94000
+            ],
+            "stream": [
+                93968,
+                93984
+            ],
+            "artist": [
+                93968,
+                93984
+            ],
+            "album": [
+                93824
+            ]
+        }
+    },
+    "Rusty Cage": {
+        "strings": {
+            "title": "Rusty Cage",
+            "stream": "Soundgarden",
+            "artist": "Soundgarden",
+            "album": "A-Sides"
+        },
+        "locs": {
+            "title": 114905,
+            "stream": 114916,
+            "artist": 114916,
+            "album": 114928
+        },
+        "ptrs": {
+            "title": [
+                93504
+            ],
+            "stream": [
+                93568,
+                93616
+            ],
+            "artist": [
+                93568,
+                93616
+            ],
+            "album": [
+                93632
+            ]
+        }
+    },
+    "Dead Living": {
+        "strings": {
+            "title": "Dead Living",
+            "stream": "Sugarcult",
+            "artist": "Sugarcult",
+            "album": "Lights Out"
+        },
+        "locs": {
+            "title": 110015,
+            "stream": 110027,
+            "artist": 110027,
+            "album": 110037
+        },
+        "ptrs": {
+            "title": [
+                92256
+            ],
+            "stream": [
+                92144,
+                92160
+            ],
+            "artist": [
+                92144,
+                92160
+            ],
+            "album": [
+                92112
+            ]
+        }
+    },
+    "Duel": {
+        "strings": {
+            "title": "Duel",
+            "stream": "Swervedriver",
+            "artist": "Swervedriver",
+            "album": ".....Head"
+        },
+        "locs": {
+            "title": 111397,
+            "stream": 111402,
+            "artist": 111402,
+            "album": 111415
+        },
+        "ptrs": {
+            "title": [
+                90080
+            ],
+            "stream": [
+                90096,
+                90128
+            ],
+            "artist": [
+                90096,
+                90128
+            ],
+            "album": [
+                90176
+            ]
+        }
+    },
+    "Glitter Hits (J. J. Puig Mix)": {
+        "strings": {
+            "title": "Glitter Hits (J. J. Puig Mix)",
+            "stream": "The_Styles",
+            "artist": "The Styles",
+            "album": "You Love The Styles"
+        },
+        "locs": {
+            "title": 114723,
+            "stream": 114753,
+            "artist": 114764,
+            "album": 114775
+        },
+        "ptrs": {
+            "title": [
+                94128
+            ],
+            "stream": [
+                94144
+            ],
+            "artist": [
+                94112
+            ],
+            "album": [
+                94096
+            ]
+        }
+    },
+    "Red Orange Yellow": {
+        "strings": {
+            "title": "Red Orange Yellow",
+            "stream": "The_Photo_Atlas",
+            "artist": "The Photo Atlas",
+            "album": "No, Not Me, Never"
+        },
+        "locs": {
+            "title": 109856,
+            "stream": 109874,
+            "artist": 109890,
+            "album": 109906
+        },
+        "ptrs": {
+            "title": [
+                91872
+            ],
+            "stream": [
+                91888
+            ],
+            "artist": [
+                92096
+            ],
+            "album": [
+                92304
+            ]
+        }
+    },
+    "I Wanna Rock": {
+        "strings": {
+            "title": "I Wanna Rock",
+            "stream": "Twisted_Sister",
+            "artist": "Twisted Sister",
+            "album": "Still Hungry"
+        },
+        "locs": {
+            "title": 111710,
+            "stream": 111723,
+            "artist": 111738,
+            "album": 111753
+        },
+        "ptrs": {
+            "title": [
+                89680
+            ],
+            "stream": [
+                89696
+            ],
+            "artist": [
+                89744
+            ],
+            "album": [
+                89792
+            ]
+        }
+    },
+    "Finger On The Trigger": {
+        "strings": {
+            "title": "Finger On The Trigger",
+            "stream": "Never_Heard_Of_It",
+            "artist": "Never Heard Of It",
+            "album": "Never Heard Of It"
+        },
+        "locs": {
+            "title": 117902,
+            "stream": 117924,
+            "artist": 117942,
+            "album": 117942
+        },
+        "ptrs": {
+            "title": [
+                94592
+            ],
+            "stream": [
+                94608
+            ],
+            "artist": [
+                94624,
+                94640
+            ],
+            "album": [
+                94624,
+                94640
+            ]
+        }
+    },
+    "Everyone Has Their Secrets": {
+        "strings": {
+            "title": "Everyone Has Their Secrets",
+            "stream": "Showing_Off_To_Theives",
+            "artist": "Showing Off To Thieves",
+            "album": "Everyone Has Their Secrets"
+        },
+        "locs": {
+            "title": 117960,
+            "stream": 117987,
+            "artist": 118010,
+            "album": 117960
+        },
+        "ptrs": {
+            "title": [
+                94656,
+                94704
+            ],
+            "stream": [
+                94672
+            ],
+            "artist": [
+                94688
+            ],
+            "album": [
+                94656,
+                94704
+            ]
+        }
+    },
+    "Paradise City": {
+        "strings": {
+            "title": "Paradise City",
+            "stream": "Guns_And_Roses",
+            "artist": "Guns N' Roses",
+            "album": "Greatest Hits"
+        },
+        "locs": {
+            "title": 111024,
+            "stream": 111038,
+            "artist": 111053,
+            "album": 111067
+        },
+        "ptrs": {
+            "title": [
+                92656
+            ],
+            "stream": [
+                92624
+            ],
+            "artist": [
+                92640
+            ],
+            "album": [
+                92528
+            ]
+        }
+    },
+    "Fake It": {
+        "strings": {
+            "title": "Fake It",
+            "stream": "Seether",
+            "artist": "Seether",
+            "album": "Finding Beauty In Negative Spaces"
+        },
+        "locs": {
+            "title": 109624,
+            "stream": 109632,
+            "artist": 109632,
+            "album": 109640
+        },
+        "ptrs": {
+            "title": [
+                92000
+            ],
+            "stream": [
+                91952,
+                91968
+            ],
+            "artist": [
+                91952,
+                91968
+            ],
+            "album": [
+                92016
+            ]
+        }
+    },
+    "I'm Not Sorry": {
+        "strings": {
+            "title": "I'm Not Sorry",
+            "stream": "PigeonDetectives",
+            "artist": "The Pigeon Detectives",
+            "album": "Wait For Me"
+        },
+        "locs": {
+            "title": 109721,
+            "stream": 109735,
+            "artist": 109752,
+            "album": 109774
+        },
+        "ptrs": {
+            "title": [
+                91936
+            ],
+            "stream": [
+                91824
+            ],
+            "artist": [
+                91840
+            ],
+            "album": [
+                91792
+            ]
+        }
+    },
+    "Until You Leave": {
+        "strings": {
+            "title": "Until You Leave",
+            "stream": "PermanentME",
+            "artist": "Permanent ME",
+            "album": "After The Room Clears"
+        },
+        "locs": {
+            "title": 111513,
+            "stream": 111529,
+            "artist": 111541,
+            "album": 111554
+        },
+        "ptrs": {
+            "title": [
+                90496
+            ],
+            "stream": [
+                90512
+            ],
+            "artist": [
+                90544
+            ],
+            "album": [
+                90592
+            ]
+        }
+    },
+    "Nothing To Lose": {
+        "strings": {
+            "title": "Nothing To Lose",
+            "stream": "Operator",
+            "artist": "Operator",
+            "album": "Soul Crusher"
+        },
+        "locs": {
+            "title": 109977,
+            "stream": 109993,
+            "artist": 109993,
+            "album": 110002
+        },
+        "ptrs": {
+            "title": [
+                92384
+            ],
+            "stream": [
+                92352,
+                92400
+            ],
+            "artist": [
+                92352,
+                92400
+            ],
+            "album": [
+                92368
+            ]
+        }
+    },
+    "Come Clean": {
+        "strings": {
+            "title": "Come Clean",
+            "stream": "Mexicolas",
+            "artist": "Mexicolas",
+            "album": "X"
+        },
+        "locs": {
+            "title": 111081,
+            "stream": 111092,
+            "artist": 111092,
+            "album": 111102
+        },
+        "ptrs": {
+            "title": [
+                92448
+            ],
+            "stream": [
+                92416,
+                92432
+            ],
+            "artist": [
+                92416,
+                92432
+            ],
+            "album": [
+                92464
+            ]
+        }
+    },
+    "Creepshow": {
+        "strings": {
+            "title": "Creepshow",
+            "stream": "Kerli",
+            "artist": "Kerli",
+            "album": "Love Is Dead"
+        },
+        "locs": {
+            "title": 114564,
+            "stream": 114574,
+            "artist": 114574,
+            "album": 114580
+        },
+        "ptrs": {
+            "title": [
+                94224
+            ],
+            "stream": [
+                94208,
+                94240
+            ],
+            "artist": [
+                94208,
+                94240
+            ],
+            "album": [
+                94192
+            ]
+        }
+    },
+    "Cities In Dust": {
+        "strings": {
+            "title": "Cities In Dust",
+            "stream": "JunkieXL",
+            "artist": "Junkie XL feat. Lauren Rocket",
+            "album": "Booming Back At You"
+        },
+        "locs": {
+            "title": 116905,
+            "stream": 116920,
+            "artist": 116929,
+            "album": 116959
+        },
+        "ptrs": {
+            "title": [
+                87328
+            ],
+            "stream": [
+                87392
+            ],
+            "artist": [
+                87456
+            ],
+            "album": [
+                87472
+            ]
+        }
+    },
+    "Fire Away": {
+        "strings": {
+            "title": "Fire Away",
+            "stream": "Jupiter_One",
+            "artist": "Jupiter One",
+            "album": "Jupiter One"
+        },
+        "locs": {
+            "title": 111104,
+            "stream": 111114,
+            "artist": 111126,
+            "album": 111126
+        },
+        "ptrs": {
+            "title": [
+                92512
+            ],
+            "stream": [
+                92480
+            ],
+            "artist": [
+                92496,
+                92672
+            ],
+            "album": [
+                92496,
+                92672
+            ]
+        }
+    },
+    "Electable (Give It Up)": {
+        "strings": {
+            "title": "Electable (Give It Up)",
+            "stream": "JimmyEatWorld",
+            "artist": "Jimmy Eat World",
+            "album": "Chase This Light"
+        },
+        "locs": {
+            "title": 109786,
+            "stream": 109809,
+            "artist": 109823,
+            "album": 109839
+        },
+        "ptrs": {
+            "title": [
+                91808
+            ],
+            "stream": [
+                91856
+            ],
+            "artist": [
+                91904
+            ],
+            "album": [
+                91920
+            ]
+        }
+    },
+    "Heart Of Fire": {
+        "strings": {
+            "title": "Heart Of Fire",
+            "stream": "Innerpartysystem",
+            "artist": "Innerpartysystem",
+            "album": "The Download EP"
+        },
+        "locs": {
+            "title": 109674,
+            "stream": 109688,
+            "artist": 109688,
+            "album": 109705
+        },
+        "ptrs": {
+            "title": [
+                92064
+            ],
+            "stream": [
+                92032,
+                92080
+            ],
+            "artist": [
+                92032,
+                92080
+            ],
+            "album": [
+                92048
+            ]
+        }
+    },
+    "Coming Down To Beijing": {
+        "strings": {
+            "title": "Coming Down To Beijing",
+            "stream": "BrainFailure",
+            "artist": "Brain Failure feat. Dicky Barrett",
+            "album": "Beijing To Boston"
+        },
+        "locs": {
+            "title": 111425,
+            "stream": 111448,
+            "artist": 111461,
+            "album": 111495
+        },
+        "ptrs": {
+            "title": [
+                90144
+            ],
+            "stream": [
+                90160
+            ],
+            "artist": [
+                90352
+            ],
+            "album": [
+                90528
+            ]
+        }
+    },
+    "Too Much, Too Young, Too Fast": {
+        "strings": {
+            "title": "Too Much, Too Young, Too Fast",
+            "stream": "Airbourne",
+            "artist": "Airbourne",
+            "album": "Runnin' Wild"
+        },
+        "locs": {
+            "title": 109924,
+            "stream": 109954,
+            "artist": 109954,
+            "album": 109964
+        },
+        "ptrs": {
+            "title": [
+                92320
+            ],
+            "stream": [
+                92272,
+                92288
+            ],
+            "artist": [
+                92272,
+                92288
+            ],
+            "album": [
+                92336
+            ]
+        }
+    },
+    "Snowhill": {
+        "strings": {
+            "title": "Snowhill",
+            "stream": "AgentBlue",
+            "artist": "Agent Blue",
+            "album": "A Stolen Honda Vision"
+        },
+        "locs": {
+            "title": 116328,
+            "stream": 116337,
+            "artist": 116347,
+            "album": 116358
+        },
+        "ptrs": {
+            "title": [
+                87760
+            ],
+            "stream": [
+                87776
+            ],
+            "artist": [
+                87728
+            ],
+            "album": [
+                87744
+            ]
+        }
+    },
+    "Burnout 2002 Reprise": {
+        "strings": {
+            "title": "Burnout 2002 Reprise",
+            "stream": "Burnout_2002Reprise",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 111219,
+            "stream": 111240,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                92720
+            ],
+            "stream": [
+                92736
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Tokyo Nights": {
+        "strings": {
+            "title": "Tokyo Nights",
+            "stream": "Burnout_TokyoNights",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 110722,
+            "stream": 110735,
+            "artist": 0,
+            "album": 110755
+        },
+        "ptrs": {
+            "title": [
+                93056
+            ],
+            "stream": [
+                92960
+            ],
+            "artist": [],
+            "album": [
+                85136,
+                89600,
+                89952,
+                90400,
+                92576,
+                92816,
+                92944,
+                93008,
+                93520,
+                93744
+            ]
+        }
+    },
+    "Bulldozer Blues": {
+        "strings": {
+            "title": "Bulldozer Blues",
+            "stream": "Burnout_BulldozerBlues",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 111138,
+            "stream": 111154,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                92864
+            ],
+            "stream": [
+                92832
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Round And Rounder": {
+        "strings": {
+            "title": "Round And Rounder",
+            "stream": "Burnout_RoundAndRounder",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 111177,
+            "stream": 111195,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                92928
+            ],
+            "stream": [
+                92896
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Pass Me By": {
+        "strings": {
+            "title": "Pass Me By",
+            "stream": "Burnout_PassMeBy",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 116201,
+            "stream": 116212,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                84784
+            ],
+            "stream": [
+                84800
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Panic Attack": {
+        "strings": {
+            "title": "Panic Attack",
+            "stream": "Burnout_PanicAttack",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 112020,
+            "stream": 112033,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                89872
+            ],
+            "stream": [
+                89840
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Ozone": {
+        "strings": {
+            "title": "Ozone",
+            "stream": "Burnout_Ozone",
+            "artist": "Criterion Games",
+            "album": "Burnout 3"
+        },
+        "locs": {
+            "title": 114544,
+            "stream": 114550,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                94448
+            ],
+            "stream": [
+                94432
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Lyon": {
+        "strings": {
+            "title": "Lyon",
+            "stream": "Burnout_Lyon",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 116133,
+            "stream": 116138,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                85040
+            ],
+            "stream": [
+                85104
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Like My Shirt": {
+        "strings": {
+            "title": "Like My Shirt",
+            "stream": "Burnout_LikeMyShirt",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 110765,
+            "stream": 110779,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                92992
+            ],
+            "stream": [
+                93024
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Halfway To Dreaming": {
+        "strings": {
+            "title": "Halfway To Dreaming",
+            "stream": "Burnout_HalfwayToDreaming",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 111854,
+            "stream": 111874,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                89584
+            ],
+            "stream": [
+                89552
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Free": {
+        "strings": {
+            "title": "Free",
+            "stream": "Burnout_Free",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 110967,
+            "stream": 110972,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93328
+            ],
+            "stream": [
+                93280
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Fight Or Flight": {
+        "strings": {
+            "title": "Fight Or Flight",
+            "stream": "Burnout_FightOrFlight",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 111576,
+            "stream": 111592,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                90560
+            ],
+            "stream": [
+                90576
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Exodus": {
+        "strings": {
+            "title": "Exodus",
+            "stream": "Burnout_Exodus",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 111998,
+            "stream": 112005,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                90064
+            ],
+            "stream": [
+                90032
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Dark Moon Rising": {
+        "strings": {
+            "title": "Dark Moon Rising",
+            "stream": "Burnout_DarkMoonRising",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 116229,
+            "stream": 116246,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                84752
+            ],
+            "stream": [
+                84768
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Childish Games": {
+        "strings": {
+            "title": "Childish Games",
+            "stream": "Burnout_ChildishGames",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 116380,
+            "stream": 116395,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                87792
+            ],
+            "stream": [
+                87808
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Chicken George": {
+        "strings": {
+            "title": "Chicken George",
+            "stream": "Burnout_ChickenGeorge",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 114830,
+            "stream": 114845,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93712
+            ],
+            "stream": [
+                93760
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Caught On A Wire": {
+        "strings": {
+            "title": "Caught On A Wire",
+            "stream": "Burnout_CaughtOnWire",
+            "artist": "Criterion Games",
+            "album": "Burnout 1"
+        },
+        "locs": {
+            "title": 114867,
+            "stream": 114884,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93728
+            ],
+            "stream": [
+                93536
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Burnout Paradise Theme": {
+        "strings": {
+            "title": "Burnout Paradise Theme",
+            "stream": "Burnout_Burnout5Theme",
+            "artist": "Criterion Games",
+            "album": "Burnout Paradise"
+        },
+        "locs": {
+            "title": 110110,
+            "stream": 110133,
+            "artist": 0,
+            "album": 110155
+        },
+        "ptrs": {
+            "title": [
+                92192
+            ],
+            "stream": [
+                92208
+            ],
+            "artist": [],
+            "album": [
+                91392
+            ]
+        }
+    },
+    "Destroyer Mix": {
+        "strings": {
+            "title": "Destroyer Mix",
+            "stream": "Burnout_DestroyerMix",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 114795,
+            "stream": 114809,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93680
+            ],
+            "stream": [
+                93696
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Bridge The Gap": {
+        "strings": {
+            "title": "Bridge The Gap",
+            "stream": "Burnout_BridgeTheGap",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 110048,
+            "stream": 110063,
+            "artist": 110084,
+            "album": 110100
+        },
+        "ptrs": {
+            "title": [
+                92128
+            ],
+            "stream": [
+                92176
+            ],
+            "artist": [
+                84816,
+                84832,
+                85120,
+                87184,
+                87424,
+                87648,
+                87824,
+                87968,
+                89568,
+                89856,
+                89984,
+                90048,
+                90320,
+                90480,
+                91376,
+                92224,
+                92560,
+                92688,
+                92800,
+                92848,
+                92912,
+                92976,
+                93040,
+                93296,
+                93408,
+                93552,
+                93664,
+                93776,
+                93952,
+                94400
+            ],
+            "album": [
+                84736,
+                84896,
+                87712,
+                87872,
+                89888,
+                92240,
+                92704,
+                92880,
+                93360,
+                93648
+            ]
+        }
+    },
+    "Backlash": {
+        "strings": {
+            "title": "Backlash",
+            "stream": "Burnout_Backlash",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 116536,
+            "stream": 116545,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                87616
+            ],
+            "stream": [
+                87632
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "A Photograph": {
+        "strings": {
+            "title": "A Photograph",
+            "stream": "Burnout_APhotograph",
+            "artist": "Criterion Games",
+            "album": "Burnout 2"
+        },
+        "locs": {
+            "title": 110799,
+            "stream": 110812,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93200
+            ],
+            "stream": [
+                93392
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "16 Years On": {
+        "strings": {
+            "title": "16 Years On",
+            "stream": "Burnout_16YearsOn",
+            "artist": "Criterion Games",
+            "album": "Burnout 3"
+        },
+        "locs": {
+            "title": 111260,
+            "stream": 111272,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                92752
+            ],
+            "stream": [
+                92784
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Another World": {
+        "strings": {
+            "title": "Another World",
+            "stream": "Burnout_AnotherWorld",
+            "artist": "Criterion Games",
+            "album": "Burnout 3"
+        },
+        "locs": {
+            "title": 111331,
+            "stream": 111345,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                90224
+            ],
+            "stream": [
+                90272
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Betties Last Voyage": {
+        "strings": {
+            "title": "Betties Last Voyage",
+            "stream": "Burnout_BettiesLastVoyage",
+            "artist": "Criterion Games",
+            "album": "Burnout 3"
+        },
+        "locs": {
+            "title": 114952,
+            "stream": 114972,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93888
+            ],
+            "stream": [
+                93904
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Liquid Sky": {
+        "strings": {
+            "title": "Liquid Sky",
+            "stream": "Burnout_LiquidSky",
+            "artist": "Criterion Games",
+            "album": "Burnout 3"
+        },
+        "locs": {
+            "title": 110985,
+            "stream": 110996,
+            "artist": 0,
+            "album": 111014
+        },
+        "ptrs": {
+            "title": [
+                92592
+            ],
+            "stream": [
+                92544
+            ],
+            "artist": [],
+            "album": [
+                87104,
+                87440,
+                87888,
+                90016,
+                90336,
+                92608,
+                92768,
+                94016,
+                94416
+            ]
+        }
+    },
+    "Red Sky Horizon": {
+        "strings": {
+            "title": "Red Sky Horizon",
+            "stream": "Burnout_RedSkyHorizon",
+            "artist": "Criterion Games",
+            "album": "Burnout 3"
+        },
+        "locs": {
+            "title": 116714,
+            "stream": 116730,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                87936
+            ],
+            "stream": [
+                87952
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Shine": {
+        "strings": {
+            "title": "Shine",
+            "stream": "Burnout_Shine",
+            "artist": "Criterion Games",
+            "album": "Burnout 3"
+        },
+        "locs": {
+            "title": 117021,
+            "stream": 117027,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                87152
+            ],
+            "stream": [
+                87168
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Take Cover": {
+        "strings": {
+            "title": "Take Cover",
+            "stream": "Burnout_TakeCover",
+            "artist": "Criterion Games",
+            "album": "Burnout 3"
+        },
+        "locs": {
+            "title": 111969,
+            "stream": 111980,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                90000
+            ],
+            "stream": [
+                89968
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "Tonight This Ends": {
+        "strings": {
+            "title": "Tonight This Ends",
+            "stream": "Burnout_TonightThisEnds",
+            "artist": "Criterion Games",
+            "album": "Burnout 3"
+        },
+        "locs": {
+            "title": 116979,
+            "stream": 116997,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                87488
+            ],
+            "stream": [
+                87408
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "$WORK_BACH_AIR": {
+        "strings": {
+            "title": "$WORK_BACH_AIR",
+            "stream": "PicParadise01",
+            "artist": "$COMP_BACH",
+            "album": ""
+        },
+        "locs": {
+            "title": 112053,
+            "stream": 112068,
+            "artist": 112082,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                89936
+            ],
+            "stream": [
+                89904
+            ],
+            "artist": [
+                89920
+            ],
+            "album": []
+        }
+    },
+    "$WORK_BOCCHERINI_MINUET": {
+        "strings": {
+            "title": "$WORK_BOCCHERINI_MINUET",
+            "stream": "PicParadise15",
+            "artist": "$COMP_BOCCHERINI",
+            "album": ""
+        },
+        "locs": {
+            "title": 111655,
+            "stream": 111679,
+            "artist": 111693,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                90432
+            ],
+            "stream": [
+                90448
+            ],
+            "artist": [
+                89712
+            ],
+            "album": []
+        }
+    },
+    "$WORK_MOZART_EINEKLEINENACHTMUSIC": {
+        "strings": {
+            "title": "$WORK_MOZART_EINEKLEINENACHTMUSIC",
+            "stream": "PicParadise08",
+            "artist": "$COMP_MOZART",
+            "album": ""
+        },
+        "locs": {
+            "title": 110172,
+            "stream": 110206,
+            "artist": 110220,
+            "album": 110233
+        },
+        "ptrs": {
+            "title": [
+                91344
+            ],
+            "stream": [
+                91360
+            ],
+            "artist": [
+                90256,
+                90416,
+                91408,
+                94336
+            ],
+            "album": [
+                84928,
+                85952,
+                85968,
+                85984,
+                86000,
+                86016,
+                86032,
+                86048,
+                86080,
+                86096,
+                86112,
+                86128,
+                86144,
+                86160,
+                86176,
+                86192,
+                86208,
+                86224,
+                86240,
+                86256,
+                86272,
+                86288,
+                86304,
+                86320,
+                86336,
+                86672,
+                86688,
+                86704,
+                86720,
+                86736,
+                86752,
+                86768,
+                86784,
+                86800,
+                86816,
+                86832,
+                86848,
+                86864,
+                86880,
+                87040,
+                87296,
+                88048,
+                88112,
+                88256,
+                88288,
+                88320,
+                88336,
+                88368,
+                88384,
+                88400,
+                88528,
+                88544,
+                88560,
+                88576,
+                88592,
+                88608,
+                88624,
+                88640,
+                88656,
+                88672,
+                88688,
+                88704,
+                88720,
+                88736,
+                89120,
+                89136,
+                89152,
+                89216,
+                89232,
+                89248,
+                89264,
+                89280,
+                89296,
+                89312,
+                89728,
+                90112,
+                90208,
+                90464,
+                90912,
+                90976,
+                91200,
+                91456,
+                91520,
+                91584,
+                91760,
+                93152,
+                93248,
+                93312,
+                93488,
+                93936,
+                94384
+            ]
+        }
+    },
+    "$WORK_DELIBES_FLOWERDUET": {
+        "strings": {
+            "title": "$WORK_DELIBES_FLOWERDUET",
+            "stream": "PicParadise09",
+            "artist": "$COMP_DELIBES",
+            "album": ""
+        },
+        "locs": {
+            "title": 116607,
+            "stream": 116632,
+            "artist": 116646,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                88144
+            ],
+            "stream": [
+                88208
+            ],
+            "artist": [
+                88272
+            ],
+            "album": []
+        }
+    },
+    "$WORK_GOUNOD_AVEMARIA": {
+        "strings": {
+            "title": "$WORK_GOUNOD_AVEMARIA",
+            "stream": "PicParadise02",
+            "artist": "$COMP_GOUNOD",
+            "album": ""
+        },
+        "locs": {
+            "title": 110250,
+            "stream": 110272,
+            "artist": 110286,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                91216
+            ],
+            "stream": [
+                91232
+            ],
+            "artist": [
+                91184
+            ],
+            "album": []
+        }
+    },
+    "$WORK_TCHAIKOVSKY_NUTCRACKER": {
+        "strings": {
+            "title": "$WORK_TCHAIKOVSKY_NUTCRACKER",
+            "stream": "PicParadise21",
+            "artist": "$COMP_TCHAIKOVSKY",
+            "album": ""
+        },
+        "locs": {
+            "title": 110487,
+            "stream": 110516,
+            "artist": 110530,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                91536
+            ],
+            "stream": [
+                91552
+            ],
+            "artist": [
+                91504,
+                93472
+            ],
+            "album": []
+        }
+    },
+    "$WORK_SAINTSAENS_AQUARIUM": {
+        "strings": {
+            "title": "$WORK_SAINTSAENS_AQUARIUM",
+            "stream": "PicParadise03",
+            "artist": "$COMP_SAINTSAENS",
+            "album": ""
+        },
+        "locs": {
+            "title": 110548,
+            "stream": 110574,
+            "artist": 110588,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                91600
+            ],
+            "stream": [
+                91616
+            ],
+            "artist": [
+                91568,
+                93264
+            ],
+            "album": []
+        }
+    },
+    "$WORK_MOZART_HORNCONCERTO4": {
+        "strings": {
+            "title": "$WORK_MOZART_HORNCONCERTO4",
+            "stream": "PicParadise12",
+            "artist": "$COMP_MOZART",
+            "album": ""
+        },
+        "locs": {
+            "title": 111614,
+            "stream": 111641,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                90368
+            ],
+            "stream": [
+                90384
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "$WORK_TCHAIKOVSKY_SLEEPINGBEAUTY": {
+        "strings": {
+            "title": "$WORK_TCHAIKOVSKY_SLEEPINGBEAUTY",
+            "stream": "PicParadise18",
+            "artist": "$COMP_TCHAIKOVSKY",
+            "album": ""
+        },
+        "locs": {
+            "title": 110832,
+            "stream": 110865,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93376
+            ],
+            "stream": [
+                93424
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "$WORK_VERDI_HEBREW": {
+        "strings": {
+            "title": "$WORK_VERDI_HEBREW",
+            "stream": "PicParadise11",
+            "artist": "$COMP_VERDI",
+            "album": ""
+        },
+        "locs": {
+            "title": 110394,
+            "stream": 110413,
+            "artist": 110427,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                91648
+            ],
+            "stream": [
+                91664
+            ],
+            "artist": [
+                90192,
+                91712
+            ],
+            "album": []
+        }
+    },
+    "$WORK_DVORAK_SYMPHONY9": {
+        "strings": {
+            "title": "$WORK_DVORAK_SYMPHONY9",
+            "stream": "PicParadise19",
+            "artist": "$COMP_DVORAK",
+            "album": ""
+        },
+        "locs": {
+            "title": 116151,
+            "stream": 116174,
+            "artist": 116188,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                85056
+            ],
+            "stream": [
+                85072
+            ],
+            "artist": [
+                85088
+            ],
+            "album": []
+        }
+    },
+    "$WORK_DEBUSSY_CLAIRDELUNE": {
+        "strings": {
+            "title": "$WORK_DEBUSSY_CLAIRDELUNE",
+            "stream": "PicParadise05",
+            "artist": "$COMP_DEBUSSY",
+            "album": ""
+        },
+        "locs": {
+            "title": 116660,
+            "stream": 116686,
+            "artist": 116700,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                88304
+            ],
+            "stream": [
+                88224
+            ],
+            "artist": [
+                88240
+            ],
+            "album": []
+        }
+    },
+    "$WORK_BEETHOVEN_MOONLIGHT": {
+        "strings": {
+            "title": "$WORK_BEETHOVEN_MOONLIGHT",
+            "stream": "PicParadise16",
+            "artist": "$COMP_BEETHOVEN",
+            "album": ""
+        },
+        "locs": {
+            "title": 112093,
+            "stream": 112119,
+            "artist": 112133,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                90880
+            ],
+            "stream": [
+                90896
+            ],
+            "artist": [
+                90928
+            ],
+            "album": []
+        }
+    },
+    "$WORK_MOZART_PIANOCONCERTO": {
+        "strings": {
+            "title": "$WORK_MOZART_PIANOCONCERTO",
+            "stream": "PicParadise17",
+            "artist": "$COMP_MOZART",
+            "album": ""
+        },
+        "locs": {
+            "title": 111290,
+            "stream": 111317,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                91168
+            ],
+            "stream": [
+                90240
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "$WORK_HANDEL_WATERMUSIC1": {
+        "strings": {
+            "title": "$WORK_HANDEL_WATERMUSIC1",
+            "stream": "PicParadise24",
+            "artist": "$COMP_HANDEL",
+            "album": ""
+        },
+        "locs": {
+            "title": 116866,
+            "stream": 116891,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                87344
+            ],
+            "stream": [
+                87360
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "$WORK_SAINTSAENS_SWAN": {
+        "strings": {
+            "title": "$WORK_SAINTSAENS_SWAN",
+            "stream": "PicParadise04",
+            "artist": "$COMP_SAINTSAENS",
+            "album": ""
+        },
+        "locs": {
+            "title": 110931,
+            "stream": 110953,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93216
+            ],
+            "stream": [
+                93232
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "$WORK_BIZET_CARMEN": {
+        "strings": {
+            "title": "$WORK_BIZET_CARMEN",
+            "stream": "PicParadise10",
+            "artist": "$COMP_BIZET",
+            "album": ""
+        },
+        "locs": {
+            "title": 116562,
+            "stream": 116581,
+            "artist": 116595,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                88160
+            ],
+            "stream": [
+                88176
+            ],
+            "artist": [
+                88192
+            ],
+            "album": []
+        }
+    },
+    "$WORK_MOZART_HORNCONCERTO3": {
+        "strings": {
+            "title": "$WORK_MOZART_HORNCONCERTO3",
+            "stream": "PicParadise13",
+            "artist": "$COMP_MOZART",
+            "album": ""
+        },
+        "locs": {
+            "title": 114503,
+            "stream": 114530,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                94352
+            ],
+            "stream": [
+                94320
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "$WORK_VERDI_AIDA": {
+        "strings": {
+            "title": "$WORK_VERDI_AIDA",
+            "stream": "PicParadise23",
+            "artist": "$COMP_VERDI",
+            "album": ""
+        },
+        "locs": {
+            "title": 111366,
+            "stream": 111383,
+            "artist": 0,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                90288
+            ],
+            "stream": [
+                90304
+            ],
+            "artist": [],
+            "album": []
+        }
+    },
+    "$WORK_HANDEL_WATERMUSIC2": {
+        "strings": {
+            "title": "$WORK_HANDEL_WATERMUSIC2",
+            "stream": "PicParadise25",
+            "artist": "$COMP_HANDEL",
+            "album": ""
+        },
+        "locs": {
+            "title": 110879,
+            "stream": 110904,
+            "artist": 110918,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93440
+            ],
+            "stream": [
+                93456
+            ],
+            "artist": [
+                87376,
+                93344
+            ],
+            "album": []
+        }
+    },
+    "$WORK_VIVALDI_SPRING": {
+        "strings": {
+            "title": "$WORK_VIVALDI_SPRING",
+            "stream": "PicParadise06",
+            "artist": "$COMP_VIVALDI",
+            "album": ""
+        },
+        "locs": {
+            "title": 110673,
+            "stream": 110694,
+            "artist": 110708,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                93136
+            ],
+            "stream": [
+                93168
+            ],
+            "artist": [
+                93184
+            ],
+            "album": []
+        }
+    },
+    "$WORK_BRAHMS_HUNGARIANDANCE": {
+        "strings": {
+            "title": "$WORK_BRAHMS_HUNGARIANDANCE",
+            "stream": "PicParadise14",
+            "artist": "$COMP_BRAHMS",
+            "album": ""
+        },
+        "locs": {
+            "title": 116752,
+            "stream": 116780,
+            "artist": 116794,
+            "album": 0
+        },
+        "ptrs": {
+            "title": [
+                87904
+            ],
+            "stream": [
+                87920
+            ],
+            "artist": [
+                87984
+            ],
+            "album": []
+        }
+    }
+}

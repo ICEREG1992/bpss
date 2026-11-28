@@ -16,6 +16,10 @@ from PyQt5.QtCore import QThread
 SX_CACHE_DIR = os.path.join("temp", "sx_cache")
 FFMPEG_EXE = resource_path("ffmpeg.exe")
 
+KNOWN_BIN_POINTERS = {
+    "05a4e2df642e04696f59f98813e8f547c85abe7ca5259efab5320af3b7ef499b": "reversion_ptrs.json",
+}
+
 TARGET_LUFS = -6
 
 def run_external(command, action):
@@ -139,11 +143,21 @@ def load_pointers(settings, filename, set_progress=None):
     # Extract data vault
     if "game" in settings.keys() and os.path.isdir(settings["game"]):
         binLoc = os.path.join(settings["game"], 'SOUND', 'BURNOUTGLOBALDATA.BIN')
+        bin_hash = hash_file(binLoc).lower()
+        # If a known mod is installed, use a pre-made pointers file
+        if os.path.isfile(binLoc):
+            bin_hash = hash_file(binLoc).lower()
+            known_mod = KNOWN_BIN_POINTERS.get(bin_hash)
+            if known_mod:
+                print(f"Recognized global data bin ({bin_hash[:8]}), using {known_mod}")
+                shutil.copyfile(resource_path(known_mod), filename)
+                if set_progress: set_progress(100, "Done!")
+                return
         tempLoc = os.path.join('temp', 'globaldata')
         shutil.rmtree(tempLoc, ignore_errors=True)
         run_external([settings["yap"], 'e', binLoc, tempLoc], "YAP extract (global data)")
     else:
-        print("failing out")
+        print("Failing out")
         if set_progress: set_progress(100, "Failed to find Burnout Paradise installation!")
         return
 
